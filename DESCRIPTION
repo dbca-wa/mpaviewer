@@ -1,22 +1,29 @@
 Package: mpaviewer
 Title: MPA Viewer
-Version: 0.0.0.9000
+Version: 0.0.1
 Authors@R: person('Florian', 'Mayer', email = 'Florian.Mayer@dbca.wa.gov.au', role = c('cre', 'aut'))
 Description: An interactive overview of selected biodiversity assets in Marine Protected Areas of Western Australia.
 License: MIT + file LICENSE
 Imports: 
     attempt,
     config (>= 0.3.1),
+    devtools,
+    dplyr,
     DT,
+    fs,
     glue,
     golem (>= 0.3.1),
+    here,
     htmltools,
+    leaflet,
+    magrittr,
     processx,
+    rlang,
     shiny (>= 1.7.1),
     thinkr
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 URL: https://github.com/dbca-wa/mpaviewer
 BugReports: https://github.com/dbca-wa/mpaviewer/issues
 Suggests: 

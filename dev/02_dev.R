@@ -16,6 +16,14 @@
 ## Dependencies ----
 ## Add one line by package you want to add as dependency
 usethis::use_package( "thinkr" )
+usethis::use_package( "dplyr" )
+usethis::use_package( "magrittr" )
+usethis::use_package( "leaflet" )
+usethis::use_package( "devtools" )
+usethis::use_package( "fs" )
+usethis::use_package( "here" )
+usethis::use_package( "rlang" )
+usethis::use_pipe()
 
 ## Add modules ----
 ## Create a module infrastructure in R/
@@ -31,7 +39,7 @@ golem::add_utils( "helpers" )
 ## Creates .js and .css files at inst/app/www
 golem::add_js_file( "script" )
 golem::add_js_handler( "handlers" )
-golem::add_css_file( "custom" )
+golem::add_css_file( "style" )
 
 ## Add internal datasets ----
 ## If you have data in your package
@@ -63,7 +71,7 @@ covrpage::covrpage()
 usethis::use_github()
 
 # GitHub Actions
-usethis::use_github_action()
+usethis::use_github_actions()
 # Chose one of the three
 # See https://usethis.r-lib.org/reference/use_github_action.html
 usethis::use_github_action_check_release()

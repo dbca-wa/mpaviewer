@@ -8,3 +8,6 @@ $run_dev.*
 ^README\.Rmd$
 ^doc$
 ^Meta$
+^\.github$
+^Dockerfile$
+^\.dockerignore$
