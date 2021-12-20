@@ -102,3 +102,8 @@ usethis::use_gitlab_ci()
 # go to dev/03_deploy.R
 rstudioapi::navigateToFile("dev/03_deploy.R")
 
+
+# Resources
+# https://shiny.rstudio.com/articles/modules.html
+# https://mastering-shiny.org/scaling-modules.html
+
