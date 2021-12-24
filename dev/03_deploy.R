@@ -32,8 +32,14 @@ devtools::build()
 # golem::add_shinyserver_file()
 
 ## Docker ----
-## If you want to deploy via a generic Dockerfile
+## Update Dockerfile
 golem::add_dockerfile()
+# Git commit
+# Trigger a new Image build through pushing a new tag
+v <- packageVersion("mpaviewer")
+system(glue::glue("git tag -a v{v} -m 'v{v}'"))
+system(glue::glue("git push --tags"))
+# Update mpaviewer in rancher
 
 ## If you want to deploy to ShinyProxy
 # golem::add_dockerfile_shinyproxy()
@@ -42,4 +48,4 @@ golem::add_dockerfile()
 # golem::add_dockerfile_heroku()
 
 # Release new docker image
-mpaviewer::make_docker()
+# mpaviewer::make_docker() # superseded by GH package

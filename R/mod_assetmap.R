@@ -31,7 +31,7 @@ mod_assetmap_server <- function(id){
         leaflet::addProviderTiles("OpenStreetMap.Mapnik") %>%
         leaflet::addProviderTiles("Esri.WorldImagery",
                          options=leaflet::providerTileOptions(opacity=0.8)) %>%
-        leaflet::setView(lng = 120, lat = -25, zoom = 5) %>%
+        leaflet::setView(lng = 120, lat = -25, zoom = 4) %>%
         leaflet::addMiniMap(toggleDisplay=T, zoomLevelOffset=-8) %>%
         leaflet::addScaleBar() %>%
         leaflet::clearShapes()

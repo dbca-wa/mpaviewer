@@ -37,10 +37,11 @@ staff.
 
 ## Development
 
-`mpaviewer` is an RShiny app using modules, packaged with `golem`.
+`mpaviewer` is an RShiny app using [Shiny
+modules](https://shiny.rstudio.com/articles/modules.html), developed
+using [`golem`](https://mastering-shiny.org/scaling-modules.html).
 
-  - <https://shiny.rstudio.com/articles/modules.html>
-  - <https://mastering-shiny.org/scaling-modules.html>
+The commands to develop new functionality are in `dev/02_dev.R`.
 
 ## Deployment
 
@@ -49,3 +50,5 @@ starting with “v”, such as “v1.0.0”. The images are pushed to the GitHub
 container registry `ghcr.io`. The DBCA maintainer of `mpaviewer` then
 updates the tag number (e.g. `1.0.0`) in the image run by Kubernetes,
 which will trigger a hot reload of the image.
+
+The commands to deploy a new version are in `dev/03_deploy.R`.
