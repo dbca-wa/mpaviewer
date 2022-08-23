@@ -15,7 +15,8 @@ Some completely made up coral data
 }
 \seealso{
 Other included: 
-\code{\link{fish}}
+\code{\link{fish}},
+\code{\link{print.mpa_data}()}
 }
 \concept{included}
 \keyword{datasets}

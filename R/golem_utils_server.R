@@ -134,19 +134,7 @@ se.max <- function(x) {
 }
 
 ### ► Function for reading in DBCA data
-read.dbca.files_csv <- function(flnm) {
-  read_csv(flnm, col_types = cols(.default = "c")) %>%
-    dplyr::mutate(folder.structure = str_replace_all(flnm, paste(data.dir, "/", sep = ""), "")) %>%
-    tidyr::separate(folder.structure, into = c("marine.park", "method", "campaignid"), sep = "/", extra = "drop", fill = "right") %>%
-    ga.clean.names()
-}
 
-read.dbca.files_txt <- function(flnm) {
-  read_tsv(flnm, col_types = cols(.default = "c")) %>%
-    dplyr::mutate(folder.structure = str_replace_all(flnm, paste(data.dir, "/", sep = ""), "")) %>%
-    tidyr::separate(folder.structure, into = c("marine.park", "method", "campaignid"), sep = "/", extra = "drop", fill = "right") %>%
-    ga.clean.names()
-}
 
 ### ► Set data directory
 # data.dir <- "./data"

@@ -2,3 +2,10 @@
 *.rds
 *.csv
 *.shp
+*.RData
+*.shx
+*.xml
+*.sbx
+*.prj
+*.dbf
+*.cpg

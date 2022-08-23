@@ -34,6 +34,15 @@ library(png)
 #' @noRd
 app_server <- function(input, output, session) {
   # mod_assetmap_server("assetmap_ui_1")
+  #
+  # Load data
+  # TODO load from .rds
+  load(here::here("inst/data/workspace.RData"))
+
+  # Use this:
+  # mpa_data <- readRDS(here::here("inst/data/mpa_data.rds"))
+  # mpa_data$abundance
+
 
 
   ## FUNCTIONS -----
