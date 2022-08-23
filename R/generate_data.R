@@ -304,8 +304,15 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     list(
       downloaded_on = Sys.time(),
       abundance = abundance,
-      all.data = all.data
-      # ...
+      total.abundance = total.abundance,
+      trophic.abundance = trophic.abundance,
+      all.data = all.data,
+      fished.complete.length = fished.complete.length,
+      fished.abundance = fished.abundance,
+      metadata = metadata,
+      sampling.effort = sampling.effort,
+      state.mp = state.mp,
+      state.pal = state.pal
     ),
     class = "mpa_data"
   )
@@ -329,7 +336,15 @@ print.mpa_data <- function(x, ...) {
     glue::glue(
       "<MPA Data> accessed on {x$downloaded_on}\n",
       "  Abundance:   {nrow(x$abundance)}\n",
-      "  all.data:   {nrow(x$all.data)}\n",
+      "  total.abundance:   {nrow(x$total.abundance)}\n",
+      "  trophic.abundance:   {nrow(x$trophic.abundance)}\n",
+      "  all.data:    {nrow(x$all.data)}\n",
+      "  fished.complete.length:    {nrow(x$fished.complete.length)}\n",
+      "  fished.abundance:    {nrow(x$fished.abundance)}\n",
+      "  metadata:    {nrow(x$metadata)}\n",
+      "  sampling.effort:    {nrow(x$sampling.effort)}\n",
+      "  state.mp:    {nrow(x$state.mp)}\n",
+      "  state.pal:    {nrow(x$state.pal)}\n",
     )
   )
   invisible(x)
