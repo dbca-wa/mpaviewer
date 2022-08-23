@@ -22,10 +22,10 @@ RUN Rscript -e 'remotes::install_version("thinkr",upgrade="never", version = "0.
 RUN Rscript -e 'remotes::install_version("leaflet",upgrade="never", version = "2.0.4.1")'
 RUN Rscript -e 'remotes::install_version("golem",upgrade="never", version = "0.3.1")'
 RUN Rscript -e 'remotes::install_version("DT",upgrade="never", version = "0.20")'
-RUN mkdir /build_zone
-ADD . /build_zone
-WORKDIR /build_zone
+# TODO add new packages
+RUN mkdir /app
+ADD . /app
+WORKDIR /app
 RUN R -e 'remotes::install_local(upgrade="never")'
-RUN rm -rf /build_zone
 EXPOSE 80
 CMD R -e "options('shiny.port'=80,shiny.host='0.0.0.0');mpaviewer::run_app()"

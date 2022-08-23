@@ -15,15 +15,38 @@ Imports:
     golem (>= 0.3.1),
     here,
     htmltools,
-    leaflet,
     magrittr,
     processx,
     rlang,
     shiny (>= 1.7.1),
-    thinkr
+    thinkr,
+    data.table,
+    forcats,
+    grid,
+    leaflet,
+    leafgl,
+    plotly,
+    readr,
+    rgdal,
+    rgeos,
+    shinyalert,
+    shinycssloaders,
+    shinydashboard,
+    shinydashboardPlus,
+    shinyWidgets,
+    GlobalArchive,
+    stringr,
+    tidyr,
+    ggplot2,
+    mgcv,
+    scales,
+    cowplot,
+    png
+Remotes:
+    github::UWAMEGFisheries/GlobalArchive
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0
 URL: https://github.com/dbca-wa/mpaviewer
 BugReports: https://github.com/dbca-wa/mpaviewer/issues
 Suggests: 
