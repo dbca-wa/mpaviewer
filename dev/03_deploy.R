@@ -36,6 +36,10 @@ devtools::build()
 golem::add_dockerfile()
 # Git commit
 # Trigger a new Image build through pushing a new tag
+usethis::use_version(which="major")
+usethis::use_version(which="minor")
+usethis::use_version(which="patch")
+devtools::document()
 v <- packageVersion("mpaviewer")
 system(glue::glue("git tag -a v{v} -m 'v{v}'"))
 system(glue::glue("git push --tags"))
