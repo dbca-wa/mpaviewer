@@ -17,6 +17,7 @@ Imports:
     golem (>= 0.3.1),
     googledrive,
     here,
+    httr,
     leaflet,
     leafgl,
     magrittr,

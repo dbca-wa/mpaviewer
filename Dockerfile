@@ -34,6 +34,8 @@ RUN Rscript -e 'remotes::install_version("leafgl",upgrade="never", version = "0.
 RUN Rscript -e 'remotes::install_version("googledrive",upgrade="never", version = "2.0.0")'
 RUN Rscript -e 'remotes::install_version("golem",upgrade="never", version = "0.3.3")'
 RUN Rscript -e 'remotes::install_version("forcats",upgrade="never", version = "0.5.1")'
+RUN Rscript -e 'remotes::install_version("ckanr",upgrade="never", version = "0.6.0.92")'
+RUN Rscript -e 'remotes::install_version("httr",upgrade="never", version = "1.4.3")'
 RUN Rscript -e 'remotes::install_github("r-spatial/sf@e0eeaa1e70522f4a7cdb439909e6151dbae5b029")'
 RUN Rscript -e 'remotes::install_github("UWAMEGFisheries/GlobalArchive@f3c4315600a0396c7f72382b81d9073d346d431d")'
 RUN mkdir /app
