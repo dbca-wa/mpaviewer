@@ -23,6 +23,7 @@ download_data <- function(drive_folder = Sys.getenv("GD_MPAVIEWER"),
   # Authentication
   drive_auth_configure(api_key = api_key)
 
+  drive_ls(drive_folder)
   # List files
   files <- drive_ls(path=drive_folder, recursive = TRUE)
 
@@ -30,8 +31,5 @@ download_data <- function(drive_folder = Sys.getenv("GD_MPAVIEWER"),
   if (nrow(files) == 0) {abort("No files were found on Google Drive.")}
 
   # Download files
-  for (file_id in files$id) {
-    drive_download(as_id(file_id), overwrite=TRUE)
-  }
-
+  purrr::walk(files$id, ~ drive_download(as_id(.x), overwrite = TRUE))
 }
