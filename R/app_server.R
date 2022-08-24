@@ -30,7 +30,7 @@ app_server <- function(input, output, session) {
       selected <- choices[1]
     }
 
-    selectInput(
+    shiny::selectInput(
       inputId = input_name,
       label = label,
       choices = choices,
@@ -50,9 +50,9 @@ app_server <- function(input, output, session) {
   # Create a marine park dropdown ----
   output$fish.state.park.dropdown <- renderUI({
     options <- mpa_data()$metadata %>%
-      distinct(marine.park) %>%
-      arrange(marine.park) %>%
-      pull("marine.park")
+      dplyr::distinct(marine.park) %>%
+      dplyr::arrange(marine.park) %>%
+      dplyr::pull("marine.park")
 
     pickerInput(
       inputId = "fish.state.park.dropdown",
@@ -68,8 +68,8 @@ app_server <- function(input, output, session) {
   output$fish.state.method.dropdown <- renderUI({
     options <- mpa_data()$metadata %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
-      distinct(method) %>%
-      pull("method")
+      dplyr::distinct(method) %>%
+      dplyr::pull("method")
 
     create_dropdown("fish.state.method.dropdown", options, "Choose a method:", FALSE)
   })
@@ -82,20 +82,20 @@ app_server <- function(input, output, session) {
       dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
       dplyr::group_by(scientific) %>%
       dplyr::summarise(total = sum(number)) %>%
-      arrange(desc(total)) %>%
-      distinct(scientific) %>%
-      pull("scientific")
+      dplyr::arrange(desc(total)) %>%
+      dplyr::distinct(scientific) %>%
+      dplyr::pull("scientific")
 
-    most.abundant <- mpa_data()$ mpa_data()$fished.complete.length %>%
+    most.abundant <- mpa_data()$fished.complete.length %>%
       dplyr::filter(number > 0) %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
       dplyr::group_by(scientific) %>%
       dplyr::summarise(total = sum(number)) %>%
-      arrange(desc(total)) %>%
-      slice(1:3) %>%
-      distinct(scientific) %>%
-      pull("scientific")
+      dplyr::arrange(desc(total)) %>%
+      dplyr::slice(1:3) %>%
+      dplyr::distinct(scientific) %>%
+      dplyr::pull("scientific")
 
     pickerInput(
       inputId = "fish.state.fished.species.dropdown",
@@ -115,9 +115,9 @@ app_server <- function(input, output, session) {
       dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
       dplyr::group_by(scientific) %>%
       dplyr::summarise(total = sum(maxn)) %>%
-      arrange(desc(total)) %>%
-      distinct(scientific) %>%
-      pull("scientific")
+      dplyr::arrange(desc(total)) %>%
+      dplyr::distinct(scientific) %>%
+      dplyr::pull("scientific")
 
     most.abundant <- mpa_data()$abundance %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
@@ -125,12 +125,12 @@ app_server <- function(input, output, session) {
       dplyr::filter(maxn > 0) %>%
       dplyr::group_by(scientific) %>%
       dplyr::summarise(total = sum(maxn)) %>%
-      arrange(desc(total)) %>%
-      slice(1:3) %>%
-      distinct(scientific) %>%
-      pull("scientific")
+      dplyr::arrange(desc(total)) %>%
+      dplyr::slice(1:3) %>%
+      dplyr::distinct(scientific) %>%
+      dplyr::pull("scientific")
 
-    pickerInput(
+    shinyWidgets::pickerInput(
       inputId = "fish.state.all.species.dropdown",
       label = "Choose species to plot:",
       choices = options,
@@ -146,9 +146,9 @@ app_server <- function(input, output, session) {
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
       dplyr::group_by(trophic.group) %>%
-      arrange() %>%
-      distinct(trophic.group) %>%
-      pull("trophic.group")
+      dplyr::arrange() %>%
+      dplyr::distinct(trophic.group) %>%
+      dplyr::pull("trophic.group")
 
     pickerInput(
       inputId = "fish.state.trophic.dropdown",
@@ -164,8 +164,8 @@ app_server <- function(input, output, session) {
   # Create a marine park dropdown ----
   output$fish.park.dropdown <- renderUI({
     options <- mpa_data()$metadata %>%
-      distinct(marine.park) %>%
-      pull("marine.park")
+      dplyr::distinct(marine.park) %>%
+      dplyr::pull("marine.park")
 
     create_dropdown("fish.park.dropdown", options, "Choose a marine park:", FALSE)
   })
@@ -174,8 +174,8 @@ app_server <- function(input, output, session) {
   output$fish.park.method.dropdown <- renderUI({
     options <- mpa_data()$metadata %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
-      distinct(method) %>%
-      pull("method")
+      dplyr::distinct(method) %>%
+      dplyr::pull("method")
 
     create_dropdown("fish.park.method.dropdown", options, "Choose a method:", FALSE)
   })
@@ -187,7 +187,7 @@ app_server <- function(input, output, session) {
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
       dplyr::distinct(site) %>%
       dplyr::arrange() %>%
-      pull("site")
+      dplyr::pull("site")
 
     pickerInput(
       inputId = "fish.park.site.dropdown",
@@ -209,9 +209,9 @@ app_server <- function(input, output, session) {
       dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
       dplyr::group_by(scientific) %>%
       dplyr::summarise(total = sum(number)) %>%
-      arrange(desc(total)) %>%
-      distinct(scientific) %>%
-      pull("scientific")
+      dplyr::arrange(desc(total)) %>%
+      dplyr::distinct(scientific) %>%
+      dplyr::pull("scientific")
 
     most.abundant <- mpa_data()$fished.complete.length %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
@@ -219,10 +219,10 @@ app_server <- function(input, output, session) {
       dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
       dplyr::group_by(scientific) %>%
       dplyr::summarise(total = sum(number)) %>%
-      arrange(desc(total)) %>%
-      slice(1) %>%
-      distinct(scientific) %>%
-      pull("scientific")
+      dplyr::arrange(desc(total)) %>%
+      dplyr::slice(1) %>%
+      dplyr::distinct(scientific) %>%
+      dplyr::pull("scientific")
 
     pickerInput(
       inputId = "fish.park.fished.species.dropdown",
@@ -243,9 +243,9 @@ app_server <- function(input, output, session) {
       dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
       dplyr::group_by(scientific) %>%
       dplyr::summarise(total = sum(maxn)) %>%
-      arrange(desc(total)) %>%
-      distinct(scientific) %>%
-      pull("scientific")
+      dplyr::arrange(desc(total)) %>%
+      dplyr::distinct(scientific) %>%
+      dplyr::pull("scientific")
 
     most.abundant <- mpa_data()$abundance %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
@@ -254,10 +254,10 @@ app_server <- function(input, output, session) {
       dplyr::filter(maxn > 0) %>%
       dplyr::group_by(scientific) %>%
       dplyr::summarise(total = sum(maxn)) %>%
-      arrange(desc(total)) %>%
-      slice(1:3) %>%
-      distinct(scientific) %>%
-      pull("scientific")
+      dplyr::arrange(desc(total)) %>%
+      dplyr::slice(1:3) %>%
+      dplyr::distinct(scientific) %>%
+      dplyr::pull("scientific")
 
     pickerInput(
       inputId = "fish.park.all.species.dropdown",
@@ -414,6 +414,8 @@ app_server <- function(input, output, session) {
       x = 0.01, y = 0.97, hjust = 0,
       gp = gpar(col = "black", fontsize = 13, fontface = "italic")
     ))
+
+    cat("drawing fish.state.total.plot")
 
     p <- ggplot(dat, aes(x = year, y = value, fill = status)) +
       stat_summary(fun = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
@@ -599,6 +601,7 @@ app_server <- function(input, output, session) {
   # Make fished abundance plot interactive so the height changes with the number of inputs ----
   output$ui.fish.state.fished.species.abundance.plot <- renderUI({
     dat <- mpa_data()$all.data %>%
+
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.state.method.dropdown))
 
@@ -612,8 +615,7 @@ app_server <- function(input, output, session) {
     dat <- mpa_data()$fished.abundance %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
-      dplyr::filter(scientific %in% c(input$fish.state.fished.species.dropdown)) %>%
-      glimpse()
+      dplyr::filter(scientific %in% c(input$fish.state.fished.species.dropdown))
 
     ggplot(dat, aes(x = year, y = mpa_data()$total.abundance, fill = status)) +
       stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
