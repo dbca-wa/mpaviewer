@@ -24,11 +24,12 @@ add_legend_sr <- function(map, colors, labels, sizes, opacity = 1, group) {
 
   return(
     leaflet::addLegend(map,
-                   colors = colorAdditions,
-                   labels = labelAdditions,
-                   opacity = opacity,
-                   title = "Species richness",
-                   group = group,
-                   position = "bottomright"
-  ))
+      colors = colorAdditions,
+      labels = labelAdditions,
+      opacity = opacity,
+      title = "Species richness",
+      group = group,
+      position = "bottomright"
+    )
+  )
 }

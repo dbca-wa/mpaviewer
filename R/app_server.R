@@ -596,7 +596,6 @@ app_server <- function(input, output, session) {
   # Make fished abundance plot interactive so the height changes with the number of inputs ----
   output$ui.fish.state.fished.species.abundance.plot <- renderUI({
     dat <- mpa_data()$all.data %>%
-
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.state.method.dropdown))
 

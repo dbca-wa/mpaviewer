@@ -1,4 +1,4 @@
-#' Donwload all files from a Google Drive folder to a local folder
+#' Download all files from a Google Drive folder to a local folder
 #'
 #' NOTE this function does not work yet
 #'
@@ -17,18 +17,24 @@ download_data <- function(drive_folder = Sys.getenv("GD_MPAVIEWER"),
                           api_key = Sys.getenv("GOOGLE_API_KEY"),
                           data_dir = here::here("inst/data")) {
   # Gatechecks
-  if (missing(drive_folder)){ stop("Missing drive_folder") }
-  if (missing(api_key)){ stop("Missing api_key") }
+  if (missing(drive_folder)) {
+    stop("Missing drive_folder")
+  }
+  if (missing(api_key)) {
+    stop("Missing api_key")
+  }
 
   # Authentication
   drive_auth_configure(api_key = api_key)
 
   drive_ls(drive_folder)
   # List files
-  files <- drive_ls(path=drive_folder, recursive = TRUE)
+  files <- drive_ls(path = drive_folder, recursive = TRUE)
 
   # Gatecheck
-  if (nrow(files) == 0) {abort("No files were found on Google Drive.")}
+  if (nrow(files) == 0) {
+    abort("No files were found on Google Drive.")
+  }
 
   # Download files
   purrr::walk(files$id, ~ drive_download(as_id(.x), overwrite = TRUE))

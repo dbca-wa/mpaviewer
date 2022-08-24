@@ -16,8 +16,11 @@ app_ui <- function(request) {
       shinydashboardPlus::dashboardHeader(
         title = tags$a(
           href = "https://www.dbca.wa.gov.au/",
-          tags$img(src = "www/dbca_logo_white_cropped.png",
-                   height = "65", width = "65")),
+          tags$img(
+            src = "www/dbca_logo_white_cropped.png",
+            height = "65", width = "65"
+          )
+        ),
         titleWidth = "90px",
         tags$li(a(
           href = "https://www.dbca.wa.gov.au/", target = "_blank",

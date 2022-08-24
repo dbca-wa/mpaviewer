@@ -2,7 +2,7 @@
 #'
 #' @return A custom ggplot2::theme()
 #' @export
-ggplot_mpatheme <- function(){
+ggplot_mpatheme <- function() {
   ggplot2::theme_bw() +
     ggplot2::theme( # use theme_get() to see available options
       panel.grid = ggplot2::element_blank(),
