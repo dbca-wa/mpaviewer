@@ -5,43 +5,31 @@ Authors@R: person('Florian', 'Mayer', email = 'Florian.Mayer@dbca.wa.gov.au', ro
 Description: An interactive overview of selected biodiversity assets in Marine Protected Areas of Western Australia.
 License: MIT + file LICENSE
 Imports: 
-    attempt,
     config (>= 0.3.1),
+    data.table,
     devtools,
     dplyr,
-    DT,
     fs,
     glue,
+    GlobalArchive,
+    ggplot2,
     golem (>= 0.3.1),
     here,
-    htmltools,
     magrittr,
-    processx,
     rlang,
     shiny (>= 1.7.1),
     thinkr,
-    data.table,
-    forcats,
     grid,
     leaflet,
-    leafgl,
-    plotly,
     readr,
-    rgdal,
-    rgeos,
     shinyalert,
     shinycssloaders,
     shinydashboard,
     shinydashboardPlus,
     shinyWidgets,
-    GlobalArchive,
     stringr,
     tidyr,
-    ggplot2,
-    mgcv,
-    scales,
-    cowplot,
-    png
+    scales
 Remotes:
     github::UWAMEGFisheries/GlobalArchive
 Encoding: UTF-8
@@ -58,5 +46,5 @@ Suggests:
 Config/testthat/edition: 3
 Language: en-US
 Depends: 
-    R (>= 2.10)
+    R (>= 4.1)
 VignetteBuilder: knitr

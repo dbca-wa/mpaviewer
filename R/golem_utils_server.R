@@ -62,36 +62,7 @@ drop_nulls <- function(x) {
 rv <- shiny::reactiveValues
 rvtl <- shiny::reactiveValuesToList
 
-## _______________________________________________________ ----
-##                        LIBRARY                          ----
-## _______________________________________________________ ----
-library(data.table)
-library(forcats)
-library(grid)
-library(leaflet)
-library(leafgl)
-library(plotly)
-library(readr)
-library(rgdal)
-library(rgeos)
-library(shiny)
-library(shinyalert)
-library(shinycssloaders)
-library(shinydashboard)
-library(shinydashboardPlus) # NEW
-library(shinyWidgets)
-library(devtools)
-# devtools::install_github('UWAMEGFisheries/GlobalArchive') # only run this if you haven't already installed
-library(GlobalArchive)
-library(stringr)
-library(tidyr)
-library(ggplot2)
-library(dplyr)
 
-library(mgcv)
-library(scales)
-library(cowplot)
-library(png)
 ## _______________________________________________________ ----
 ##                FUNCTIONS AND DIRECTORIES                ----
 ## _______________________________________________________ ----
@@ -333,28 +304,28 @@ se.max <- function(x) {
 #
 
 ### ► Theme for plotting ----
-Theme1 <- theme_bw() +
-  theme( # use theme_get() to see available options
-    panel.grid = element_blank(),
-    panel.border = element_blank(),
-    axis.line = element_line(colour = "black"),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
-    legend.background = element_blank(),
-    legend.key = element_blank(), # switch off the rectangle around symbols in the legend
-    legend.text = element_text(size = 12),
-    legend.title = element_blank(),
+Theme1 <- ggplot2::theme_bw() +
+  ggplot2::theme( # use theme_get() to see available options
+    panel.grid = ggplot2::element_blank(),
+    panel.border = ggplot2::element_blank(),
+    axis.line = ggplot2::element_line(colour = "black"),
+    panel.grid.major = ggplot2::element_blank(),
+    panel.grid.minor = ggplot2::element_blank(),
+    legend.background = ggplot2::element_blank(),
+    legend.key = ggplot2::element_blank(), # switch off the rectangle around symbols in the legend
+    legend.text = ggplot2::element_text(size = 12),
+    legend.title = ggplot2::element_blank(),
     # legend.position = "top",
-    text = element_text(size = 12),
-    strip.text.y = element_text(size = 12, angle = 0),
-    axis.title.x = element_text(vjust = 0.3, size = 12),
-    axis.title.y = element_text(vjust = 0.6, angle = 90, size = 12),
-    axis.text.y = element_text(size = 12),
-    axis.text.x = element_text(size = 12),
-    axis.line.x = element_line(colour = "black", size = 0.5, linetype = "solid"),
-    axis.line.y = element_line(colour = "black", size = 0.5, linetype = "solid"),
-    strip.background = element_blank(),
-    plot.title = element_text(color = "black", size = 12, face = "bold.italic")
+    text = ggplot2::element_text(size = 12),
+    strip.text.y = ggplot2::element_text(size = 12, angle = 0),
+    axis.title.x = ggplot2::element_text(vjust = 0.3, size = 12),
+    axis.title.y = ggplot2::element_text(vjust = 0.6, angle = 90, size = 12),
+    axis.text.y = ggplot2::element_text(size = 12),
+    axis.text.x = ggplot2::element_text(size = 12),
+    axis.line.x = ggplot2::element_line(colour = "black", size = 0.5, linetype = "solid"),
+    axis.line.y = ggplot2::element_line(colour = "black", size = 0.5, linetype = "solid"),
+    strip.background = ggplot2::element_blank(),
+    plot.title = ggplot2::element_text(color = "black", size = 12, face = "bold.italic")
   )
 
 

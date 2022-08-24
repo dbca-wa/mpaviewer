@@ -1,31 +1,3 @@
-library(data.table)
-library(forcats)
-library(grid)
-library(leaflet)
-library(leafgl)
-library(plotly)
-library(readr)
-library(rgdal)
-library(rgeos)
-library(shiny)
-library(shinyalert)
-library(shinycssloaders)
-library(shinydashboard)
-library(shinydashboardPlus) # NEW
-library(shinyWidgets)
-library(devtools)
-# devtools::install_github('UWAMEGFisheries/GlobalArchive') # only run this if you haven't already installed
-library(GlobalArchive)
-library(stringr)
-library(tidyr)
-library(ggplot2)
-library(dplyr)
-
-library(mgcv)
-library(scales)
-library(cowplot)
-library(png)
-
 #' The application server-side
 #'
 #' @param input,output,session Internal parameters for {shiny}.

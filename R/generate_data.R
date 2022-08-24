@@ -15,8 +15,6 @@
 #' x <- generate_data() # returns data and saves data to local file
 #' }
 generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds")) {
-  library(magrittr)
-
   data.dir <- here::here("inst")
 
   ### ► Life history sheet ----
@@ -327,6 +325,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   x
 }
+
 #' @title S3 print method for 'mpa_data'.
 #' @description Prints a short representation of mpa_data returned by
 #' \code{\link{generate_data.R}}.
