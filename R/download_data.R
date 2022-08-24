@@ -2,7 +2,7 @@
 #'
 #' @param ckan_url The data catalogue URL,
 #'   default: `Sys.getenv("CKAN_URL")`
-#' @param api_key The resource ID of the data file,
+#' @param data_rid The resource ID of the data file,
 #'   default: `Sys.getenv("MPAVIEWER_RID")`.
 #' @param data_dir A local directory to download files to,
 #'   default: `here::here("inst/data")`.

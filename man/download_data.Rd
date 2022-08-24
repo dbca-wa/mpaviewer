@@ -14,11 +14,11 @@ download_data(
 \item{ckan_url}{The data catalogue URL,
 default: \code{Sys.getenv("CKAN_URL")}}
 
+\item{data_rid}{The resource ID of the data file,
+default: \code{Sys.getenv("MPAVIEWER_RID")}.}
+
 \item{data_dir}{A local directory to download files to,
 default: \code{here::here("inst/data")}.}
-
-\item{api_key}{The resource ID of the data file,
-default: \code{Sys.getenv("MPAVIEWER_RID")}.}
 }
 \value{
 None.
