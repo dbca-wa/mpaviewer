@@ -329,8 +329,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 #' @title S3 print method for 'mpa_data'.
 #' @description Prints a short representation of mpa_data returned by
 #' \code{\link{generate_data.R}}.
-#' @param x An object of class `mpa_data` as returned by
-#'   \code{\link{generate_data.R}}.
+#' @param x An object of class `mpa_data` as returned by `generate_data`.
 #' @param ... Extra parameters for `print`
 #' @export
 #' @family included

@@ -7,8 +7,7 @@
 \method{print}{mpa_data}(x, ...)
 }
 \arguments{
-\item{x}{An object of class `mpa_data` as returned by
-\code{\link{generate_data.R}}.}
+\item{x}{An object of class `mpa_data` as returned by `generate_data`.}
 
 \item{...}{Extra parameters for `print`}
 }
