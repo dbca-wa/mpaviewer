@@ -22,7 +22,6 @@ RUN Rscript -e 'remotes::install_version("shinydashboard",upgrade="never", versi
 RUN Rscript -e 'remotes::install_version("leaflet",upgrade="never", version = "2.1.1")'
 RUN Rscript -e 'remotes::install_version("here",upgrade="never", version = "1.0.1")'
 RUN Rscript -e 'remotes::install_version("config",upgrade="never", version = "0.3.1")'
-RUN Rscript -e 'remotes::install_version("spelling",upgrade="never", version = "2.2.1")'
 RUN Rscript -e 'remotes::install_version("thinkr",upgrade="never", version = "0.16")'
 RUN Rscript -e 'remotes::install_version("data.table",upgrade="never", version = "1.14.2")'
 RUN Rscript -e 'remotes::install_version("shinydashboardPlus",upgrade="never", version = "2.0.3")'
