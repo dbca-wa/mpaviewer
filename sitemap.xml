@@ -25,10 +25,16 @@
     <loc>https://dbca-wa.github.io/mpaviewer/news/index.html</loc>
   </url>
   <url>
+    <loc>https://dbca-wa.github.io/mpaviewer/reference/add_legend_sr.html</loc>
+  </url>
+  <url>
     <loc>https://dbca-wa.github.io/mpaviewer/reference/add_legend_ta.html</loc>
   </url>
   <url>
     <loc>https://dbca-wa.github.io/mpaviewer/reference/generate_data.html</loc>
+  </url>
+  <url>
+    <loc>https://dbca-wa.github.io/mpaviewer/reference/ggplot_mpatheme.html</loc>
   </url>
   <url>
     <loc>https://dbca-wa.github.io/mpaviewer/reference/index.html</loc>
