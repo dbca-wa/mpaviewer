@@ -20,8 +20,6 @@ app_server <- function(input, output, session) {
     )
   }
 
-
-
   ## FUNCTIONS -----
   create_dropdown <- function(input_name, choices, label, multiple) {
     if (!is.null(input[[input_name]]) && input[[input_name]] %in% choices) {
@@ -316,8 +314,7 @@ app_server <- function(input, output, session) {
         "<b>Site:</b>", site, "<br/>",
         "<b>Location:</b>", location, "<br/>",
         "<b>Number of times sampled:</b>", number.of.times.sampled, "<br/>"
-      )) %>%
-      glimpse()
+      ))
 
     overzero.ta <- filter(ta, value > 0)
     equalzero.ta <- filter(ta, value == 0) %>% glimpse()
@@ -414,8 +411,6 @@ app_server <- function(input, output, session) {
       x = 0.01, y = 0.97, hjust = 0,
       gp = gpar(col = "black", fontsize = 13, fontface = "italic")
     ))
-
-    cat("drawing fish.state.total.plot")
 
     p <- ggplot(dat, aes(x = year, y = value, fill = status)) +
       stat_summary(fun = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
