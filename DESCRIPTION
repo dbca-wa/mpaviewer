@@ -14,6 +14,7 @@ Imports:
     ggplot2,
     GlobalArchive,
     golem (>= 0.3.1),
+    googledrive,
     here,
     leaflet,
     leafgl,
