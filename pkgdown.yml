@@ -1,0 +1,10 @@
+pandoc: 2.14.2
+pkgdown: 2.0.6
+pkgdown_sha: ~
+articles:
+  mpaviewer: mpaviewer.html
+last_built: 2022-08-24T02:46Z
+urls:
+  reference: https://dbca-wa.github.io/mpaviewer/reference
+  article: https://dbca-wa.github.io/mpaviewer/articles
+
