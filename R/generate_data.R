@@ -344,7 +344,7 @@ print.mpa_data <- function(x, ...) {
       "  metadata:    {nrow(x$metadata)}\n",
       "  sampling.effort:    {nrow(x$sampling.effort)}\n",
       "  state.mp:    {nrow(x$state.mp)}\n",
-      "  state.pal:    {nrow(x$state.pal)}\n",
+      "  state.pal:    {nrow(x$state.pal)}\n"
     )
   )
   invisible(x)
