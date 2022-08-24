@@ -2,7 +2,7 @@
 #'
 #' @param input,output,session Internal parameters for {shiny}.
 #'     DO NOT REMOVE.
-#' @import shiny
+#' @import shiny leaflet dplyr grid ggplot2 leafgl rgdal forcats
 #' @noRd
 app_server <- function(input, output, session) {
   # mod_assetmap_server("assetmap_ui_1")
@@ -42,12 +42,8 @@ app_server <- function(input, output, session) {
   # State image
 
   output$ui.fish.park.image <- renderUI({
-    park <- str_replace_all(tolower(input$fish.park.dropdown), " ", ".")
-
-    marine.park.selected <- paste0(park, ".jpg")
-    print(marine.park.selected)
-
-    img(src = marine.park.selected, align = "right", width = "100%")
+    park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), " ", ".")
+    img(src = paste0("www/", park, ".jpg"), align = "right", width = "100%")
   })
 
   # State data ----
@@ -80,7 +76,7 @@ app_server <- function(input, output, session) {
 
   # Create a fished species dropdown ----
   output$fish.state.fished.species.dropdown <- renderUI({
-    options <-  mpa_data()$fished.complete.length %>%
+    options <- mpa_data()$fished.complete.length %>%
       dplyr::filter(number > 0) %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
@@ -90,7 +86,7 @@ app_server <- function(input, output, session) {
       distinct(scientific) %>%
       pull("scientific")
 
-    most.abundant <-  mpa_data()$ mpa_data()$fished.complete.length %>%
+    most.abundant <- mpa_data()$ mpa_data()$fished.complete.length %>%
       dplyr::filter(number > 0) %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
@@ -206,7 +202,7 @@ app_server <- function(input, output, session) {
 
   # Create a fished species dropdown ----
   output$fish.park.fished.species.dropdown <- renderUI({
-    options <-  mpa_data()$fished.complete.length %>%
+    options <- mpa_data()$fished.complete.length %>%
       dplyr::filter(number > 0) %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
@@ -217,7 +213,7 @@ app_server <- function(input, output, session) {
       distinct(scientific) %>%
       pull("scientific")
 
-    most.abundant <-  mpa_data()$fished.complete.length %>%
+    most.abundant <- mpa_data()$fished.complete.length %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
       dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
@@ -344,7 +340,7 @@ app_server <- function(input, output, session) {
         group = "Marine Parks"
       ) %>%
       addLegend(
-        pal =mpa_data()$state.pal, values =  mpa_data()$state.mp$zone, opacity = 1,
+        pal = mpa_data()$state.pal, values = mpa_data()$state.mp$zone, opacity = 1,
         title = "Zones",
         position = "bottomright",
         group = "Marine Parks"
@@ -355,7 +351,7 @@ app_server <- function(input, output, session) {
         labels = c(0, round(max.ta / 2), max.ta),
         sizes = c(5, 20, 40), group = "Total abundance"
       ) %>%
-      addLegendSR(
+      add_legend_sr(
         colors = c("black", "green", "green"),
         labels = c(0, round(max.sr / 2), max.sr),
         sizes = c(5, 20, 40), group = "Species richness"
@@ -425,10 +421,10 @@ app_server <- function(input, output, session) {
       xlab("Year") +
       ylab("Average total abundance per sample \n(+/- SE)") +
       annotation_custom(label) +
-      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+      stat_smooth(method = "gam", formula = y ~ mgcv::s(x, k = 3), size = 1, col = "black") +
       # scale_y_continuous(expand = expansion(mult = 10)) +
       scale_x_continuous(breaks = c(unique(dat$year))) +
-      Theme1 +
+      ggplot_mpatheme() +
       facet_wrap(marine.park ~ ., scales = "free", ncol = 1) +
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
       geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA) # +
@@ -467,10 +463,10 @@ app_server <- function(input, output, session) {
       xlab("Year") +
       ylab("Average number of species per sample \n(+/- SE)") +
       annotation_custom(label) +
-      Theme1 +
+      ggplot_mpatheme() +
       scale_y_continuous(expand = c(0, 0.1)) +
       scale_x_continuous(breaks = c(unique(dat$year))) +
-      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+      stat_smooth(method = "gam", formula = y ~ mgcv::s(x, k = 3), size = 1, col = "black") +
       facet_wrap(marine.park ~ ., scales = "free", ncol = 1) +
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
       geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA)
@@ -501,7 +497,7 @@ app_server <- function(input, output, session) {
       coord_flip() +
       xlab("Species") +
       ylab(expression(Overall ~ abundance ~ (Sigma ~ MaxN))) +
-      Theme1 +
+      ggplot_mpatheme() +
       theme(axis.text.y = element_text(face = "italic")) +
       scale_y_continuous(expand = expand_scale(mult = c(0, .1)))
   })
@@ -522,9 +518,9 @@ app_server <- function(input, output, session) {
       ylab("Average abundance per sample \n(+/- SE)") +
       scale_y_continuous(expand = c(0, 0.1)) +
       scale_x_continuous(breaks = c(unique(dat$year))) +
-      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+      stat_smooth(method = "gam", formula = y ~ mgcv::s(x, k = 3), size = 1, col = "black") +
       facet_wrap(marine.park ~ trophic.group, scales = "free", ncol = length(unique(dat$trophic.group))) +
-      Theme1 +
+      ggplot_mpatheme() +
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
       geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA)
   })
@@ -542,7 +538,7 @@ app_server <- function(input, output, session) {
   output$fish.state.fished.species.kde.plot <- renderPlot({
     req(input$fish.state.park.dropdown, input$fish.state.method.dropdown, input$fish.state.fished.species.dropdown)
 
-    more.than.20 <-  mpa_data()$fished.complete.length %>%
+    more.than.20 <- mpa_data()$fished.complete.length %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
       dplyr::group_by(marine.park, method, campaignid, status, scientific) %>%
@@ -552,7 +548,7 @@ app_server <- function(input, output, session) {
       dplyr::distinct(marine.park, method, campaignid, status, scientific) # %>%
     # glimpse()
 
-    dat <-  mpa_data()$fished.complete.length %>%
+    dat <- mpa_data()$fished.complete.length %>%
       dplyr::semi_join(more.than.20) %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
@@ -626,9 +622,9 @@ app_server <- function(input, output, session) {
       ylab("Average abundance of target species per sample \n(+/- SE)") +
       scale_y_continuous(expand = c(0, 0.1)) +
       scale_x_continuous(breaks = c(unique(dat$year))) +
-      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+      stat_smooth(method = "gam", formula = y ~ mgcv::s(x, k = 3), size = 1, col = "black") +
       facet_wrap(marine.park ~ scientific, scales = "free", ncol = length(unique(dat$scientific))) +
-      Theme1 +
+      ggplot_mpatheme() +
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
       geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA)
   })
@@ -661,9 +657,9 @@ app_server <- function(input, output, session) {
       ylab("Average abundance of target species per sample \n(+/- SE)") +
       scale_y_continuous(expand = c(0, 0.1)) +
       scale_x_continuous(breaks = c(unique(dat$year))) +
-      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+      stat_smooth(method = "gam", formula = y ~ mgcv::s(x, k = 3), size = 1, col = "black") +
       facet_wrap(marine.park ~ scientific, scales = "free", ncol = length(unique(dat$scientific))) +
-      Theme1 +
+      ggplot_mpatheme() +
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
       geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA)
   })
@@ -713,12 +709,12 @@ app_server <- function(input, output, session) {
       addMarkers(lng = ~longitude, lat = ~latitude, label = ~ as.character(sample), popup = ~content, group = "Sampling locations") %>%
       addGlPolygons(
         data =  mpa_data()$state.mp,
-        color = ~mpa_data()$state.pal(zone),
+        color = ~ mpa_data()$state.pal(zone),
         popup =  mpa_data()$state.mp$COMMENTS,
         group = "Marine Parks"
       ) %>%
       addLegend(
-        pal =mpa_data()$state.pal, values =  mpa_data()$state.mp$zone, opacity = 1,
+        pal = mpa_data()$state.pal, values = mpa_data()$state.mp$zone, opacity = 1,
         title = "Zones",
         position = "bottomright", group = "Marine Parks"
       ) %>%
@@ -731,7 +727,7 @@ app_server <- function(input, output, session) {
         labels = c(0, round(max.ta / 2), max.ta),
         sizes = c(5, 20, 40), group = "Total abundance"
       ) %>%
-      addLegendSR(
+      add_legend_sr(
         colors = c("black", "green", "green"),
         labels = c(0, round(max.sr / 2), max.sr),
         sizes = c(5, 20, 40), group = "Species richness"
@@ -801,9 +797,9 @@ app_server <- function(input, output, session) {
       xlab("Year") +
       ylab("Average total abundance per sample \n(+/- SE)") +
       annotation_custom(label) +
-      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+      stat_smooth(method = "gam", formula = y ~ mgcv::s(x, k = 3), size = 1, col = "black") +
       scale_x_continuous(breaks = c(unique(dat$year))) +
-      Theme1 +
+      ggplot_mpatheme() +
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
       geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA)
   })
@@ -829,9 +825,9 @@ app_server <- function(input, output, session) {
       xlab("Year") +
       ylab("Average number of species per sample \n(+/- SE)") +
       annotation_custom(label) +
-      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+      stat_smooth(method = "gam", formula = y ~ mgcv::s(x, k = 3), size = 1, col = "black") +
       scale_x_continuous(breaks = c(unique(dat$year))) +
-      Theme1 +
+      ggplot_mpatheme() +
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
       geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA)
   })
@@ -855,7 +851,7 @@ app_server <- function(input, output, session) {
       coord_flip() +
       xlab("Species") +
       ylab("Overall abundance") +
-      Theme1 +
+      ggplot_mpatheme() +
       theme(axis.text.y = element_text(face = "italic")) +
       scale_y_continuous(expand = expand_scale(mult = c(0, .1)))
   })
@@ -877,9 +873,9 @@ app_server <- function(input, output, session) {
       ylab("Average abundance per sample \n(+/- SE)") +
       scale_y_continuous(expand = c(0, 0.1)) +
       scale_x_continuous(breaks = c(unique(dat$year))) +
-      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+      stat_smooth(method = "gam", formula = y ~ mgcv::s(x, k = 3), size = 1, col = "black") +
       facet_wrap(trophic.group ~ ., scales = "free", ncol = 1) +
-      Theme1 +
+      ggplot_mpatheme() +
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
       geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA)
   })
@@ -905,7 +901,7 @@ app_server <- function(input, output, session) {
         group = "Marine Parks"
       ) %>%
       addLegend(
-        pal =mpa_data()$state.pal, values =  mpa_data()$state.mp$zone, opacity = 1,
+        pal = mpa_data()$state.pal, values = mpa_data()$state.mp$zone, opacity = 1,
         title = "Zones",
         position = "bottomright", group = "Marine Parks"
       ) %>%
@@ -936,7 +932,7 @@ app_server <- function(input, output, session) {
   output$fish.park.fished.species.kde.plot <- renderPlot({
     req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.site.dropdown, input$fish.park.fished.species.dropdown)
 
-    more.than.20 <-  mpa_data()$fished.complete.length %>%
+    more.than.20 <- mpa_data()$fished.complete.length %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
       dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
@@ -947,7 +943,7 @@ app_server <- function(input, output, session) {
       dplyr::distinct(marine.park, method, campaignid, status, scientific) # %>%
     # glimpse()
 
-    dat <-  mpa_data()$fished.complete.length %>%
+    dat <- mpa_data()$fished.complete.length %>%
       dplyr::semi_join(more.than.20) %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
@@ -1000,9 +996,9 @@ app_server <- function(input, output, session) {
       ylab("Average abundance of target species per sample \n(+/- SE)") +
       scale_y_continuous(expand = c(0, 0.1)) +
       scale_x_continuous(breaks = c(unique(dat$year))) +
-      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+      stat_smooth(method = "gam", formula = y ~ mgcv::s(x, k = 3), size = 1, col = "black") +
       facet_wrap(scientific ~ ., scales = "free", ncol = 1) +
-      Theme1 +
+      ggplot_mpatheme() +
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
       geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA)
   })
@@ -1029,9 +1025,9 @@ app_server <- function(input, output, session) {
       ylab("Average abundance of target species per sample \n(+/- SE)") +
       scale_y_continuous(expand = c(0, 0.1)) +
       scale_x_continuous(breaks = c(unique(dat$year))) +
-      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+      stat_smooth(method = "gam", formula = y ~ mgcv::s(x, k = 3), size = 1, col = "black") +
       facet_wrap(scientific ~ ., scales = "free", ncol = 1) +
-      Theme1 +
+      ggplot_mpatheme() +
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
       geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA)
   })
@@ -1042,7 +1038,7 @@ app_server <- function(input, output, session) {
 
   observeEvent(
     input$alert.marinepark,
-    shinyalert(
+    shinyalert::shinyalert(
       title = input$fish.park.dropdown,
       text = filter(park.popups, marine.park %in% c(input$fish.park.dropdown))$info,
       size = "s",

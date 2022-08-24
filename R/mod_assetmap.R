@@ -7,36 +7,34 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_assetmap_ui <- function(id){
+mod_assetmap_ui <- function(id) {
   ns <- NS(id)
   tagList(
     navbarPage(
       "MPA Viewer",
       tabPanel("Map", leaflet::leafletOutput(ns("map")))
     )
-
   )
 }
 
 #' assetmap Server Functions
 #'
 #' @noRd
-mod_assetmap_server <- function(id){
-  moduleServer( id, function(input, output, session){
-
+mod_assetmap_server <- function(id) {
+  moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
     output$map <- leaflet::renderLeaflet({
       leaflet::leaflet() %>%
         leaflet::addProviderTiles("OpenStreetMap.Mapnik") %>%
         leaflet::addProviderTiles("Esri.WorldImagery",
-                         options=leaflet::providerTileOptions(opacity=0.8)) %>%
+          options = leaflet::providerTileOptions(opacity = 0.8)
+        ) %>%
         leaflet::setView(lng = 120, lat = -25, zoom = 4) %>%
-        leaflet::addMiniMap(toggleDisplay=T, zoomLevelOffset=-8) %>%
+        leaflet::addMiniMap(toggleDisplay = T, zoomLevelOffset = -8) %>%
         leaflet::addScaleBar() %>%
         leaflet::clearShapes()
     })
-
   })
 }
 

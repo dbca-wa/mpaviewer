@@ -27,6 +27,29 @@ using [`golem`](https://mastering-shiny.org/scaling-modules.html).
 
 The commands to develop new functionality are in `dev/02_dev.R`.
 
+## Release
+
+Once app and Docker image work, create a new version, tag, and push the
+tag.
+
+``` r
+styler::style_pkg()
+spelling::spell_check_package()
+spelling::update_wordlist()
+
+# Code and docs tested, working, committed
+usethis::use_version(which="patch")
+usethis::use_version(which="minor")
+usethis::use_version(which="major")
+usethis::edit_file("NEWS.md")
+
+# Document to load new package version. Git commit, tag, and push.
+devtools::document()
+v <- packageVersion("mpaviewer")
+system(glue::glue("git tag -a v{v} -m 'v{v}'"))
+system(glue::glue("git push && git push --tags"))
+```
+
 ## Deployment
 
 GitHub Actions are configured to build a new Docker image for every tag

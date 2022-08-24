@@ -4,10 +4,12 @@
 \alias{read_dbca_files_txt}
 \title{Read DBCA TXT files}
 \usage{
-read_dbca_files_txt(flnm)
+read_dbca_files_txt(flnm, data_dir = here::here("inst/data"))
 }
 \arguments{
 \item{flnm}{A filename}
+
+\item{data_dir}{The data directory, default: \code{here::here("inst/data")}.}
 }
 \value{
 The file contents as tibble

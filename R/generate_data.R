@@ -8,14 +8,15 @@
 #' @return An object of class "mpa_data" containing all data tibbles and objects
 #'   used by server.R
 #' @export
+#' @import purrr
 #'
 #' @examples
 #' \dontrun{
-#' x <- generate_data(save=FALSE) # only returns data
+#' x <- generate_data(save = FALSE) # only returns data
 #' x <- generate_data() # returns data and saves data to local file
 #' }
 generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds")) {
-  data.dir <- here::here("inst")
+  data.dir <- here::here("inst/data")
 
   ### ► Life history sheet ----
   ## Will need to replace with DBCA's own version eventually but this will work for time being
@@ -152,7 +153,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(maxn = as.numeric(maxn)) %>%
     dplyr::full_join(metadata) %>%
     dplyr::select(marine.park, method, campaignid, sample, family, genus, species, maxn) %>%
-    tidyr::complete(nesting(marine.park, method, campaignid, sample), nesting(family, genus, species)) %>%
+    tidyr::complete(tidyr::nesting(marine.park, method, campaignid, sample), tidyr::nesting(family, genus, species)) %>%
     tidyr::replace_na(list(maxn = 0)) %>%
     dplyr::left_join(metadata) %>%
     dplyr::mutate(scientific = paste(genus, species, sep = " "))
@@ -214,7 +215,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(number = 1) %>%
     dplyr::bind_rows(threed.points) %>%
     dplyr::full_join(metadata) %>%
-    tidyr::complete(nesting(marine.park, method, campaignid, sample), nesting(family, genus, species)) %>%
+    tidyr::complete(tidyr::nesting(marine.park, method, campaignid, sample), tidyr::nesting(family, genus, species)) %>%
     tidyr::replace_na(list(number = 0)) %>%
     dplyr::select(marine.park, campaignid, method, sample, family, genus, species, number, length) %>%
     dplyr::left_join(metadata) %>%
@@ -229,14 +230,14 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::left_join(total.abundance) %>%
     dplyr::left_join(species.richness) %>%
     tidyr::pivot_longer(., c(total.abundance, species.richness), names_to = "metric") %>%
-    dplyr::mutate(metric = str_replace_all(.$metric, c(
+    dplyr::mutate(metric = stringr::str_replace_all(.$metric, c(
       "total.abundance" = "Total abundance",
       "species.richness" = "Species richness"
     )))
 
   fished.complete.length <- dplyr::semi_join(complete.length, fished.species)
 
-  state.mp <- readOGR(here::here("inst/data/spatial/WA_MPA_2018.shp"))
+  state.mp <- rgdal::readOGR(here::here("inst/data/spatial/WA_MPA_2018.shp"))
 
   # filter out unassigned and unclassified
   state.mp <- state.mp[!state.mp$ZONE_TYPE %in% c("Unassigned (IUCN IA)", "Unassigned (IUCN II)", "Unassigned (IUCN III)", "Unassigned (IUCN IV)", "Unassigned (IUCN VI)", "MMA (Unclassified) (IUCN VI)", "MP (Unclassified) (IUCN VI)"), ]
@@ -270,9 +271,16 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   ))
 
   state.mp$zone <- as.factor(state.mp$zone)
-  state.mp$zone <- fct_relevel(state.mp$zone, "Conservation (no-take)", "Sanctuary (no-take)", "Recreation", "General Use", "Special Purpose")
+  state.mp$zone <- forcats::fct_relevel(
+    state.mp$zone,
+    "Conservation (no-take)",
+    "Sanctuary (no-take)",
+    "Recreation",
+    "General Use",
+    "Special Purpose"
+  )
 
-  state.pal <- colorFactor(c(
+  state.pal <- leaflet::colorFactor(c(
     "#bfaf02", # conservation
     "#7bbc63", # sanctuary = National Park
     "#fdb930", # recreation
@@ -328,7 +336,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
 #' @title S3 print method for 'mpa_data'.
 #' @description Prints a short representation of mpa_data returned by
-#' \code{\link{generate_data.R}}.
+#' `generate_data`.
 #' @param x An object of class `mpa_data` as returned by `generate_data`.
 #' @param ... Extra parameters for `print`
 #' @export

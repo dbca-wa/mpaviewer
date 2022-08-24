@@ -6,9 +6,9 @@
 \alias{mpaviewer-package}
 \title{mpaviewer: MPA Viewer}
 \description{
-`mpaviewer` is an interactive dashboard for
+\code{mpaviewer} is an interactive dashboard for
 Western Australian marine monitoring data,
-hosted at <https://mpaviewer.dbca.wa.gov.au/>.
+hosted at \url{https://mpaviewer.dbca.wa.gov.au/}.
 }
 \seealso{
 Useful links:

@@ -2,7 +2,9 @@
 #'
 #' @param request Internal parameter for `{shiny}`.
 #'     DO NOT REMOVE.
-#' @import shiny
+#' @importFrom shiny tags
+#' @importFrom shinycssloaders withSpinner
+#' @import shinyWidgets shinydashboard
 #' @noRd
 app_ui <- function(request) {
   tagList(
@@ -10,14 +12,17 @@ app_ui <- function(request) {
     golem_add_external_resources(),
     # mod_assetmap_ui("assetmap_ui_1")
 
-    dashboardPage(
-      dashboardHeader(
-        title = tags$a(href = "https://www.dbca.wa.gov.au/", tags$img(src = "dbca_logo_white_cropped.png", height = "65", width = "65")),
+    shinydashboardPlus::dashboardPage(
+      shinydashboardPlus::dashboardHeader(
+        title = tags$a(
+          href = "https://www.dbca.wa.gov.au/",
+          tags$img(src = "www/dbca_logo_white_cropped.png",
+                   height = "65", width = "65")),
         titleWidth = "90px",
         tags$li(a(
           href = "https://www.dbca.wa.gov.au/", target = "_blank",
           img(
-            src = "DBCA_BCS_colour.png",
+            src = "www/DBCA_BCS_colour.png",
             title = "DBCA",
             height = "67px",
             style = "margin-top:-15px; padding-top:-50px; margin-bottom:-15px; padding-bottom:-50px;"
@@ -26,7 +31,7 @@ app_ui <- function(request) {
         tags$li(a(
           href = "https://www.dbca.wa.gov.au/", target = "_blank",
           img(
-            src = "DBCA_BCS_white.png",
+            src = "www/DBCA_BCS_white.png",
             title = "DBCA",
             height = "67px",
             style = "margin-top:-15px; padding-top:-50px; margin-bottom:-15px; padding-bottom:-50px;"
@@ -39,17 +44,16 @@ app_ui <- function(request) {
         # ), class = "dropdown"
         # )
       ),
-      dashboardSidebar(
+      shinydashboardPlus::dashboardSidebar(
         width = "90px",
-        sidebarMenu(
+        shinydashboard::sidebarMenu(
           h1(" "), # to move the fish down a lil bit
           menuItem("", tabName = "fishtab", icon = icon("fish")),
           menuItem("", tabName = "benthictab", icon = icon("pagelines"))
-          # div(tags$img(src = "coral.png", width="15px")))
+          # div(tags$img(src = "www/coral.png", width="15px")))
         )
       ),
-      dashboardBody(
-        useShinyalert(),
+      shinydashboard::dashboardBody(
         tags$head(
           tags$style(HTML(".main-sidebar { font-size: 45px; }
                        .skin-blue .main-header .navbar .sidebar-toggle {display: none;}

@@ -62,28 +62,6 @@ drop_nulls <- function(x) {
 rv <- shiny::reactiveValues
 rvtl <- shiny::reactiveValuesToList
 
-
-## _______________________________________________________ ----
-##                FUNCTIONS AND DIRECTORIES                ----
-## _______________________________________________________ ----
-
-
-addLegendSR <- function(map, colors, labels, sizes, opacity = 1, group) {
-  colorAdditions <- paste0(colors, "; border-radius: 50%; width:", sizes, "px; height:", sizes, "px")
-  labelAdditions <- paste0(
-    "<div style='display: inline-block;height: ",
-    sizes, "px;margin-top: 4px;line-height: ", sizes, "px;'>",
-    labels, "</div>"
-  )
-
-  return(addLegend(map,
-    colors = colorAdditions,
-    labels = labelAdditions, opacity = opacity, title = "Species richness", group = group, position = "bottomright"
-  ))
-}
-
-
-
 ### ► Leaflet spinner ----
 options(
   spinner.color = "#0275D8",
@@ -104,12 +82,7 @@ se.max <- function(x) {
   (mean(x)) + se(x)
 }
 
-### ► Function for reading in DBCA data
-
-
-### ► Set data directory
-# data.dir <- "./data"
-
+### ► Theme for plotting ----
 
 
 # ### ► TEST KDE
@@ -273,7 +246,7 @@ se.max <- function(x) {
 # limits <- aes(ymax = mean + se, ymin = mean - se)
 # TargetFig <- ggplot(target.sp, aes(x=Year, y=mean, group=Zone, shape=Zone, colour = Zone)) +
 #   geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.25, position=pd, colour = "black") + # error bars
-#   #geom_smooth(method = "gam", formula = y ~ s(x,k=4), se=F, size = 1) +
+#   #geom_smooth(method = "gam", formula = y ~ mcgv::s(x,k=4), se=F, size = 1) +
 #   #geom_smooth(method = "gam", formula = y ~ poly(x,3), se=F, size = 0.5,col="black") +
 #   #geom_line(position=pd) +                      # line
 #   geom_point(aes(fill = Zone),position=pd, size=5,colour = "black") +             # points
@@ -302,30 +275,3 @@ se.max <- function(x) {
 # #  width = 800, height = 600, units = "px", pointsize = 6)
 # TargetFig+facet_grid(Taxa~Location,scales = "free_y")
 #
-
-### ► Theme for plotting ----
-Theme1 <- ggplot2::theme_bw() +
-  ggplot2::theme( # use theme_get() to see available options
-    panel.grid = ggplot2::element_blank(),
-    panel.border = ggplot2::element_blank(),
-    axis.line = ggplot2::element_line(colour = "black"),
-    panel.grid.major = ggplot2::element_blank(),
-    panel.grid.minor = ggplot2::element_blank(),
-    legend.background = ggplot2::element_blank(),
-    legend.key = ggplot2::element_blank(), # switch off the rectangle around symbols in the legend
-    legend.text = ggplot2::element_text(size = 12),
-    legend.title = ggplot2::element_blank(),
-    # legend.position = "top",
-    text = ggplot2::element_text(size = 12),
-    strip.text.y = ggplot2::element_text(size = 12, angle = 0),
-    axis.title.x = ggplot2::element_text(vjust = 0.3, size = 12),
-    axis.title.y = ggplot2::element_text(vjust = 0.6, angle = 90, size = 12),
-    axis.text.y = ggplot2::element_text(size = 12),
-    axis.text.x = ggplot2::element_text(size = 12),
-    axis.line.x = ggplot2::element_line(colour = "black", size = 0.5, linetype = "solid"),
-    axis.line.y = ggplot2::element_line(colour = "black", size = 0.5, linetype = "solid"),
-    strip.background = ggplot2::element_blank(),
-    plot.title = ggplot2::element_text(color = "black", size = 12, face = "bold.italic")
-  )
-
-

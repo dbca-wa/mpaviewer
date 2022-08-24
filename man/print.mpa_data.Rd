@@ -7,12 +7,12 @@
 \method{print}{mpa_data}(x, ...)
 }
 \arguments{
-\item{x}{An object of class `mpa_data` as returned by `generate_data`.}
+\item{x}{An object of class \code{mpa_data} as returned by \code{generate_data}.}
 
-\item{...}{Extra parameters for `print`}
+\item{...}{Extra parameters for \code{print}}
 }
 \description{
 Prints a short representation of mpa_data returned by
-\code{\link{generate_data.R}}.
+\code{generate_data}.
 }
 \concept{included}
