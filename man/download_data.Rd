@@ -2,28 +2,27 @@
 % Please edit documentation in R/download_data.R
 \name{download_data}
 \alias{download_data}
-\title{Download all files from a Google Drive folder to a local folder}
+\title{Download the data file from CKAN}
 \usage{
 download_data(
-  drive_folder = Sys.getenv("GD_MPAVIEWER"),
-  api_key = Sys.getenv("GOOGLE_API_KEY"),
+  ckan_url = Sys.getenv("CKAN_URL"),
+  data_rid = Sys.getenv("MPAVIEWER_RID"),
   data_dir = here::here("inst/data")
 )
 }
 \arguments{
-\item{drive_folder}{The URL of the Google Drive folder,
-default: \code{Sys.getenv("GD_MPAVIEWER")}}
-
-\item{api_key}{A read-permitted Google API key,
-default: \code{Sys.getenv("GOOGLE_API_KEY")}.
-Note the Google Drive API must be enabled.}
+\item{ckan_url}{The data catalogue URL,
+default: \code{Sys.getenv("CKAN_URL")}}
 
 \item{data_dir}{A local directory to download files to,
 default: \code{here::here("inst/data")}.}
+
+\item{api_key}{The resource ID of the data file,
+default: \code{Sys.getenv("MPAVIEWER_RID")}.}
 }
 \value{
 None.
 }
 \description{
-NOTE this function does not work yet
+Download the data file from CKAN
 }
