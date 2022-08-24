@@ -16,9 +16,4 @@
 Prints a short representation of mpa_data returned by
 \code{\link{generate_data.R}}.
 }
-\seealso{
-Other included: 
-\code{\link{corals}},
-\code{\link{fish}}
-}
 \concept{included}

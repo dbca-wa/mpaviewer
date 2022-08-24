@@ -15,25 +15,9 @@ staff.
 
 ## Architecture
 
-  - Data is loaded from a locally saved `.rds` file, or freshly loaded
-    from the DBCA data catalogue (and then saved as `.rds`). The locally
-    saved file lives on a persistent volume.
-  - The main area shows a map and a data area.
-  - The map displays all MPAs, sites, and transects once ready.
-  - The user can filter data through cascading dropdown menus:
-      - All MPAs or one selected MPA (one or many)
-      - All site within selected MPAs or selected sites (one or many)
-      - All transects within selected sites or selected transects (one
-        or many)
-      - Time - no filtering as we show timeseries
-  - The map shows selected locations, and data summarised for all
-    selected locations.
-  - The map has popups for each selected location with some useful
-    content.
-  - The data area shows tabs, one for each asset.
-  - Each asset has a “display data” module that knows how to generate
-    data summaries for each asset. The individual products (tables,
-    plots) are created with helper functions.
+-   Data is loaded from a locally saved `.rds` file, or freshly loaded
+    from Google Drive or the DBCA data catalogue (and then saved as
+    `.rds`). The locally saved file lives on a persistent volume.
 
 ## Development
 

@@ -2,7 +2,7 @@
 
 S3method(print,mpa_data)
 export("%>%")
-export(addLegendTA)
+export(add_legend_ta)
 export(generate_data)
 export(make_docker)
 export(read_dbca_files_csv)

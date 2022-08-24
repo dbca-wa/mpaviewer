@@ -10,6 +10,10 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' x <- generate_data(save=FALSE) # only returns data
+#' x <- generate_data() # returns data and saves data to local file
+#' }
 generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds")) {
   library(magrittr)
 

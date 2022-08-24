@@ -19,3 +19,9 @@ An object of class "mpa_data" containing all data tibbles and objects
 \description{
 Generate one data object to use in server.R
 }
+\examples{
+\dontrun{
+x <- generate_data(save=FALSE) # only returns data
+x <- generate_data() # returns data and saves data to local file
+}
+}

@@ -4,8 +4,6 @@
 #'
 #' @return The file contents as tibble
 #' @export
-#'
-#' @examples
 read_dbca_files_csv <- function(flnm) {
   flnm %>%
     readr::read_csv(col_types = cols(.default = "c")) %>%

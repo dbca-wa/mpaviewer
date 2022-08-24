@@ -378,7 +378,7 @@ app_server <- function(input, output, session) {
         group = "Marine Parks"
       ) %>%
       addLayersControl(overlayGroups = c("Sampling locations", "Marine Parks", "Total abundance", "Species richness"), options = layersControlOptions(collapsed = FALSE)) %>%
-      addLegendTA(
+      add_legend_ta(
         colors = c("black", "yellow", "yellow"),
         labels = c(0, round(max.ta / 2), max.ta),
         sizes = c(5, 20, 40), group = "Total abundance"
@@ -754,7 +754,7 @@ app_server <- function(input, output, session) {
         overlayGroups = c("Sampling locations", "Marine Parks", "Total abundance", "Species richness"),
         options = layersControlOptions(collapsed = FALSE)
       ) %>%
-      addLegendTA(
+      add_legend_ta(
         colors = c("black", "yellow", "yellow"),
         labels = c(0, round(max.ta / 2), max.ta),
         sizes = c(5, 20, 40), group = "Total abundance"
