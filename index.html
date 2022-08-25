@@ -77,32 +77,22 @@
 <h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
 </h2>
 <p>The dashboard runs off a single <code>mpa_data.rds</code> R save file which is produced from a range of source data files (CSV, TXT, SHP).</p>
-<div class="section level3">
-<h3 id="current-data-etl">Current data ETL<a class="anchor" aria-label="anchor" href="#current-data-etl"></a>
-</h3>
 <p>Archived on the DBCA data catalogue as dataset <a href="https://data.dbca.wa.gov.au/dataset/mpaviewer" class="external-link">mpaviewer</a> are: * A link to a Google Drive folder which contains a copy of source data files in the folder/file/data structure expected by <code><a href="reference/generate_data.html">mpaviewer::generate_data()</a></code>. * Links to the deployed dashboard and this GitHub code repository * The mpaviewer data file <code>mpa_data.rds</code> at a specific resource ID expected by <code><a href="reference/download_data.html">mpaviewer::download_data()</a></code>.</p>
-<div class="section level4">
-<h4 id="update-source-data">Update source data<a class="anchor" aria-label="anchor" href="#update-source-data"></a>
-</h4>
+<div class="section level3">
+<h3 id="update-source-data">Update source data<a class="anchor" aria-label="anchor" href="#update-source-data"></a>
+</h3>
 <p>Data owners can update the Google Drive folder with new data.</p>
 </div>
-<div class="section level4">
-<h4 id="generate-dashboard-data">Generate dashboard data<a class="anchor" aria-label="anchor" href="#generate-dashboard-data"></a>
-</h4>
+<div class="section level3">
+<h3 id="generate-dashboard-data">Generate dashboard data<a class="anchor" aria-label="anchor" href="#generate-dashboard-data"></a>
+</h3>
 <p>Whenever the source data was updated, an analyst must download the contents of the Google Drive folder “mpaviewer” into the directory <code>inst/data</code> of a local clone of the mpaviewer codebase and run <code><a href="reference/generate_data.html">mpaviewer::generate_data()</a></code>, then upload the data file <code>mpa_data.rds</code> to the DBCA data catalogue.</p>
 </div>
-<div class="section level4">
-<h4 id="update-the-dashboard-with-new-data">Update the dashboard with new data<a class="anchor" aria-label="anchor" href="#update-the-dashboard-with-new-data"></a>
-</h4>
-<p>A maintainer accesses the running <code>mpaviewer</code> Docker container through a shell, runs R, and executes <code>mpaviewer::download_data(data_dir="/app/inst/data")</code>.</p>
-</div>
-</div>
 <div class="section level3">
-<h3 id="ideal-data-etl">Ideal data ETL<a class="anchor" aria-label="anchor" href="#ideal-data-etl"></a>
+<h3 id="update-the-dashboard-with-new-data">Update the dashboard with new data<a class="anchor" aria-label="anchor" href="#update-the-dashboard-with-new-data"></a>
 </h3>
-<p>A second Docker container should run <code>mpaviewer::download_data(data_dir="/app/inst/data")</code> as a cronjob, following <a href="https://github.com/dbca-wa/etlTurtleNesting/tree/master/cron" class="external-link">this</a> example.</p>
-<p>The container could also run other R scripts, e.g. scripts downloading source data from the DBCA data catalogue, then running <code><a href="reference/generate_data.html">mpaviewer::generate_data()</a></code> on the downloaded copies. The downloading, processing, and uploading of data can be split out into another R package or remain in mpaviewer.</p>
-<p>Data owners could further automate their data pipelines by scripting the upload of their source data to the data catalogue, e.g. using R.</p>
+<p>A <a href="https://github.com/dbca-wa/mpaviewer/pkgs/container/mpaviewer_cron" class="external-link">Docker container for ETL</a> periodically executes a script to download source data and process it into the application data.</p>
+<p>Until the source data files are all available from the DBCA Data Catalogue, the container simply downloads the pre-processed data file <code>mpa_data.rds</code> from the DBCA data catalogue.</p>
 </div>
 </div>
 <div class="section level2">
