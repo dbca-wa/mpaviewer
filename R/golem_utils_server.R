@@ -68,16 +68,3 @@ options(
   spinner.color.background = "#ffffff",
   spinner.size = 2
 )
-
-### ► functions for summarising data on plots ----
-se <- function(x) {
-  sd(x) / sqrt(length(x))
-}
-
-se.min <- function(x) {
-  (mean(x)) - se(x)
-}
-
-se.max <- function(x) {
-  (mean(x)) + se(x)
-}
