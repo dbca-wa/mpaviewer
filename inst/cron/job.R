@@ -41,6 +41,6 @@ mpaviewer::download_source_data()
 # TODO enable this once download from CKAN is live
 # mpaviewer::generate_data()
 # For now, we download mpa_data.rds from CKAN:
-mpaviewer::download_data()
+mpaviewer::download_data(data_dir = "/app/inst/data")
 
 "[{Sys.time()}] Data ETL finished." %>% glue::glue() %>% print()
