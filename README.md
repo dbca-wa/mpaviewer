@@ -21,6 +21,56 @@ staff.
     from Google Drive or the DBCA data catalogue (and then saved as
     `.rds`). The locally saved file lives on a persistent volume.
 
+## Data
+
+The dashboard runs off a single `mpa_data.rds` R save file which is
+produced from a range of source data files (CSV, TXT, SHP).
+
+### Current data ETL
+
+Archived on the DBCA data catalogue as dataset
+[mpaviewer](https://data.dbca.wa.gov.au/dataset/mpaviewer) are: \* A
+link to a Google Drive folder which contains a copy of source data files
+in the folder/file/data structure expected by
+`mpaviewer::generate_data()`. \* Links to the deployed dashboard and
+this GitHub code repository \* The mpaviewer data file `mpa_data.rds` at
+a specific resource ID expected by `mpaviewer::download_data()`.
+
+#### Update source data
+
+Data owners can update the Google Drive folder with new data.
+
+#### Generate dashboard data
+
+Whenever the source data was updated, an analyst must download the
+contents of the Google Drive folder “mpaviewer” into the directory
+`inst/data` of a local clone of the mpaviewer codebase and run
+`mpaviewer::generate_data()`, then upload the data file `mpa_data.rds`
+to the DBCA data catalogue.
+
+#### Update the dashboard with new data
+
+A maintainer accesses the running `mpaviewer` Docker container through a
+shell, runs R, and executes
+`mpaviewer::download_data(data_dir="/app/inst/data")`.
+
+### Ideal data ETL
+
+A second Docker container should run
+`mpaviewer::download_data(data_dir="/app/inst/data")` as a cronjob,
+following
+[this](https://github.com/dbca-wa/etlTurtleNesting/tree/master/cron)
+example.
+
+The container could also run other R scripts, e.g. scripts downloading
+source data from the DBCA data catalogue, then running
+`mpaviewer::generate_data()` on the downloaded copies. The downloading,
+processing, and uploading of data can be split out into another R
+package or remain in mpaviewer.
+
+Data owners could further automate their data pipelines by scripting the
+upload of their source data to the data catalogue, e.g. using R.
+
 ## Development
 
 `mpaviewer` is an RShiny app using [Shiny

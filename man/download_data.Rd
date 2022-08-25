@@ -2,20 +2,21 @@
 % Please edit documentation in R/download_data.R
 \name{download_data}
 \alias{download_data}
-\title{Download the data file from CKAN}
+\title{Download the application data file mpa_data.rds from CKAN}
 \usage{
 download_data(
-  ckan_url = Sys.getenv("CKAN_URL"),
-  data_rid = Sys.getenv("MPAVIEWER_RID"),
+  ckan_url = Sys.getenv("CKAN_URL", unset = "https://data.dbca.wa.gov.au"),
+  data_rid = Sys.getenv("MPAVIEWER_RID", unset =
+    "29183116-2409-4213-90c7-69f00888f280"),
   data_dir = here::here("inst/data")
 )
 }
 \arguments{
 \item{ckan_url}{The data catalogue URL,
-default: \code{Sys.getenv("CKAN_URL")}}
+default: \code{Sys.getenv("CKAN_URL")} or the current DBCA CKAN server.}
 
 \item{data_rid}{The resource ID of the data file,
-default: \code{Sys.getenv("MPAVIEWER_RID")}.}
+default: \code{Sys.getenv("MPAVIEWER_RID")} or the current resource ID.}
 
 \item{data_dir}{A local directory to download files to,
 default: \code{here::here("inst/data")}.}
@@ -24,5 +25,7 @@ default: \code{here::here("inst/data")}.}
 None.
 }
 \description{
-Download the data file from CKAN
+This method can be configured to point to the data file through environment
+variables. It will work with defaults unless the location of the data file
+changes.
 }

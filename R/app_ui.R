@@ -30,16 +30,16 @@ app_ui <- function(request) {
             height = "67px",
             style = "margin-top:-15px; padding-top:-50px; margin-bottom:-15px; padding-bottom:-50px;"
           )
-        ), class = "dropdown"),
-        tags$li(a(
-          href = "https://www.dbca.wa.gov.au/", target = "_blank",
-          img(
-            src = "www/DBCA_BCS_white.png",
-            title = "DBCA",
-            height = "67px",
-            style = "margin-top:-15px; padding-top:-50px; margin-bottom:-15px; padding-bottom:-50px;"
-          )
         ), class = "dropdown")
+        # tags$li(a(
+        #   href = "https://www.dbca.wa.gov.au/", target = "_blank",
+        #   img(
+        #     src = "www/DBCA_BCS_white.png",
+        #     title = "DBCA",
+        #     height = "67px",
+        #     style = "margin-top:-15px; padding-top:-50px; margin-bottom:-15px; padding-bottom:-50px;"
+        #   )
+        # ), class = "dropdown")
         # tags$li(a(href = 'https://marineecology.io/', target="_blank",
         #           img(src = 'https://github.com/UWAMEGFisheries/UWAMEGFisheries.github.io/blob/master/images/MEG-white.png?raw=true',
         #               title = "Marine Ecology Group",
@@ -198,7 +198,7 @@ app_ui <- function(request) {
                     width = "100%",
                     "fishlocationpark",
                     "Choose a marine park:",
-                    choices = c("Ningaloo Marine Park", "Jurien Marine Park", "Rottnest Marine Park"),
+                    choices = c("Ningaloo", "Jurien", "Rottnest"),
                     multiple = FALSE,
                     selectize = TRUE
                   ),

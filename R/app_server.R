@@ -10,7 +10,11 @@ app_server <- function(input, output, session) {
   # Load data: generate with generate_data()
   fn_mpa_data <- here::here("inst/data/mpa_data.rds")
   mpa_data <- if (!fs::file_exists(fn_mpa_data)) {
-    NULL
+    # Download mpa_data.rds from the DBCA CKAN data catalogue
+    # TODO schedule download_data() to run e.g. every hour
+    # TODO automate generate_data() after moving all data assets to DBCA's CKAN
+    message("Data file not found, downloading from DBCA data catalogue...")
+    download_data()
   } else {
     reactiveFileReader(
       1000, # Poll data file for changes every 1 second
@@ -21,6 +25,7 @@ app_server <- function(input, output, session) {
   }
 
   ## FUNCTIONS -----
+  # TODO refactor as R/create_dropdown.R
   create_dropdown <- function(input_name, choices, label, multiple) {
     if (!is.null(input[[input_name]]) && input[[input_name]] %in% choices) {
       selected <- input[[input_name]]
@@ -38,7 +43,8 @@ app_server <- function(input, output, session) {
   }
 
   # State image
-
+  # NOTE this depends on the image filename being identical to the data folders
+  # in the source data (data/Ningaloo or data/Ningaloo Marine Park)
   output$ui.fish.park.image <- renderUI({
     park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), " ", ".")
     img(src = paste0("www/", park, ".jpg"), align = "right", width = "100%")
@@ -47,7 +53,7 @@ app_server <- function(input, output, session) {
   # State data ----
   # Create a marine park dropdown ----
   output$fish.state.park.dropdown <- renderUI({
-    options <- mpa_data()$metadata %>%
+    choices <- mpa_data()$metadata %>%
       dplyr::distinct(marine.park) %>%
       dplyr::arrange(marine.park) %>%
       dplyr::pull("marine.park")
@@ -55,92 +61,72 @@ app_server <- function(input, output, session) {
     pickerInput(
       inputId = "fish.state.park.dropdown",
       label = "Choose Marine Parks to include:",
-      choices = options,
+      choices = choices,
       multiple = TRUE,
-      selected = options,
+      selected = choices,
       options = list(`actions-box` = TRUE, `live-search` = TRUE)
     )
   })
 
   # Create method dropdown ----
   output$fish.state.method.dropdown <- renderUI({
-    options <- mpa_data()$metadata %>%
+    choices <- mpa_data()$metadata %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
       dplyr::distinct(method) %>%
       dplyr::pull("method")
 
-    create_dropdown("fish.state.method.dropdown", options, "Choose a method:", FALSE)
+    create_dropdown("fish.state.method.dropdown", choices, "Choose a method:", FALSE)
   })
 
   # Create a fished species dropdown ----
   output$fish.state.fished.species.dropdown <- renderUI({
-    options <- mpa_data()$fished.complete.length %>%
-      dplyr::filter(number > 0) %>%
-      dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
-      dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
-      dplyr::group_by(scientific) %>%
-      dplyr::summarise(total = sum(number)) %>%
-      dplyr::arrange(desc(total)) %>%
-      dplyr::distinct(scientific) %>%
-      dplyr::pull("scientific")
+    req(mpa_data())
 
-    most.abundant <- mpa_data()$fished.complete.length %>%
+    choices <- mpa_data()$fished.complete.length %>%
       dplyr::filter(number > 0) %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
       dplyr::group_by(scientific) %>%
       dplyr::summarise(total = sum(number)) %>%
       dplyr::arrange(desc(total)) %>%
-      dplyr::slice(1:3) %>%
       dplyr::distinct(scientific) %>%
       dplyr::pull("scientific")
 
     pickerInput(
       inputId = "fish.state.fished.species.dropdown",
       label = "Choose target species to plot:",
-      choices = options,
+      choices = choices,
       multiple = TRUE,
-      selected = most.abundant,
+      selected = choices[1:3],
       options = list(`actions-box` = TRUE, `live-search` = TRUE)
     )
   })
 
   # Create a fished species dropdown ----
   output$fish.state.all.species.dropdown <- renderUI({
-    options <- mpa_data()$abundance %>%
+    choices <- mpa_data()$abundance %>%
       dplyr::filter(maxn > 0) %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
       dplyr::group_by(scientific) %>%
       dplyr::summarise(total = sum(maxn)) %>%
       dplyr::arrange(desc(total)) %>%
-      dplyr::distinct(scientific) %>%
-      dplyr::pull("scientific")
-
-    most.abundant <- mpa_data()$abundance %>%
-      dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
-      dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
-      dplyr::filter(maxn > 0) %>%
-      dplyr::group_by(scientific) %>%
-      dplyr::summarise(total = sum(maxn)) %>%
-      dplyr::arrange(desc(total)) %>%
-      dplyr::slice(1:3) %>%
       dplyr::distinct(scientific) %>%
       dplyr::pull("scientific")
 
     shinyWidgets::pickerInput(
       inputId = "fish.state.all.species.dropdown",
       label = "Choose species to plot:",
-      choices = options,
+      choices = choices,
       multiple = TRUE,
-      selected = most.abundant,
+      selected = choices[1:3],
       options = list(`actions-box` = TRUE, `live-search` = TRUE)
     )
   })
 
   # Create a trophic group dropdown ----
   output$fish.state.trophic.dropdown <- renderUI({
-    options <- mpa_data()$trophic.abundance %>%
+    choices <- mpa_data()$trophic.abundance %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
       dplyr::group_by(trophic.group) %>%
@@ -151,9 +137,9 @@ app_server <- function(input, output, session) {
     pickerInput(
       inputId = "fish.state.trophic.dropdown",
       label = "Choose trophic groups to plot:",
-      choices = options,
+      choices = choices,
       multiple = TRUE,
-      selected = options,
+      selected = choices,
       options = list(`actions-box` = TRUE, `live-search` = TRUE)
     )
   })
@@ -200,7 +186,7 @@ app_server <- function(input, output, session) {
 
   # Create a fished species dropdown ----
   output$fish.park.fished.species.dropdown <- renderUI({
-    options <- mpa_data()$fished.complete.length %>%
+    choices <- mpa_data()$fished.complete.length %>%
       dplyr::filter(number > 0) %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
@@ -211,30 +197,19 @@ app_server <- function(input, output, session) {
       dplyr::distinct(scientific) %>%
       dplyr::pull("scientific")
 
-    most.abundant <- mpa_data()$fished.complete.length %>%
-      dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
-      dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
-      dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
-      dplyr::group_by(scientific) %>%
-      dplyr::summarise(total = sum(number)) %>%
-      dplyr::arrange(desc(total)) %>%
-      dplyr::slice(1) %>%
-      dplyr::distinct(scientific) %>%
-      dplyr::pull("scientific")
-
     pickerInput(
       inputId = "fish.park.fished.species.dropdown",
       label = "Choose target species to plot:",
-      choices = options,
+      choices = choices,
       multiple = TRUE,
-      selected = most.abundant,
+      selected = choices[1],
       options = list(`actions-box` = TRUE, `live-search` = TRUE)
     )
   })
 
   # Create an all species dropdown ----
   output$fish.park.all.species.dropdown <- renderUI({
-    options <- mpa_data()$abundance %>%
+    choices <- mpa_data()$abundance %>%
       dplyr::filter(maxn > 0) %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
@@ -242,34 +217,22 @@ app_server <- function(input, output, session) {
       dplyr::group_by(scientific) %>%
       dplyr::summarise(total = sum(maxn)) %>%
       dplyr::arrange(desc(total)) %>%
-      dplyr::distinct(scientific) %>%
-      dplyr::pull("scientific")
-
-    most.abundant <- mpa_data()$abundance %>%
-      dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
-      dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
-      dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
-      dplyr::filter(maxn > 0) %>%
-      dplyr::group_by(scientific) %>%
-      dplyr::summarise(total = sum(maxn)) %>%
-      dplyr::arrange(desc(total)) %>%
-      dplyr::slice(1:3) %>%
       dplyr::distinct(scientific) %>%
       dplyr::pull("scientific")
 
     pickerInput(
       inputId = "fish.park.all.species.dropdown",
       label = "Choose species to plot:",
-      choices = options,
+      choices = choices,
       multiple = TRUE,
-      selected = most.abundant,
+      selected = choices[1:3],
       options = list(`actions-box` = TRUE, `live-search` = TRUE)
     )
   })
 
   # Create a trophic group dropdown ----
   output$fish.park.trophic.dropdown <- renderUI({
-    options <- mpa_data()$trophic.abundance %>%
+    choices <- mpa_data()$trophic.abundance %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
       dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
@@ -281,9 +244,9 @@ app_server <- function(input, output, session) {
     pickerInput(
       inputId = "fish.park.trophic.dropdown",
       label = "Choose trophic groups to plot:",
-      choices = options,
+      choices = choices,
       multiple = TRUE,
-      selected = options,
+      selected = choices,
       options = list(`actions-box` = TRUE, `live-search` = TRUE)
     )
   })
@@ -306,7 +269,7 @@ app_server <- function(input, output, session) {
     dat <- mpa_data()$sampling.effort %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
-      mutate(content = paste(
+      dplyr::mutate(content = paste(
         sep = " ",
         "<b>Sample:", sample, "</b>", "<br/>",
         "<b>Status:</b>", status, "<br/>",
@@ -316,16 +279,15 @@ app_server <- function(input, output, session) {
         "<b>Number of times sampled:</b>", number.of.times.sampled, "<br/>"
       ))
 
-    overzero.ta <- filter(ta, value > 0)
-    equalzero.ta <- filter(ta, value == 0) %>% glimpse()
+    overzero.ta <- dplyr::filter(ta, value > 0)
+    equalzero.ta <- dplyr::filter(ta, value == 0)
     max.ta <- max(overzero.ta$value)
 
-    overzero.sr <- filter(sr, value > 0)
-    equalzero.sr <- filter(sr, value == 0) %>% glimpse()
+    overzero.sr <- dplyr::filter(sr, value > 0)
+    equalzero.sr <- dplyr::filter(sr, value == 0)
     max.sr <- max(overzero.sr$value)
 
-    map <- leaflet(dat) %>%
-      addTiles() %>%
+    map <- leaflet_basemap(dat) %>%
       fitBounds(~ min(longitude), ~ min(latitude), ~ max(longitude), ~ max(latitude)) %>%
       # addCircleMarkers(lng = ~longitude, lat = ~latitude, label = ~as.character(sample), popup = ~content,
       #                  radius = 1, fillOpacity = 1, color = "black") %>%
@@ -480,7 +442,7 @@ app_server <- function(input, output, session) {
 
   ## ►  Stacked Abundance Plot ----
   output$fish.state.stack.plot <- renderPlot({
-    maxn.sum <- abundance %>%
+    maxn.sum <- mpa_data()$abundance %>%
       mutate(scientific = paste(genus, species, sep = " ")) %>%
       group_by(scientific) %>%
       dplyr::summarise(maxn = sum(maxn)) %>%
@@ -542,8 +504,7 @@ app_server <- function(input, output, session) {
       dplyr::summarise(number = sum(number)) %>%
       dplyr::filter(number > 20) %>%
       dplyr::ungroup() %>%
-      dplyr::distinct(marine.park, method, campaignid, status, scientific) # %>%
-    # glimpse()
+      dplyr::distinct(marine.park, method, campaignid, status, scientific)
 
     dat <- mpa_data()$fished.complete.length %>%
       dplyr::semi_join(more.than.20) %>%
@@ -551,8 +512,7 @@ app_server <- function(input, output, session) {
       dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
       dplyr::filter(!is.na(length)) %>%
       # dplyr::filter(length > 0) %>% # Might need to check if this is right?
-      dplyr::filter(scientific %in% c(input$fish.state.fished.species.dropdown)) %>%
-      glimpse()
+      dplyr::filter(scientific %in% c(input$fish.state.fished.species.dropdown))
 
     split.dat <- split(dat, f = dat$marine.park, drop = TRUE)
 
@@ -641,7 +601,7 @@ app_server <- function(input, output, session) {
   output$fish.state.all.species.abundance.plot <- renderPlot({
     req(input$fish.state.method.dropdown, input$fish.state.park.dropdown, input$fish.state.all.species.dropdown)
 
-    dat <- abundance %>%
+    dat <- mpa_data()$abundance %>%
       dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
       dplyr::filter(scientific %in% c(input$fish.state.all.species.dropdown))
@@ -699,8 +659,7 @@ app_server <- function(input, output, session) {
     equalzero.sr <- filter(sr, value == 0)
     max.sr <- max(overzero.sr$value)
 
-    map <- leaflet(dat) %>%
-      addTiles() %>%
+    map <- leaflet_basemap(dat) %>%
       fitBounds(~ min(longitude), ~ min(latitude), ~ max(longitude), ~ max(latitude)) %>%
       addMarkers(lng = ~longitude, lat = ~latitude, label = ~ as.character(sample), popup = ~content, group = "Sampling locations") %>%
       addGlPolygons(
@@ -830,7 +789,7 @@ app_server <- function(input, output, session) {
 
   ## ►  Stacked Abundance Plot ----
   output$fish.park.stack.plot <- renderPlot({
-    maxn.sum <- abundance %>%
+    maxn.sum <- mpa_data()$abundance %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
       dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
@@ -887,8 +846,7 @@ app_server <- function(input, output, session) {
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
       dplyr::filter(metric %in% c("Total abundance"))
 
-    map <- leaflet(dat) %>%
-      addTiles() %>%
+    map <- leaflet_basemap(dat) %>%
       fitBounds(~ min(longitude), ~ min(latitude), ~ max(longitude), ~ max(latitude)) %>%
       addGlPolygons(
         data =  mpa_data()$state.mp,
@@ -936,8 +894,7 @@ app_server <- function(input, output, session) {
       dplyr::summarise(number = sum(number)) %>%
       dplyr::filter(number > 20) %>%
       dplyr::ungroup() %>%
-      dplyr::distinct(marine.park, method, campaignid, status, scientific) # %>%
-    # glimpse()
+      dplyr::distinct(marine.park, method, campaignid, status, scientific)
 
     dat <- mpa_data()$fished.complete.length %>%
       dplyr::semi_join(more.than.20) %>%
@@ -1008,7 +965,7 @@ app_server <- function(input, output, session) {
   output$fish.park.all.species.abundance.plot <- renderPlot({
     req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.site.dropdown, input$fish.park.all.species.dropdown)
 
-    dat <- abundance %>%
+    dat <- mpa_data()$abundance %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
       dplyr::filter(scientific %in% c(input$fish.park.all.species.dropdown)) %>%
