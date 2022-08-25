@@ -12,8 +12,8 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 [![pkgdown](https://github.com/dbca-wa/mpaviewer/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/dbca-wa/mpaviewer/actions/workflows/pkgdown.yaml)
 <!-- badges: end -->
 
-The goal of mpaviewer is to visualise marine monitoring data to DBCA
-staff.
+[mpaviewer](https://mpaviewer.dbca.wa.gov.au/) is a dashboard of marine
+monitoring data for DBCA staff.
 
 ## Architecture
 

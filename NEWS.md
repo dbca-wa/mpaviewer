@@ -1,7 +1,4 @@
 # mpaviewer 0.0.5
-
-# mpaviewer 0.0.4
-
-# mpaviewer 0.0.0.9000
-
-* Added a `NEWS.md` file to track changes to the package.
+The first version with real data and a real dashboard is deployed at 
+<https://mpaviewer.dbca.wa.gov.au/>.
+The data lives on the DBCA data catalogue and is both generated and loaded manually.
