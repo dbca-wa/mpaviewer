@@ -10,15 +10,15 @@
 #'
 #' @examples
 #' leaflet_basemap()
-leaflet_basemap <- function(data=NULL, l_width = NULL, l_height = NULL) {
-  leaflet::leaflet(data=data, width = l_width, height = l_height) %>%
+leaflet_basemap <- function(data = NULL, l_width = NULL, l_height = NULL) {
+  leaflet::leaflet(data = data, width = l_width, height = l_height) %>%
     leaflet::addProviderTiles("Esri.WorldImagery", group = "Basemap") %>%
     leaflet::addProviderTiles(
       "OpenStreetMap.Mapnik",
       group = "Basemap",
       options = leaflet::providerTileOptions(opacity = 0.35)
     ) %>%
-    leaflet.extras::addFullscreenControl(pseudoFullscreen = TRUE, position="topleft") %>%
+    leaflet.extras::addFullscreenControl(pseudoFullscreen = TRUE, position = "topleft") %>%
     leaflet::addScaleBar(
       position = "bottomleft",
       options = leaflet::scaleBarOptions(
