@@ -1,6 +1,8 @@
 # Setup -----------------------------------------------------------------------#
 library(mpaviewer)
 library(ckanr)
+library(fs)
+library(glue)
 
 # Absolute paths to saved data and config files -------------------------------#
 fn_renv <- "/app/inst/data/.Renviron"
@@ -9,11 +11,8 @@ fn_renv <- "/app/inst/data/.Renviron"
 "[{Sys.time()}] Cronjob startup and gatechecks" %>% glue::glue() %>% print()
 # There are two mounted persistent volumes, one for data, the other for config.
 # If the data directory does not exist, the save functions below will fail.
-print("Shared data directory exists:")
+print("Shared data and config directory exists:")
 print(fs::dir_exists("/app/inst/data"))
-
-print("Persistent config directory exists:")
-print(fs::dir_exists("/app/config/"))
 
 # The file .Renviron has to be created once manually through a shell into the
 # running container, pasting in any environment variables we need for the script.
