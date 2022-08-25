@@ -2,7 +2,7 @@ FROM rocker/geospatial:4.2.1 as base
 RUN apt-get update && apt-get install -y  rclone cron git-core \
 libcairo2-dev libcurl4-openssl-dev libfribidi-dev \
 libgeos++-dev libgit2-dev libharfbuzz-dev libicu-dev libpng-dev \
-libtiff-dev libxml2-dev make pandoc pandoc-citeproc zlib1g-dev && \
+libtiff-dev libxml2-dev make pandoc pandoc-citeproc  zlib1g-dev && \
 rm -rf /var/lib/apt/lists/*
 
 FROM base as rlibs
@@ -53,3 +53,17 @@ WORKDIR /app
 RUN R -e 'remotes::install_local(upgrade="never")'
 EXPOSE 80
 CMD R -e "options('shiny.port'=80,shiny.host='0.0.0.0');mpaviewer::run_app()"
+
+# Mount a volume to /app/inst that is shared with turtleviewer2
+# A second volume /app/config will hold an .Renviron file
+RUN mkdir -p /app/inst/data && echo "WASTDR_API_URL=NOTSET" >> /app/inst/data/.Renviron
+
+# Initiate cronjob
+RUN crontab inst/cron/cronjob
+
+# Run command on container startup
+CMD echo "start cronjob" &&\
+(cron) &&\
+echo "init logs" &&\
+touch /app/inst/cron.log &&\
+tail -f /app/inst/cron.log
