@@ -222,7 +222,7 @@ app_ui <- function(request) {
                     width = "100%",
                     "fishlocationmetric",
                     "Choose a metric:",
-                    choices = c("Total abundance", "Species ricness", "Targeted abundance"),
+                    choices = c("Total abundance", "Species richness", "Targeted abundance"),
                     multiple = FALSE,
                     selectize = TRUE
                   )
