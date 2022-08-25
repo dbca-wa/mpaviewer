@@ -67,7 +67,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   ### ► Summarise to find sampling effort, this is used for the leaflet maps ----
   sampling.effort <- metadata %>%
     dplyr::group_by(marine.park, method, sample, status, site, location, latitude, longitude, depth) %>%
-    dplyr::summarise(number.of.times.sampled = n()) %>%
+    dplyr::summarise(number.of.times.sampled = dplyr::n()) %>%
     dplyr::ungroup()
 
   ### ► Generic data (still using "sample") ----
@@ -149,7 +149,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::group_by(marine.park, method, campaignid, sample, family, genus, species) %>%
     dplyr::slice(which.max(maxn)) %>%
     dplyr::ungroup() %>%
-    bind_rows(count.maxn) %>%
+    dplyr::bind_rows(count.maxn) %>%
     dplyr::mutate(maxn = as.numeric(maxn)) %>%
     dplyr::full_join(metadata) %>%
     dplyr::select(marine.park, method, campaignid, sample, family, genus, species, maxn) %>%
@@ -158,7 +158,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::left_join(metadata) %>%
     dplyr::mutate(scientific = paste(genus, species, sep = " "))
 
-  abundance <- bind_rows(maxn, count.summary, count.maxn)
+  abundance <- dplyr::bind_rows(maxn, count.summary, count.maxn)
 
   ## _______________________________________________________ ----
   ##                      ABUNDANCE METRICS                  ----
@@ -204,7 +204,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   length <- length[rep(row.names(length), length$count), ]
   lengths <- lengths[rep(row.names(lengths), lengths$number), ]
 
-  names(threed.points)
+  # names(threed.points)
 
   generic <- length %>%
     dplyr::mutate(number = 1) %>%
@@ -322,7 +322,8 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
       metadata = metadata,
       sampling.effort = sampling.effort,
       state.mp = state.mp,
-      state.pal = state.pal
+      state.pal = state.pal,
+      park.popups = park.popups
     ),
     class = "mpa_data"
   )
@@ -354,7 +355,8 @@ print.mpa_data <- function(x, ...) {
       "  metadata:    {nrow(x$metadata)}\n",
       "  sampling.effort:    {nrow(x$sampling.effort)}\n",
       "  state.mp:    {nrow(x$state.mp)}\n",
-      "  state.pal:    {nrow(x$state.pal)}\n"
+      "  state.pal:    {nrow(x$state.pal)}\n",
+      "  park.popups:    {nrow(x$park.popups)}\n"
     )
   )
   invisible(x)

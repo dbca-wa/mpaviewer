@@ -3,6 +3,7 @@ library(mpaviewer)
 library(ckanr)
 library(fs)
 library(glue)
+library(magrittr)
 
 # Absolute paths to saved data and config files -------------------------------#
 fn_renv <- "/app/inst/data/.Renviron"

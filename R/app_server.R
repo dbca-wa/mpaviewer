@@ -993,7 +993,7 @@ app_server <- function(input, output, session) {
     input$alert.marinepark,
     shinyalert::shinyalert(
       title = input$fish.park.dropdown,
-      text = filter(park.popups, marine.park %in% c(input$fish.park.dropdown))$info,
+      text = filter(mpa_data()$park.popups, marine.park %in% c(input$fish.park.dropdown))$info,
       size = "s",
       closeOnEsc = TRUE,
       closeOnClickOutside = FALSE,
