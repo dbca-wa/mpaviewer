@@ -470,7 +470,7 @@ app_server <- function(input, output, session) {
       dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
       dplyr::filter(trophic.group %in% c(input$fish.state.trophic.dropdown))
 
-    ggplot(dat, aes(x = year, y = mpa_data()$total.abundance, fill = status)) +
+    ggplot(dat, aes(x = year, y = total.abundance, fill = status)) +
       stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
       xlab("Year") +
@@ -571,7 +571,7 @@ app_server <- function(input, output, session) {
       dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
       dplyr::filter(scientific %in% c(input$fish.state.fished.species.dropdown))
 
-    ggplot(dat, aes(x = year, y = mpa_data()$total.abundance, fill = status)) +
+    ggplot(dat, aes(x = year, y = total.abundance, fill = status)) +
       stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
       xlab("Year") +
@@ -821,7 +821,7 @@ app_server <- function(input, output, session) {
       dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
       dplyr::filter(trophic.group %in% c(input$fish.park.trophic.dropdown))
 
-    ggplot(dat, aes(x = year, y = mpa_data()$total.abundance, fill = status)) +
+    ggplot(dat, aes(x = year, y = total.abundance, fill = status)) +
       stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
       xlab("Year") +
@@ -942,7 +942,7 @@ app_server <- function(input, output, session) {
       dplyr::filter(scientific %in% c(input$fish.park.fished.species.dropdown)) %>%
       dplyr::filter(site %in% c(input$fish.park.site.dropdown))
 
-    ggplot(dat, aes(x = year, y = mpa_data()$total.abundance, fill = status)) +
+    ggplot(dat, aes(x = year, y = total.abundance, fill = status)) +
       stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
       xlab("Year") +
