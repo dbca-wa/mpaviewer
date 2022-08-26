@@ -107,25 +107,25 @@ app_ui <- function(request) {
                   ),
                   conditionalPanel(
                     'input.fishstatemetric == "Whole assemblage"',
-                    withSpinner(uiOutput("ui.fish.state.total.plot")),
-                    withSpinner(uiOutput("ui.fish.state.rich.plot")) # ,
+                    withSpinner(plotOutput("ui.fish.state.total.plot")),
+                    withSpinner(plotOutput("ui.fish.state.rich.plot")) # ,
                     # plotOutput("fish.state.stack.plot", height = 500)
                   ),
                   conditionalPanel(
                     'input.fishstatemetric == "Target species"',
                     htmlOutput("fish.state.fished.species.dropdown"),
-                    withSpinner(uiOutput("ui.fish.state.fished.species.abundance.plot")),
-                    withSpinner(uiOutput("ui.fish.state.fished.species.kde.plot"))
+                    withSpinner(plotOutput("ui.fish.state.fished.species.abundance.plot")),
+                    withSpinner(plotOutput("ui.fish.state.fished.species.kde.plot"))
                   ),
                   conditionalPanel(
                     'input.fishstatemetric == "Individual species"',
                     htmlOutput("fish.state.all.species.dropdown"),
-                    withSpinner(uiOutput("ui.fish.state.all.species.abundance.plot"))
+                    withSpinner(plotOutput("ui.fish.state.all.species.abundance.plot"))
                   ),
                   conditionalPanel(
                     'input.fishstatemetric == "Life history traits"',
                     htmlOutput("fish.state.trophic.dropdown"),
-                    withSpinner(uiOutput("ui.fish.state.trophic.plot"))
+                    withSpinner(plotOutput("ui.fish.state.trophic.plot"))
                   )
                 ),
                 tabPanel(
@@ -178,7 +178,7 @@ app_ui <- function(request) {
                   conditionalPanel(
                     'input.fishparkmetric == "Target species"',
                     htmlOutput("fish.park.fished.species.dropdown"),
-                    withSpinner(uiOutput("ui.fish.park.fished.species.abundance.plot")),
+                    withSpinner(plotOutput("ui.fish.park.fished.species.abundance.plot")),
                     withSpinner(plotOutput("fish.park.fished.species.kde.plot", height = 500))
                   ),
                   conditionalPanel(
@@ -222,7 +222,7 @@ app_ui <- function(request) {
                     width = "100%",
                     "fishlocationmetric",
                     "Choose a metric:",
-                    choices = c("Total abundance", "Species ricness", "Targeted abundance"),
+                    choices = c("Total abundance", "Species richness", "Targeted abundance"),
                     multiple = FALSE,
                     selectize = TRUE
                   )

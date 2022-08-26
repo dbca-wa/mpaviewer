@@ -7,9 +7,13 @@
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![R-CMD-check](https://github.com/dbca-wa/mpaviewer/workflows/R-CMD-check/badge.svg)](https://github.com/dbca-wa/mpaviewer/actions)
-[![docker](https://github.com/dbca-wa/mpaviewer/actions/workflows/docker.yaml/badge.svg)](https://github.com/dbca-wa/mpaviewer/actions/workflows/docker.yaml)
-[![pkgdown](https://github.com/dbca-wa/mpaviewer/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/dbca-wa/mpaviewer/actions/workflows/pkgdown.yaml)
+[![Package
+checks](https://github.com/dbca-wa/mpaviewer/workflows/R-CMD-check/badge.svg)](https://github.com/dbca-wa/mpaviewer/actions)
+[![Docker
+app](https://github.com/dbca-wa/mpaviewer/actions/workflows/docker.yaml/badge.svg)](https://github.com/dbca-wa/mpaviewer/actions/workflows/docker.yaml)
+[![Docker
+data](https://github.com/dbca-wa/mpaviewer/actions/workflows/docker_cron.yaml/badge.svg)](https://github.com/dbca-wa/mpaviewer/actions/workflows/docker_cron.yaml)
+[![Docs](https://github.com/dbca-wa/mpaviewer/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/dbca-wa/mpaviewer/actions/workflows/pkgdown.yaml)
 <!-- badges: end -->
 
 [mpaviewer](https://mpaviewer.dbca.wa.gov.au/) is a dashboard of marine
@@ -26,8 +30,6 @@ monitoring data for DBCA staff.
 The dashboard runs off a single `mpa_data.rds` R save file which is
 produced from a range of source data files (CSV, TXT, SHP).
 
-### Current data ETL
-
 Archived on the DBCA data catalogue as dataset
 [mpaviewer](https://data.dbca.wa.gov.au/dataset/mpaviewer) are: \* A
 link to a Google Drive folder which contains a copy of source data files
@@ -36,11 +38,11 @@ in the folder/file/data structure expected by
 this GitHub code repository \* The mpaviewer data file `mpa_data.rds` at
 a specific resource ID expected by `mpaviewer::download_data()`.
 
-#### Update source data
+### Update source data
 
 Data owners can update the Google Drive folder with new data.
 
-#### Generate dashboard data
+### Generate dashboard data
 
 Whenever the source data was updated, an analyst must download the
 contents of the Google Drive folder “mpaviewer” into the directory
@@ -48,28 +50,16 @@ contents of the Google Drive folder “mpaviewer” into the directory
 `mpaviewer::generate_data()`, then upload the data file `mpa_data.rds`
 to the DBCA data catalogue.
 
-#### Update the dashboard with new data
+### Update the dashboard with new data
 
-A maintainer accesses the running `mpaviewer` Docker container through a
-shell, runs R, and executes
-`mpaviewer::download_data(data_dir="/app/inst/data")`.
+A [Docker container for
+ETL](https://github.com/dbca-wa/mpaviewer/pkgs/container/mpaviewer_cron)
+periodically executes a script to download source data and process it
+into the application data.
 
-### Ideal data ETL
-
-A second Docker container should run
-`mpaviewer::download_data(data_dir="/app/inst/data")` as a cronjob,
-following
-[this](https://github.com/dbca-wa/etlTurtleNesting/tree/master/cron)
-example.
-
-The container could also run other R scripts, e.g. scripts downloading
-source data from the DBCA data catalogue, then running
-`mpaviewer::generate_data()` on the downloaded copies. The downloading,
-processing, and uploading of data can be split out into another R
-package or remain in mpaviewer.
-
-Data owners could further automate their data pipelines by scripting the
-upload of their source data to the data catalogue, e.g. using R.
+Until the source data files are all available from the DBCA Data
+Catalogue, the container simply downloads the pre-processed data file
+`mpa_data.rds` from the DBCA data catalogue.
 
 ## Development
 
@@ -98,8 +88,7 @@ usethis::edit_file("NEWS.md")
 # Document to load new package version. Git commit, tag, and push.
 devtools::document()
 v <- packageVersion("mpaviewer")
-system(glue::glue("git tag -a v{v} -m 'v{v}'"))
-system(glue::glue("git push && git push --tags"))
+system(glue::glue("git tag -a v{v} -m 'v{v}' && git push && git push --tags"))
 ```
 
 ## Deployment

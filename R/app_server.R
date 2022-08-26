@@ -485,7 +485,7 @@ app_server <- function(input, output, session) {
   })
 
   # Make species richness plot interactive so the height changes with the number of inputs ----
-  output$ui.fish.state.trophic.plot <- renderUI({
+  output$ui.fish.state.trophic.plot <- renderPlot({
     dat <- mpa_data()$all.data %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.state.method.dropdown))
@@ -545,7 +545,7 @@ app_server <- function(input, output, session) {
   })
 
   # Make KDE plot interactive so the height changes with the number of inputs ----
-  output$ui.fish.state.fished.species.kde.plot <- renderUI({
+  output$ui.fish.state.fished.species.kde.plot <- renderPlot({
     dat <- mpa_data()$all.data %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.state.method.dropdown))
@@ -554,7 +554,7 @@ app_server <- function(input, output, session) {
   })
 
   # Make fished abundance plot interactive so the height changes with the number of inputs ----
-  output$ui.fish.state.fished.species.abundance.plot <- renderUI({
+  output$ui.fish.state.fished.species.abundance.plot <- renderPlot({
     dat <- mpa_data()$all.data %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.state.method.dropdown))
@@ -587,7 +587,7 @@ app_server <- function(input, output, session) {
 
 
   # Make all species abundance plot interactive so the height changes with the number of inputs ----
-  output$ui.fish.state.all.species.abundance.plot <- renderUI({
+  output$ui.fish.state.all.species.abundance.plot <- renderPlot({
     dat <- mpa_data()$all.data %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.state.method.dropdown))
