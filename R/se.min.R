@@ -4,8 +4,6 @@
 #'
 #' @return standard error minimum
 #' @export
-#'
-#' @examples
 se.min <- function(x) {
   (mean(x)) - se(x)
 }
