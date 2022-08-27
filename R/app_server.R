@@ -658,6 +658,7 @@ app_server <- function(input, output, session) {
   output$fish.state.fished.species.kde.plot <- renderPlot({
     req(input$fish.state.park.dropdown, input$fish.state.method.dropdown, input$fish.state.fished.species.dropdown)
 
+    # https://github.com/dbca-wa/mpaviewer/issues/13
     more.than.20 <- mpa_data()$fished.complete.length %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
@@ -667,6 +668,7 @@ app_server <- function(input, output, session) {
       dplyr::ungroup() %>%
       dplyr::distinct(marine.park, method, campaignid, status, scientific)
 
+    # https://github.com/dbca-wa/mpaviewer/issues/13
     dat <- mpa_data()$fished.complete.length %>%
       dplyr::semi_join(more.than.20) %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
@@ -701,32 +703,30 @@ app_server <- function(input, output, session) {
       need(nrow(dat) > 0, "Sorry, there is not enough data to create a KDE for the species you requested. Please change your input selections")
     )
 
-
     cowplot::plot_grid(plotlist = plot_list, ncol = 1)
   })
 
   # Make KDE plot interactive so the height changes with the number of inputs ----
   output$ui.fish.state.fished.species.kde.plot <- renderPlot({
-    dat <- mpa_data()$all.data %>%
-      dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
-      dplyr::filter(method %in% c(input$fish.state.method.dropdown))
-
-    plotOutput("fish.state.fished.species.kde.plot", height = 300 * length(unique(dat$marine.park)))
+    req(input$fish.state.park.dropdown)
+    plotOutput("fish.state.fished.species.kde.plot",
+               height = 300 * length(c(input$fish.state.park.dropdown)))
   })
 
   # Make fished abundance plot interactive so the height changes with the number of inputs ----
   output$ui.fish.state.fished.species.abundance.plot <- renderPlot({
-    dat <- mpa_data()$all.data %>%
-      dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
-      dplyr::filter(method %in% c(input$fish.state.method.dropdown))
-
-    plotOutput("fish.state.fished.species.abundance.plot", height = 300 * length(unique(dat$marine.park)))
+    req(c(input$fish.state.park.dropdown))
+    plotOutput("fish.state.fished.species.abundance.plot",
+               height = 300 * length(c(input$fish.state.park.dropdown)))
   })
 
   # Fished species abundance plot -----
   output$fish.state.fished.species.abundance.plot <- renderPlot({
-    req(input$fish.state.park.dropdown, input$fish.state.method.dropdown, input$fish.state.fished.species.dropdown)
+    req(input$fish.state.park.dropdown,
+        input$fish.state.method.dropdown,
+        input$fish.state.fished.species.dropdown)
 
+    # https://github.com/dbca-wa/mpaviewer/issues/13
     dat <- mpa_data()$fished.abundance %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
@@ -749,19 +749,18 @@ app_server <- function(input, output, session) {
 
   # Make all species abundance plot interactive so the height changes with the number of inputs ----
   output$ui.fish.state.all.species.abundance.plot <- renderPlot({
-    dat <- mpa_data()$all.data %>%
-      dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
-      dplyr::filter(method %in% c(input$fish.state.method.dropdown))
-
-    plotOutput("fish.state.all.species.abundance.plot", height = 300 * length(unique(dat$marine.park)))
-
-    # plotOutput("fish.state.all.species.abundance.plot", height = 300 * length(input$fish.state.all.species.dropdown))
+    req(input$fish.state.park.dropdown)
+    plotOutput("fish.state.all.species.abundance.plot",
+               height = 300 * length(c(input$fish.state.park.dropdown)))
   })
 
   # All species abundance ----
   output$fish.state.all.species.abundance.plot <- renderPlot({
-    req(input$fish.state.method.dropdown, input$fish.state.park.dropdown, input$fish.state.all.species.dropdown)
+    req(input$fish.state.method.dropdown,
+        input$fish.state.park.dropdown,
+        input$fish.state.all.species.dropdown)
 
+    # https://github.com/dbca-wa/mpaviewer/issues/13
     dat <- mpa_data()$abundance %>%
       dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
@@ -787,17 +786,21 @@ app_server <- function(input, output, session) {
   output$fish.park.sampling.leaflet <- renderLeaflet({
     req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.site.dropdown)
 
+    # https://github.com/dbca-wa/mpaviewer/issues/13
     fish.dat <- mpa_data()$all.data %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
       dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown))
 
+    # https://github.com/dbca-wa/mpaviewer/issues/13
     ta <- fish.dat %>%
       dplyr::filter(metric %in% c("Total abundance"))
 
+    # https://github.com/dbca-wa/mpaviewer/issues/13
     sr <- fish.dat %>%
       dplyr::filter(metric %in% c("Species richness"))
 
+    # https://github.com/dbca-wa/mpaviewer/issues/13
     dat <- mpa_data()$sampling.effort %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
@@ -821,8 +824,18 @@ app_server <- function(input, output, session) {
     max.sr <- max(overzero.sr$value)
 
     map <- leaflet_basemap(dat) %>%
-      fitBounds(~ min(longitude), ~ min(latitude), ~ max(longitude), ~ max(latitude)) %>%
-      addMarkers(lng = ~longitude, lat = ~latitude, label = ~ as.character(sample), popup = ~content, group = "Sampling locations") %>%
+      fitBounds(
+        ~ min(longitude),
+        ~ min(latitude),
+        ~ max(longitude),
+        ~ max(latitude)) %>%
+      addMarkers(
+        lng = ~longitude,
+        lat = ~latitude,
+        label = ~ as.character(sample),
+        popup = ~content,
+        group = "Sampling locations"
+      ) %>%
       addGlPolygons(
         data =  mpa_data()$state.mp,
         color = ~ mpa_data()$state.pal(zone),
@@ -830,12 +843,20 @@ app_server <- function(input, output, session) {
         group = "Marine Parks"
       ) %>%
       addLegend(
-        pal = mpa_data()$state.pal, values = mpa_data()$state.mp$zone, opacity = 1,
+        pal = mpa_data()$state.pal,
+        values = mpa_data()$state.mp$zone,
+        opacity = 1,
         title = "Zones",
-        position = "bottomright", group = "Marine Parks"
+        position = "bottomright",
+        group = "Marine Parks"
       ) %>%
       addLayersControl(
-        overlayGroups = c("Sampling locations", "Marine Parks", "Total abundance", "Species richness"),
+        overlayGroups = c(
+          "Sampling locations",
+          "Marine Parks",
+          "Total abundance",
+          "Species richness"
+        ),
         options = layersControlOptions(collapsed = FALSE)
       ) %>%
       add_legend_ta(
@@ -852,18 +873,29 @@ app_server <- function(input, output, session) {
     if (nrow(overzero.ta)) {
       map <- map %>%
         addCircleMarkers(
-          data = overzero.ta, lat = ~latitude, lng = ~longitude,
-          radius = ~ (((value / max(value)) * 20)), fillOpacity = 0.5, stroke = FALSE,
-          label = ~ as.character(value), group = "Total abundance", color = "yellow"
+          data = overzero.ta,
+          lat = ~latitude,
+          lng = ~longitude,
+          radius = ~ (((value / max(value)) * 20)),
+          fillOpacity = 0.5, stroke = FALSE,
+          label = ~ as.character(value),
+          group = "Total abundance",
+          color = "yellow"
         )
     }
 
     if (nrow(equalzero.ta)) {
       map <- map %>%
         addCircleMarkers(
-          data = equalzero.ta, lat = ~latitude, lng = ~longitude,
-          radius = 2, fillOpacity = 0.5, color = "black", stroke = FALSE,
-          label = ~ as.character(value), group = "Total abundance"
+          data = equalzero.ta,
+          lat = ~latitude,
+          lng = ~longitude,
+          radius = 2,
+          fillOpacity = 0.5,
+          color = "black",
+          stroke = FALSE,
+          label = ~ as.character(value),
+          group = "Total abundance"
         )
     }
 
@@ -871,9 +903,15 @@ app_server <- function(input, output, session) {
     if (nrow(overzero.sr)) {
       map <- map %>%
         addCircleMarkers(
-          data = overzero.sr, lat = ~latitude, lng = ~longitude,
-          radius = ~ ((value / max(value)) * 20), fillOpacity = 0.5, stroke = FALSE,
-          label = ~ as.character(value), group = "Species richness", color = "green"
+          data = overzero.sr,
+          lat = ~latitude,
+          lng = ~longitude,
+          radius = ~ ((value / max(value)) * 20),
+          fillOpacity = 0.5,
+          stroke = FALSE,
+          label = ~ as.character(value),
+          group = "Species richness",
+          color = "green"
         )
     }
 
@@ -881,9 +919,15 @@ app_server <- function(input, output, session) {
     if (nrow(equalzero.sr)) {
       map <- map %>%
         addCircleMarkers(
-          data = equalzero.sr, lat = ~latitude, lng = ~longitude,
-          radius = 2, fillOpacity = 0.5, color = "black", stroke = FALSE,
-          label = ~ as.character(value), group = "Species richness"
+          data = equalzero.sr,
+          lat = ~latitude,
+          lng = ~longitude,
+          radius = 2,
+          fillOpacity = 0.5,
+          color = "black",
+          stroke = FALSE,
+          label = ~ as.character(value),
+          group = "Species richness"
         )
     }
 
@@ -894,8 +938,11 @@ app_server <- function(input, output, session) {
 
   # Total abundance ----
   output$fish.park.total.plot <- renderPlot({
-    req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.site.dropdown)
+    req(input$fish.park.method.dropdown,
+        input$fish.park.dropdown,
+        input$fish.park.site.dropdown)
 
+    # https://github.com/dbca-wa/mpaviewer/issues/13
     dat <- mpa_data()$all.data %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
@@ -908,22 +955,51 @@ app_server <- function(input, output, session) {
     ))
 
     ggplot(dat, aes(x = year, y = value, fill = status)) +
-      stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
-      stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
+      stat_summary(
+        fun.y = mean,
+        geom = "point",
+        shape = 23,
+        size = 6,
+        col = "black",
+        position = position_dodge(width = 0.5)
+      ) +
+      stat_summary(
+        fun.ymin = se.min,
+        fun.ymax = se.max,
+        geom = "errorbar",
+        width = 0.1,
+        col = "black",
+        position = position_dodge(width = 0.5)
+      ) +
       xlab("Year") +
       ylab("Average total abundance per sample \n(+/- SE)") +
       annotation_custom(label) +
-      stat_smooth(method = "gam", formula = y ~ mgcv::s(x, k = 3), size = 1, col = "black") +
+      stat_smooth(
+        method = "gam",
+        formula = y ~ mgcv::s(x, k = 3),
+        size = 1,
+        col = "black") +
       scale_x_continuous(breaks = c(unique(dat$year))) +
       ggplot_mpatheme() +
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
-      geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA)
+      geom_label(
+        x = dat$year.zoned,
+        y = +Inf,
+        label = "\n zoned",
+        size = 5,
+        fill = "white",
+        check_overlap = TRUE,
+        label.size = NA
+      )
   })
 
   # Species richness ----
   output$fish.park.rich.plot <- renderPlot({
-    req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.site.dropdown)
+    req(input$fish.park.method.dropdown,
+        input$fish.park.dropdown,
+        input$fish.park.site.dropdown)
 
+    # https://github.com/dbca-wa/mpaviewer/issues/13
     dat <- mpa_data()$all.data %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
@@ -950,6 +1026,7 @@ app_server <- function(input, output, session) {
 
   ## ►  Stacked Abundance Plot ----
   output$fish.park.stack.plot <- renderPlot({
+    # https://github.com/dbca-wa/mpaviewer/issues/13
     maxn.sum <- mpa_data()$abundance %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
@@ -974,8 +1051,12 @@ app_server <- function(input, output, session) {
 
   # Trophic group ----
   output$fish.park.trophic.plot <- renderPlot({
-    req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.site.dropdown, input$fish.park.trophic.dropdown)
+    req(input$fish.park.method.dropdown,
+        input$fish.park.dropdown,
+        input$fish.park.site.dropdown,
+        input$fish.park.trophic.dropdown)
 
+    # https://github.com/dbca-wa/mpaviewer/issues/13
     dat <- mpa_data()$trophic.abundance %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
@@ -999,8 +1080,11 @@ app_server <- function(input, output, session) {
 
   # Total abundance leaflet ----
   output$fish.park.total.leaflet <- renderLeaflet({
-    req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.site.dropdown)
+    req(input$fish.park.method.dropdown,
+        input$fish.park.dropdown,
+        input$fish.park.site.dropdown)
 
+    # https://github.com/dbca-wa/mpaviewer/issues/13
     dat <- mpa_data()$all.data %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
       dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
@@ -1045,8 +1129,12 @@ app_server <- function(input, output, session) {
   })
 
   output$fish.park.fished.species.kde.plot <- renderPlot({
-    req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.site.dropdown, input$fish.park.fished.species.dropdown)
+    req(input$fish.park.method.dropdown,
+        input$fish.park.dropdown,
+        input$fish.park.site.dropdown,
+        input$fish.park.fished.species.dropdown)
 
+    # https://github.com/dbca-wa/mpaviewer/issues/13
     more.than.20 <- mpa_data()$fished.complete.length %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
@@ -1057,6 +1145,7 @@ app_server <- function(input, output, session) {
       dplyr::ungroup() %>%
       dplyr::distinct(marine.park, method, campaignid, status, scientific)
 
+    # https://github.com/dbca-wa/mpaviewer/issues/13
     dat <- mpa_data()$fished.complete.length %>%
       dplyr::semi_join(more.than.20) %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
@@ -1090,13 +1179,18 @@ app_server <- function(input, output, session) {
 
   # Make fished abundance plot interactive so the height changes with the number of inputs ----
   output$ui.fish.park.fished.species.abundance.plot <- renderUI({
-    plotOutput("fish.park.fished.species.abundance.plot", height = 300 * length(input$fish.park.fished.species.dropdown))
+    plotOutput("fish.park.fished.species.abundance.plot",
+               height = 300 * length(input$fish.park.fished.species.dropdown))
   })
 
   # Fished abundance ----
   output$fish.park.fished.species.abundance.plot <- renderPlot({
-    req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.site.dropdown, input$fish.park.fished.species.dropdown)
+    req(input$fish.park.method.dropdown,
+        input$fish.park.dropdown,
+        input$fish.park.site.dropdown,
+        input$fish.park.fished.species.dropdown)
 
+    # https://github.com/dbca-wa/mpaviewer/issues/13
     dat <- mpa_data()$fished.abundance %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
@@ -1119,13 +1213,18 @@ app_server <- function(input, output, session) {
 
   # Make all species abundance plot interactive so the height changes with the number of inputs ----
   output$ui.fish.park.all.species.abundance.plot <- renderUI({
-    plotOutput("fish.park.all.species.abundance.plot", height = 300 * length(input$fish.park.all.species.dropdown))
+    plotOutput("fish.park.all.species.abundance.plot",
+               height = 300 * length(input$fish.park.all.species.dropdown))
   })
 
   # All species abundance ----
   output$fish.park.all.species.abundance.plot <- renderPlot({
-    req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.site.dropdown, input$fish.park.all.species.dropdown)
+    req(input$fish.park.method.dropdown,
+        input$fish.park.dropdown,
+        input$fish.park.site.dropdown,
+        input$fish.park.all.species.dropdown)
 
+    # https://github.com/dbca-wa/mpaviewer/issues/13
     dat <- mpa_data()$abundance %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
@@ -1145,8 +1244,6 @@ app_server <- function(input, output, session) {
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
       geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA)
   })
-
-
 
   # Info buttons ----
 
