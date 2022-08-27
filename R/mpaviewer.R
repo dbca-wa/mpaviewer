@@ -19,7 +19,7 @@ utils::globalVariables(
     "hideGroup", "latitude", "layersControlOptions", "leaflet", "leafletOutput",
     "location", "longitude", "marine.park", "maxn", "menuItem", "method", "metric", "mutate", "n",
     "nesting", "number", "number.of.times.sampled", "opcode", "park.popups", "period",
-    "periodtime", "pickerInput", "plot_grid", "position_dodge", "pull", "read.csv", "readOGR",
+    "periodtime", "pickerInput", "position_dodge", "pull", "read.csv", "readOGR",
     "renderLeaflet", "reorder", "rls.trophic.group", "scale_x_continuous",
     "scale_y_continuous", "scientific", "sd", "shinyalert", "sidebarMenu", "site", "slice",
     "species", "stat_smooth", "stat_summary", "status", "str_replace_all", "tabBox",
