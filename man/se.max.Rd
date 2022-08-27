@@ -2,7 +2,7 @@
 % Please edit documentation in R/se.max.R
 \name{se.max}
 \alias{se.max}
-\title{Function for calculating standard error maximum}
+\title{Calculate standard error maximum}
 \usage{
 se.max(x)
 }
@@ -13,5 +13,5 @@ se.max(x)
 standard error maxmimum
 }
 \description{
-Function for calculating standard error maximum
+Calculate standard error maximum
 }

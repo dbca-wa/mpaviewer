@@ -2,7 +2,7 @@
 % Please edit documentation in R/se.min.R
 \name{se.min}
 \alias{se.min}
-\title{Function for calculating standard error minimum}
+\title{Calculate standard error minimum}
 \usage{
 se.min(x)
 }
@@ -13,5 +13,5 @@ se.min(x)
 standard error minimum
 }
 \description{
-Function for calculating standard error minimum
+Calculate standard error minimum
 }

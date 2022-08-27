@@ -1,4 +1,4 @@
-#' Function for calculating standard error maximum
+#' Calculate standard error maximum
 #'
 #' @param x
 #'

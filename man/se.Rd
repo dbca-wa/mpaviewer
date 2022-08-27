@@ -2,7 +2,7 @@
 % Please edit documentation in R/se.R
 \name{se}
 \alias{se}
-\title{Function for calculating standard error}
+\title{Calculate standard error}
 \usage{
 se(x)
 }
@@ -13,5 +13,5 @@ se(x)
 standard error
 }
 \description{
-Function for calculating standard error
+Calculate standard error
 }
