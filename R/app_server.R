@@ -558,9 +558,9 @@ app_server <- function(input, output, session) {
     # https://github.com/dbca-wa/mpaviewer/issues/1
     # use_r("fish_ggplot_XXX")
     ggplot(
-        fish_sr(),
-        aes(x = year, y = value, fill = status, group = status)
-      ) +
+      fish_sr(),
+      aes(x = year, y = value, fill = status, group = status)
+    ) +
       stat_summary(
         fun.y = mean,
         geom = "point",
@@ -587,7 +587,8 @@ app_server <- function(input, output, session) {
         method = "gam",
         formula = y ~ mgcv::s(x, k = 3),
         size = 1,
-        col = "black") +
+        col = "black"
+      ) +
       facet_wrap(marine.park ~ ., scales = "free", ncol = 1) +
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
       geom_label(
@@ -605,7 +606,8 @@ app_server <- function(input, output, session) {
   output$ui.fish.state.rich.plot <- renderUI({
     req(input$fish.state.park.dropdown)
     plotOutput("fish.state.rich.plot",
-               height = 300 * length(input$fish.state.park.dropdown))
+      height = 300 * length(input$fish.state.park.dropdown)
+    )
   })
 
   ## ►  Stacked Abundance Plot ----
@@ -659,16 +661,19 @@ app_server <- function(input, output, session) {
 
   # Make species richness plot interactive so the height changes with the number of inputs ----
   output$ui.fish.state.trophic.plot <- renderPlot({
-   req(input$fish.state.park.dropdown)
-   plotOutput("fish.state.trophic.plot",
-              height = 300 * length(input$fish.state.park.dropdown))
+    req(input$fish.state.park.dropdown)
+    plotOutput("fish.state.trophic.plot",
+      height = 300 * length(input$fish.state.park.dropdown)
+    )
   })
 
   # Fished species KDE ----
   output$fish.state.fished.species.kde.plot <- renderPlot({
-    req(input$fish.state.park.dropdown,
-        input$fish.state.method.dropdown,
-        input$fish.state.fished.species.dropdown)
+    req(
+      input$fish.state.park.dropdown,
+      input$fish.state.method.dropdown,
+      input$fish.state.fished.species.dropdown
+    )
 
     # https://github.com/dbca-wa/mpaviewer/issues/13
     more.than.20 <- mpa_data()$fished.complete.length %>%
@@ -724,21 +729,25 @@ app_server <- function(input, output, session) {
   output$ui.fish.state.fished.species.kde.plot <- renderPlot({
     req(input$fish.state.park.dropdown)
     plotOutput("fish.state.fished.species.kde.plot",
-               height = 300 * length(input$fish.state.park.dropdown))
+      height = 300 * length(input$fish.state.park.dropdown)
+    )
   })
 
   # Make fished abundance plot interactive so the height changes with the number of inputs ----
   output$ui.fish.state.fished.species.abundance.plot <- renderPlot({
     req(c(input$fish.state.park.dropdown))
     plotOutput("fish.state.fished.species.abundance.plot",
-               height = 300 * length(input$fish.state.park.dropdown))
+      height = 300 * length(input$fish.state.park.dropdown)
+    )
   })
 
   # Fished species abundance plot -----
   output$fish.state.fished.species.abundance.plot <- renderPlot({
-    req(input$fish.state.park.dropdown,
-        input$fish.state.method.dropdown,
-        input$fish.state.fished.species.dropdown)
+    req(
+      input$fish.state.park.dropdown,
+      input$fish.state.method.dropdown,
+      input$fish.state.fished.species.dropdown
+    )
 
     # https://github.com/dbca-wa/mpaviewer/issues/13
     dat <- mpa_data()$fished.abundance %>%
@@ -767,14 +776,17 @@ app_server <- function(input, output, session) {
   output$ui.fish.state.all.species.abundance.plot <- renderPlot({
     req(input$fish.state.park.dropdown)
     plotOutput("fish.state.all.species.abundance.plot",
-               height = 300 * length(c(input$fish.state.park.dropdown)))
+      height = 300 * length(c(input$fish.state.park.dropdown))
+    )
   })
 
   # All species abundance ----
   output$fish.state.all.species.abundance.plot <- renderPlot({
-    req(input$fish.state.method.dropdown,
-        input$fish.state.park.dropdown,
-        input$fish.state.all.species.dropdown)
+    req(
+      input$fish.state.method.dropdown,
+      input$fish.state.park.dropdown,
+      input$fish.state.all.species.dropdown
+    )
 
     # https://github.com/dbca-wa/mpaviewer/issues/13
     dat <- mpa_data()$abundance %>%
@@ -848,7 +860,8 @@ app_server <- function(input, output, session) {
         ~ min(longitude),
         ~ min(latitude),
         ~ max(longitude),
-        ~ max(latitude)) %>%
+        ~ max(latitude)
+      ) %>%
       addMarkers(
         lng = ~longitude,
         lat = ~latitude,
@@ -958,9 +971,11 @@ app_server <- function(input, output, session) {
 
   # Total abundance ----
   output$fish.park.total.plot <- renderPlot({
-    req(input$fish.park.method.dropdown,
-        input$fish.park.dropdown,
-        input$fish.park.site.dropdown)
+    req(
+      input$fish.park.method.dropdown,
+      input$fish.park.dropdown,
+      input$fish.park.site.dropdown
+    )
 
     # https://github.com/dbca-wa/mpaviewer/issues/13
     dat <- mpa_data()$all.data %>%
@@ -1000,7 +1015,8 @@ app_server <- function(input, output, session) {
         method = "gam",
         formula = y ~ mgcv::s(x, k = 3),
         size = 1,
-        col = "black") +
+        col = "black"
+      ) +
       scale_x_continuous(breaks = c(unique(dat$year))) +
       ggplot_mpatheme() +
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
@@ -1017,9 +1033,11 @@ app_server <- function(input, output, session) {
 
   # Species richness ----
   output$fish.park.rich.plot <- renderPlot({
-    req(input$fish.park.method.dropdown,
-        input$fish.park.dropdown,
-        input$fish.park.site.dropdown)
+    req(
+      input$fish.park.method.dropdown,
+      input$fish.park.dropdown,
+      input$fish.park.site.dropdown
+    )
 
     # https://github.com/dbca-wa/mpaviewer/issues/13
     dat <- mpa_data()$all.data %>%
@@ -1077,10 +1095,12 @@ app_server <- function(input, output, session) {
 
   # Trophic group ----
   output$fish.park.trophic.plot <- renderPlot({
-    req(input$fish.park.method.dropdown,
-        input$fish.park.dropdown,
-        input$fish.park.site.dropdown,
-        input$fish.park.trophic.dropdown)
+    req(
+      input$fish.park.method.dropdown,
+      input$fish.park.dropdown,
+      input$fish.park.site.dropdown,
+      input$fish.park.trophic.dropdown
+    )
 
     # https://github.com/dbca-wa/mpaviewer/issues/13
     dat <- mpa_data()$trophic.abundance %>%
@@ -1108,9 +1128,11 @@ app_server <- function(input, output, session) {
 
   # Total abundance leaflet ----
   output$fish.park.total.leaflet <- renderLeaflet({
-    req(input$fish.park.method.dropdown,
-        input$fish.park.dropdown,
-        input$fish.park.site.dropdown)
+    req(
+      input$fish.park.method.dropdown,
+      input$fish.park.dropdown,
+      input$fish.park.site.dropdown
+    )
 
     # https://github.com/dbca-wa/mpaviewer/issues/13
     dat <- mpa_data()$all.data %>%
@@ -1159,10 +1181,12 @@ app_server <- function(input, output, session) {
   })
 
   output$fish.park.fished.species.kde.plot <- renderPlot({
-    req(input$fish.park.method.dropdown,
-        input$fish.park.dropdown,
-        input$fish.park.site.dropdown,
-        input$fish.park.fished.species.dropdown)
+    req(
+      input$fish.park.method.dropdown,
+      input$fish.park.dropdown,
+      input$fish.park.site.dropdown,
+      input$fish.park.fished.species.dropdown
+    )
 
     # https://github.com/dbca-wa/mpaviewer/issues/13
     more.than.20 <- mpa_data()$fished.complete.length %>%
@@ -1212,15 +1236,18 @@ app_server <- function(input, output, session) {
   # Make fished abundance plot interactive so the height changes with the number of inputs ----
   output$ui.fish.park.fished.species.abundance.plot <- renderUI({
     plotOutput("fish.park.fished.species.abundance.plot",
-               height = 300 * length(input$fish.park.fished.species.dropdown))
+      height = 300 * length(input$fish.park.fished.species.dropdown)
+    )
   })
 
   # Fished abundance ----
   output$fish.park.fished.species.abundance.plot <- renderPlot({
-    req(input$fish.park.method.dropdown,
-        input$fish.park.dropdown,
-        input$fish.park.site.dropdown,
-        input$fish.park.fished.species.dropdown)
+    req(
+      input$fish.park.method.dropdown,
+      input$fish.park.dropdown,
+      input$fish.park.site.dropdown,
+      input$fish.park.fished.species.dropdown
+    )
 
     # https://github.com/dbca-wa/mpaviewer/issues/13
     dat <- mpa_data()$fished.abundance %>%
@@ -1248,15 +1275,18 @@ app_server <- function(input, output, session) {
   # Make all species abundance plot interactive so the height changes with the number of inputs ----
   output$ui.fish.park.all.species.abundance.plot <- renderUI({
     plotOutput("fish.park.all.species.abundance.plot",
-               height = 300 * length(input$fish.park.all.species.dropdown))
+      height = 300 * length(input$fish.park.all.species.dropdown)
+    )
   })
 
   # All species abundance ----
   output$fish.park.all.species.abundance.plot <- renderPlot({
-    req(input$fish.park.method.dropdown,
-        input$fish.park.dropdown,
-        input$fish.park.site.dropdown,
-        input$fish.park.all.species.dropdown)
+    req(
+      input$fish.park.method.dropdown,
+      input$fish.park.dropdown,
+      input$fish.park.site.dropdown,
+      input$fish.park.all.species.dropdown
+    )
 
     # https://github.com/dbca-wa/mpaviewer/issues/13
     dat <- mpa_data()$abundance %>%

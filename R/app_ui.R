@@ -107,7 +107,7 @@ app_ui <- function(request) {
                   ),
                   conditionalPanel(
                     'input.fishstatemetric == "Whole assemblage"',
-                    withSpinner(plotOutput("fish.state.total.plot", height = 500)), #ui.
+                    withSpinner(plotOutput("fish.state.total.plot", height = 500)), # ui.
                     withSpinner(plotOutput("fish.state.rich.plot", height = 500)) # ui.
                     # plotOutput("fish.state.stack.plot", height = 500)
                   ),

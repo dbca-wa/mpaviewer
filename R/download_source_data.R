@@ -12,9 +12,7 @@
 #' @return None.
 #' @export
 download_source_data <- function(ckan_url = Sys.getenv("CKAN_URL", unset = "https://data.dbca.wa.gov.au"),
-
-                                 data_dir = here::here("inst/data")){
-
+                                 data_dir = here::here("inst/data")) {
   ckanr::ckanr_setup(url = ckan_url)
   message("Downloading data from DBCA data catalogue...")
 
