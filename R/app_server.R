@@ -338,6 +338,8 @@ app_server <- function(input, output, session) {
     equalzero.sr <- dplyr::filter(fish_sr(), value == 0)
     max.sr <- max(overzero.sr$value)
 
+    # https://github.com/dbca-wa/mpaviewer/issues/1
+    # use_r("fish_map_XXX")
     map <- leaflet_basemap(fish_samplingeffort()) %>%
       fitBounds(
         ~ min(longitude),
@@ -472,6 +474,8 @@ app_server <- function(input, output, session) {
     #   dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
     #   dplyr::filter(metric %in% c("Total abundance"))
 
+    # https://github.com/dbca-wa/mpaviewer/issues/1
+    # use_r("fish_ggplot_XXX")
     label <- grobTree(textGrob(as.character("Total abundance"),
       x = 0.01, y = 0.97, hjust = 0,
       gp = gpar(col = "black", fontsize = 13, fontface = "italic")
@@ -534,7 +538,7 @@ app_server <- function(input, output, session) {
     # plotOutput("fish.state.total.plot", height = 300 * length(unique(fish_alldata()$marine.park)))
 
     # Comment 2: We can save a filter > unique by just grabbing the dropdown
-    plotOutput("fish.state.total.plot", height = 300 * length(c(input$fish.state.park.dropdown)))
+    plotOutput("fish.state.total.plot", height = 300 * length(input$fish.state.park.dropdown))
   })
 
   # Species richness ----
@@ -551,6 +555,8 @@ app_server <- function(input, output, session) {
       gp = gpar(col = "black", fontsize = 13, fontface = "italic")
     ))
 
+    # https://github.com/dbca-wa/mpaviewer/issues/1
+    # use_r("fish_ggplot_XXX")
     ggplot(
         fish_sr(),
         aes(x = year, y = value, fill = status, group = status)
@@ -598,7 +604,8 @@ app_server <- function(input, output, session) {
   # Make species richness plot interactive so the height changes with the number of inputs ----
   output$ui.fish.state.rich.plot <- renderUI({
     req(input$fish.state.park.dropdown)
-    plotOutput("fish.state.rich.plot", height = 300 * length(c(input$fish.state.park.dropdown)))
+    plotOutput("fish.state.rich.plot",
+               height = 300 * length(input$fish.state.park.dropdown))
   })
 
   ## ►  Stacked Abundance Plot ----
@@ -611,6 +618,8 @@ app_server <- function(input, output, session) {
       arrange(desc(maxn)) %>%
       top_n(10)
 
+    # https://github.com/dbca-wa/mpaviewer/issues/1
+    # use_r("fish_ggplot_XXX")
     ## ►  Total frequency of occurrence ----
     ggplot(maxn.sum, aes(x = reorder(scientific, maxn), y = maxn)) +
       geom_bar(stat = "identity", position = position_dodge()) +
@@ -626,11 +635,14 @@ app_server <- function(input, output, session) {
   output$fish.state.trophic.plot <- renderPlot({
     req(input$fish.state.park.dropdown, input$fish.state.method.dropdown, input$fish.state.trophic.dropdown)
 
+    # https://github.com/dbca-wa/mpaviewer/issues/13
     dat <- mpa_data()$trophic.abundance %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
       dplyr::filter(trophic.group %in% c(input$fish.state.trophic.dropdown))
 
+    # https://github.com/dbca-wa/mpaviewer/issues/1
+    # use_r("fish_ggplot_XXX")
     ggplot(dat, aes(x = year, y = total.abundance, fill = status)) +
       stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
@@ -647,16 +659,16 @@ app_server <- function(input, output, session) {
 
   # Make species richness plot interactive so the height changes with the number of inputs ----
   output$ui.fish.state.trophic.plot <- renderPlot({
-    dat <- mpa_data()$all.data %>%
-      dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
-      dplyr::filter(method %in% c(input$fish.state.method.dropdown))
-
-    plotOutput("fish.state.trophic.plot", height = 300 * length(unique(dat$marine.park)))
+   req(input$fish.state.park.dropdown)
+   plotOutput("fish.state.trophic.plot",
+              height = 300 * length(input$fish.state.park.dropdown))
   })
 
   # Fished species KDE ----
   output$fish.state.fished.species.kde.plot <- renderPlot({
-    req(input$fish.state.park.dropdown, input$fish.state.method.dropdown, input$fish.state.fished.species.dropdown)
+    req(input$fish.state.park.dropdown,
+        input$fish.state.method.dropdown,
+        input$fish.state.fished.species.dropdown)
 
     # https://github.com/dbca-wa/mpaviewer/issues/13
     more.than.20 <- mpa_data()$fished.complete.length %>%
@@ -677,6 +689,8 @@ app_server <- function(input, output, session) {
       # dplyr::filter(length > 0) %>% # Might need to check if this is right?
       dplyr::filter(scientific %in% c(input$fish.state.fished.species.dropdown))
 
+    # https://github.com/dbca-wa/mpaviewer/issues/1
+    # use_r("fish_ggplot_XXX")
     split.dat <- split(dat, f = dat$marine.park, drop = TRUE)
 
     plot_list <- lapply(split.dat, function(dat) {
@@ -710,14 +724,14 @@ app_server <- function(input, output, session) {
   output$ui.fish.state.fished.species.kde.plot <- renderPlot({
     req(input$fish.state.park.dropdown)
     plotOutput("fish.state.fished.species.kde.plot",
-               height = 300 * length(c(input$fish.state.park.dropdown)))
+               height = 300 * length(input$fish.state.park.dropdown))
   })
 
   # Make fished abundance plot interactive so the height changes with the number of inputs ----
   output$ui.fish.state.fished.species.abundance.plot <- renderPlot({
     req(c(input$fish.state.park.dropdown))
     plotOutput("fish.state.fished.species.abundance.plot",
-               height = 300 * length(c(input$fish.state.park.dropdown)))
+               height = 300 * length(input$fish.state.park.dropdown))
   })
 
   # Fished species abundance plot -----
@@ -732,6 +746,8 @@ app_server <- function(input, output, session) {
       dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
       dplyr::filter(scientific %in% c(input$fish.state.fished.species.dropdown))
 
+    # https://github.com/dbca-wa/mpaviewer/issues/1
+    # use_r("fish_ggplot_XXX")
     ggplot(dat, aes(x = year, y = total.abundance, fill = status)) +
       stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
@@ -766,6 +782,8 @@ app_server <- function(input, output, session) {
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
       dplyr::filter(scientific %in% c(input$fish.state.all.species.dropdown))
 
+    # https://github.com/dbca-wa/mpaviewer/issues/1
+    # use_r("fish_ggplot_XXX")
     ggplot(dat, aes(x = year, y = maxn, fill = status)) +
       stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
@@ -823,6 +841,8 @@ app_server <- function(input, output, session) {
     equalzero.sr <- filter(sr, value == 0)
     max.sr <- max(overzero.sr$value)
 
+    # https://github.com/dbca-wa/mpaviewer/issues/1
+    # use_r("fish_map_XXX")
     map <- leaflet_basemap(dat) %>%
       fitBounds(
         ~ min(longitude),
@@ -949,6 +969,8 @@ app_server <- function(input, output, session) {
       dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
       dplyr::filter(metric %in% c("Total abundance"))
 
+    # https://github.com/dbca-wa/mpaviewer/issues/1
+    # use_r("fish_ggplot_XXX")
     label <- grobTree(textGrob(as.character("Total abundance"),
       x = 0.01, y = 0.97, hjust = 0,
       gp = gpar(col = "black", fontsize = 13, fontface = "italic")
@@ -1006,6 +1028,8 @@ app_server <- function(input, output, session) {
       dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
       dplyr::filter(metric %in% c("Species richness"))
 
+    # https://github.com/dbca-wa/mpaviewer/issues/1
+    # use_r("fish_ggplot_XXX")
     label <- grobTree(textGrob(as.character("Species richness"),
       x = 0.01, y = 0.97, hjust = 0,
       gp = gpar(col = "black", fontsize = 13, fontface = "italic")
@@ -1038,6 +1062,8 @@ app_server <- function(input, output, session) {
       arrange(desc(maxn)) %>%
       top_n(10)
 
+    # https://github.com/dbca-wa/mpaviewer/issues/1
+    # use_r("fish_ggplot_XXX")
     ## ►  Total frequency of occurrence ----
     ggplot(maxn.sum, aes(x = reorder(scientific, maxn), y = maxn)) +
       geom_bar(stat = "identity", position = position_dodge()) +
@@ -1063,6 +1089,8 @@ app_server <- function(input, output, session) {
       dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
       dplyr::filter(trophic.group %in% c(input$fish.park.trophic.dropdown))
 
+    # https://github.com/dbca-wa/mpaviewer/issues/1
+    # use_r("fish_ggplot_XXX")
     ggplot(dat, aes(x = year, y = total.abundance, fill = status)) +
       stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
@@ -1091,6 +1119,8 @@ app_server <- function(input, output, session) {
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
       dplyr::filter(metric %in% c("Total abundance"))
 
+    # https://github.com/dbca-wa/mpaviewer/issues/1
+    # use_r("fish_map_XXX")
     map <- leaflet_basemap(dat) %>%
       fitBounds(~ min(longitude), ~ min(latitude), ~ max(longitude), ~ max(latitude)) %>%
       addGlPolygons(
@@ -1159,6 +1189,8 @@ app_server <- function(input, output, session) {
       need(nrow(dat) > 0, "Sorry, there is not enough data to create a KDE for the species you requested. Please change your input selections")
     )
 
+    # https://github.com/dbca-wa/mpaviewer/issues/1
+    # use_r("fish_ggplot_XXX")
     ggplot(dat, aes(x = length, fill = status)) +
       geom_density(aes(y = ..density.. * 1000), alpha = 0.5, size = 0.7) +
       theme(legend.position = ("bottom")) +
@@ -1197,6 +1229,8 @@ app_server <- function(input, output, session) {
       dplyr::filter(scientific %in% c(input$fish.park.fished.species.dropdown)) %>%
       dplyr::filter(site %in% c(input$fish.park.site.dropdown))
 
+    # https://github.com/dbca-wa/mpaviewer/issues/1
+    # use_r("fish_ggplot_XXX")
     ggplot(dat, aes(x = year, y = total.abundance, fill = status)) +
       stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
@@ -1231,6 +1265,8 @@ app_server <- function(input, output, session) {
       dplyr::filter(scientific %in% c(input$fish.park.all.species.dropdown)) %>%
       dplyr::filter(site %in% c(input$fish.park.site.dropdown))
 
+    # https://github.com/dbca-wa/mpaviewer/issues/1
+    # use_r("fish_ggplot_XXX")
     ggplot(dat, aes(x = year, y = maxn, fill = status)) +
       stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
@@ -1246,7 +1282,6 @@ app_server <- function(input, output, session) {
   })
 
   # Info buttons ----
-
   observeEvent(
     input$alert.marinepark,
     shinyalert::shinyalert(
