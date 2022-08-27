@@ -9,6 +9,7 @@ Imports:
     devtools,
     dplyr,
     ckanr,
+    cowplot,
     fs,
     forcats,
     glue,
