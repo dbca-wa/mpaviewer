@@ -14,13 +14,12 @@ hosted at \url{https://mpaviewer.dbca.wa.gov.au/}.
 Useful links:
 \itemize{
   \item \url{https://github.com/dbca-wa/mpaviewer}
-  \item \url{https://dbca-wa.github.io/mpaviewer/}
   \item Report bugs at \url{https://github.com/dbca-wa/mpaviewer/issues}
 }
 
 }
 \author{
-\strong{Maintainer}: Florian Mayer \email{Florian.Mayer@dbca.wa.gov.au}
+\strong{Maintainer}: Brooke Gibbons \email{brooke.gibbons@uwa.edu.au}
 
 }
 \keyword{internal}
