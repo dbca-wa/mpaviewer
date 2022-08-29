@@ -1,6 +1,6 @@
 Package: mpaviewer
 Title: MPA Viewer
-Version: 0.0.16
+Version: 0.0.17
 Authors@R: person('Brooke', 'Gibbons', email = 'brooke.gibbons@uwa.edu.au', role = c('cre', 'aut'))
 Description: An interactive overview of selected biodiversity assets in Marine Protected Areas of Western Australia.
 License: MIT + file LICENSE
