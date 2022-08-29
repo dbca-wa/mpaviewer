@@ -22,9 +22,9 @@ golem::fill_desc(
   pkg_name = "mpaviewer", # The Name of the package containing the App
   pkg_title = "MPA Viewer", # The Title of the package containing the App
   pkg_description = "An interactive overview of selected biodiversity assets in Marine Protected Areas of Western Australia.", # The Description of the package containing the App
-  author_first_name = "Florian", # Your First Name
-  author_last_name = "Mayer", # Your Last Name
-  author_email = "Florian.Mayer@dbca.wa.gov.au", # Your Email
+  author_first_name = "Brooke", # Your First Name
+  author_last_name = "Gibbons", # Your Last Name
+  author_email = "brooke.gibbons@uwa.edu.au", # Your Email
   repo_url = "https://github.com/dbca-wa/mpaviewer" # The URL of the GitHub Repo (optional)
 )
 
