@@ -34,7 +34,8 @@ Imports:
     shinyalert,
     shinycssloaders,
     shinydashboardPlus,
-    tidyr
+    tidyr,
+    pkgload
 Remotes:
     github::UWAMEGFisheries/GlobalArchive
 Encoding: UTF-8
