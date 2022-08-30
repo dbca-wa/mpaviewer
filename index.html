@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="index.html">mpaviewer</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.17</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.18</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -100,6 +100,14 @@
 </h2>
 <p><code>mpaviewer</code> is an RShiny app using <a href="https://shiny.rstudio.com/articles/modules.html" class="external-link">Shiny modules</a>, developed using <a href="https://mastering-shiny.org/scaling-modules.html" class="external-link"><code>golem</code></a>.</p>
 <p>The commands to develop new functionality are in <code>dev/02_dev.R</code>.</p>
+<ul>
+<li>Create a GH issue for each task, keep it as small and self-contained as possible.</li>
+<li>Work on one issue at a time.</li>
+<li>Once R CMD Check passes and all build errors and warnings are addressed, commit changes.</li>
+<li>Write descriptive and well-formed commit messages and reference the GH issue.</li>
+<li>Push and see whether the R CMD Check GH action passes.</li>
+<li>Bonus points: Build and run the Docker image locally. If that’s not an option, at least make sure that any new package dependencies are added to the Dockerfile.</li>
+</ul>
 </div>
 <div class="section level2">
 <h2 id="release">Release<a class="anchor" aria-label="anchor" href="#release"></a>
