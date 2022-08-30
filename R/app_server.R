@@ -237,9 +237,9 @@ app_server <- function(input, output, session) {
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
       dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
       dplyr::group_by(trophic.group) %>%
-      arrange() %>%
-      distinct(trophic.group) %>%
-      pull("trophic.group")
+      dplyr::arrange() %>%
+      dplyr::distinct(trophic.group) %>%
+      dplyr::pull("trophic.group")
 
     pickerInput(
       inputId = "fish.park.trophic.dropdown",
@@ -613,12 +613,12 @@ app_server <- function(input, output, session) {
   ## ►  Stacked Abundance Plot ----
   output$fish.state.stack.plot <- renderPlot({
     maxn.sum <- mpa_data()$abundance %>%
-      mutate(scientific = paste(genus, species, sep = " ")) %>%
-      group_by(scientific) %>%
+      dplyr::mutate(scientific = paste(genus, species, sep = " ")) %>%
+      dplyr::group_by(scientific) %>%
       dplyr::summarise(maxn = sum(maxn)) %>%
-      ungroup() %>%
-      arrange(desc(maxn)) %>%
-      top_n(10)
+      dplyr::ungroup() %>%
+      dplyr::arrange(dplyr::desc(maxn)) %>%
+      dplyr::top_n(10)
 
     # https://github.com/dbca-wa/mpaviewer/issues/1
     # use_r("fish_ggplot_XXX")
@@ -1073,12 +1073,12 @@ app_server <- function(input, output, session) {
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
       dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
-      mutate(scientific = paste(genus, species, sep = " ")) %>%
-      group_by(scientific) %>%
+      dplyr::mutate(scientific = paste(genus, species, sep = " ")) %>%
+      dplyr::group_by(scientific) %>%
       dplyr::summarise(maxn = sum(maxn)) %>%
-      ungroup() %>%
-      arrange(desc(maxn)) %>%
-      top_n(10)
+      dplyr::ungroup() %>%
+      dplyr::arrange(dplyr::desc(maxn)) %>%
+      dplyr::top_n(10)
 
     # https://github.com/dbca-wa/mpaviewer/issues/1
     # use_r("fish_ggplot_XXX")
