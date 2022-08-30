@@ -7,7 +7,7 @@
 se.min(x)
 }
 \arguments{
-\item{x}{}
+\item{x}{A vector}
 }
 \value{
 standard error minimum

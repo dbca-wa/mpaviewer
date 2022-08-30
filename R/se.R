@@ -1,6 +1,6 @@
 #' Calculate standard error
 #'
-#' @param x
+#' @param x A vector
 #'
 #' @return standard error
 #' @export

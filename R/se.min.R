@@ -1,6 +1,6 @@
 #' Calculate standard error minimum
 #'
-#' @param x
+#' @param x A vector
 #'
 #' @return standard error minimum
 #' @export

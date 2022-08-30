@@ -1,6 +1,6 @@
 #' Calculate standard error maximum
 #'
-#' @param x
+#' @param x A vector
 #'
 #' @return standard error maxmimum
 #' @export

@@ -7,7 +7,7 @@
 se.max(x)
 }
 \arguments{
-\item{x}{}
+\item{x}{A vector}
 }
 \value{
 standard error maxmimum
