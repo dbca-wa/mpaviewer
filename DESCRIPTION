@@ -34,8 +34,7 @@ Imports:
     shinyalert,
     shinycssloaders,
     shinydashboardPlus,
-    tidyr,
-    pkgload
+    tidyr
 Remotes:
     github::UWAMEGFisheries/GlobalArchive
 Encoding: UTF-8
@@ -51,6 +50,7 @@ Suggests:
     thinkr,
     rmarkdown,
     knitr,
+    pkgload,
     spelling,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
