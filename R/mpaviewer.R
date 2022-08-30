@@ -23,7 +23,8 @@ utils::globalVariables(
     "renderLeaflet", "reorder", "rls.trophic.group", "scale_x_continuous",
     "scale_y_continuous", "scientific", "sd", "shinyalert", "sidebarMenu", "site", "slice",
     "species", "stat_smooth", "stat_summary", "status", "str_replace_all", "tabBox",
-    "tabItem", "tabItems", "textGrob", "theme", "top_n", "total", "trophic.group", "ungroup",
+    "tabItem", "tabItems", "textGrob", "theme", "top_n", "total", "total.abundance",
+    "trophic.group", "ungroup",
     "useShinyalert", "value", "withSpinner", "xlab", "year", "year.zoned", "ylab"
   )
 )
