@@ -76,7 +76,7 @@ The commands to develop new functionality are in `dev/02_dev.R`.
     addressed, commit changes.
 -   Write descriptive and well-formed commit messages and reference the
     GH issue.
--   Push and see whether the R CMD Check Gh action passes.
+-   Push and see whether the R CMD Check GH action passes.
 -   Bonus points: Build and run the Docker image locally. If that’s not
     an option, at least make sure that any new package dependencies are
     added to the Dockerfile.
