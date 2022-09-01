@@ -380,7 +380,8 @@ app_server <- function(input, output, session) {
           "Sampling locations",
           "Marine Parks",
           "Total abundance",
-          "Species richness"),
+          "Species richness"
+        ),
         options = layersControlOptions(collapsed = FALSE)
       ) %>%
       add_legend_ta(
@@ -477,9 +478,9 @@ app_server <- function(input, output, session) {
     ))
 
     p <- ggplot(
-        fish_ta(),
-        aes(x = year, y = value, fill = status)
-      ) +
+      fish_ta(),
+      aes(x = year, y = value, fill = status)
+    ) +
       stat_summary(
         fun = mean,
         geom = "point",
