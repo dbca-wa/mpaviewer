@@ -19,7 +19,18 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Brooke Gibbons \email{brooke.gibbons@uwa.edu.au}
+\strong{Maintainer}: Florian W. Mayer \email{Florian.Mayer@dbca.wa.gov.au} (\href{https://orcid.org/0000-0003-4269-4242}{ORCID})
+
+Authors:
+\itemize{
+  \item Brooke Gibbons \email{Brooke.Gibbons@uwa.edu.au} (\href{https://orcid.org/0000-0002-0628-7781}{ORCID})
+}
+
+Other contributors:
+\itemize{
+  \item DBCA [copyright holder, funder]
+  \item WAMMP [funder]
+}
 
 }
 \keyword{internal}
