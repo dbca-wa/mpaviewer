@@ -25,7 +25,7 @@ app_ui <- function(request) {
         tags$li(a(
           href = "https://www.dbca.wa.gov.au/", target = "_blank",
           img(
-            src = "www/DBCA_BCS_colour.png",
+            src = "www/DBCA_logo1_reversed_BCS",
             title = "DBCA",
             height = "67px",
             style = "margin-top:-15px; padding-top:-50px; margin-bottom:-15px; padding-bottom:-50px;"
@@ -74,7 +74,25 @@ app_ui <- function(request) {
         padding: -0 10px;
         overflow: hidden;
         color: white;
+          }
+
+      .skin-blue .main-header .navbar {
+    background-color: #2d2f32;
       }
+
+      .skin-blue .main-header .logo {
+    background-color: #2d2f32;
+    color: #fff;
+    border-bottom: 0 solid transparent;
+      }
+
+.skin-blue .sidebar-menu>li.active>a {
+    border-left-color: #2d2f32;
+}
+
+
+
+
     '
         ))),
         tags$script(HTML('
