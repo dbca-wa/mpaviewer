@@ -209,42 +209,42 @@ app_ui <- function(request) {
                     htmlOutput("fish.park.trophic.dropdown"),
                     withSpinner(plotOutput("fish.park.trophic.plot", height = 750))
                   )
-                ),
-                tabPanel(
-                  "Location",
-                  selectInput(
-                    width = "100%",
-                    "fishlocationpark",
-                    "Choose a marine park:",
-                    choices = c("Ningaloo", "Jurien", "Rottnest"),
-                    multiple = FALSE,
-                    selectize = TRUE
-                  ),
-                  selectInput(
-                    width = "100%",
-                    "fishlocationlocation",
-                    "Choose a location:",
-                    choices = c("Location 1", "Location 2", "Location 3"),
-                    multiple = FALSE,
-                    selectize = TRUE
-                  ),
-                  selectInput(
-                    width = "100%",
-                    "fishlocationmethod",
-                    "Choose a method:",
-                    choices = c("DOVs", "BRUVs", "ROV"),
-                    multiple = FALSE,
-                    selectize = TRUE
-                  ),
-                  selectInput(
-                    width = "100%",
-                    "fishlocationmetric",
-                    "Choose a metric:",
-                    choices = c("Total abundance", "Species richness", "Targeted abundance"),
-                    multiple = FALSE,
-                    selectize = TRUE
-                  )
                 )
+                # tabPanel(
+                #   "Location",
+                #   selectInput(
+                #     width = "100%",
+                #     "fishlocationpark",
+                #     "Choose a marine park:",
+                #     choices = c("Ningaloo", "Jurien", "Rottnest"),
+                #     multiple = FALSE,
+                #     selectize = TRUE
+                #   ),
+                #   selectInput(
+                #     width = "100%",
+                #     "fishlocationlocation",
+                #     "Choose a location:",
+                #     choices = c("Location 1", "Location 2", "Location 3"),
+                #     multiple = FALSE,
+                #     selectize = TRUE
+                #   ),
+                #   selectInput(
+                #     width = "100%",
+                #     "fishlocationmethod",
+                #     "Choose a method:",
+                #     choices = c("DOVs", "BRUVs", "ROV"),
+                #     multiple = FALSE,
+                #     selectize = TRUE
+                #   ),
+                #   selectInput(
+                #     width = "100%",
+                #     "fishlocationmetric",
+                #     "Choose a metric:",
+                #     choices = c("Total abundance", "Species richness", "Targeted abundance"),
+                #     multiple = FALSE,
+                #     selectize = TRUE
+                #   )
+                # )
               ),
               fluidRow(
                 div(column(
@@ -267,13 +267,13 @@ app_ui <- function(request) {
                 ))
               )
             )
-          ),
-
-          # Second tab content
-          tabItem(
-            tabName = "benthictab",
-            h2("to add to")
           )
+
+          # Second tab content - enable when content is ready
+          # tabItem(
+          #   tabName = "benthictab",
+          #   h2("to add to")
+          # )
         )
       )
     )

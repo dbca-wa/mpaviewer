@@ -1,3 +1,6 @@
+# mpaviewer 0.1.0
+Complete fish assets with all figures and plots working.
+
 # mpaviewer 0.0.18
 
 # mpaviewer 0.0.17
