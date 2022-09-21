@@ -64,6 +64,13 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   # dplyr::mutate(year = as.Date(year, "%Y")) %>%
   # dplyr::mutate(year = format(year, "%Y"))
 
+  lats <- metadata %>%
+    dplyr::group_by(marine.park) %>%
+    dplyr::summarise(mean.lat = mean(latitude)) %>% # biggest is the most north
+    dplyr::arrange(desc(mean.lat))
+
+  metadata$marine.park<-fct_relevel(metadata$marine.park, c(unique(lats$marine.park)))
+
   ### ► Summarise to find sampling effort, this is used for the leaflet maps ----
   sampling.effort <- metadata %>%
     dplyr::group_by(marine.park, method, sample, status, site, location, latitude, longitude, depth) %>%
