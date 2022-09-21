@@ -25,7 +25,7 @@ app_ui <- function(request) {
         tags$li(a(
           href = "https://www.dbca.wa.gov.au/", target = "_blank",
           img(
-            src = "www/DBCA_logo1_reversed_BCS",
+            src = "www/DBCA_logo1_reversed_BCS.png",
             title = "DBCA",
             height = "67px",
             style = "margin-top:-15px; padding-top:-50px; margin-bottom:-15px; padding-bottom:-50px;"
