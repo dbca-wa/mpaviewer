@@ -69,7 +69,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::summarise(mean.lat = mean(latitude)) %>% # biggest is the most north
     dplyr::arrange(desc(mean.lat))
 
-  metadata$marine.park<-fct_relevel(metadata$marine.park, c(unique(lats$marine.park)))
+  metadata$marine.park <- forcats::fct_relevel(metadata$marine.park, c(unique(lats$marine.park)))
 
   ### ► Summarise to find sampling effort, this is used for the leaflet maps ----
   sampling.effort <- metadata %>%
@@ -79,10 +79,17 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   ### ► Generic data (still using "sample") ----
   ### ► Count ----
-  count <- list.files(path = data.dir, recursive = T, pattern = "_Count.csv", full.names = T) %>% # list all files ending in "_Count.csv"
+  count.csv <- list.files(path = data.dir, recursive = T, pattern = "_Count.csv", full.names = T) %>% # list all files ending in "_Count.csv"
     purrr::map_df(~ read_dbca_files_csv(.)) %>% # combine into dataframe
     dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Count.csv" = ""))) %>%
     dplyr::mutate(count = as.numeric(count))
+
+  count.txt <- list.files(path = data.dir, recursive = T, pattern = "_Count.txt", full.names = T)  %>%
+    purrr::map_df(~read.dbca.files_txt(.)) %>% # combine into dataframe
+    dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Count.txt" = ""))) %>%
+    dplyr::mutate(count = as.numeric(count))
+
+  count <- dplyr::bind_rows(count.csv, count.txt)
 
   ### ► Length ----
   length <- list.files(path = data.dir, recursive = T, pattern = "_Length.csv", full.names = T) %>% # list all files ending in "_Length.csv"
@@ -90,6 +97,15 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Length.csv" = ""))) %>%
     dplyr::mutate(count = as.numeric(count)) %>%
     dplyr::mutate(length = as.numeric(length))
+
+  length.txt <- list.files(path = data.dir, recursive = T, pattern = "_Length.txt", full.names = T) %>% # list all files ending in "_Length.csv"
+    purrr::map_df(~read.dbca.files_txt(.)) %>% # combine into dataframe
+    dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Length.txt" = ""))) %>%
+    dplyr::mutate(count = as.numeric(count)) %>%
+    dplyr::mutate(length = as.numeric(length))
+
+  length <- dplyr::bind_rows(length.csv, length.txt) %>%
+    dplyr::filter(!is.na(length))
 
   ### ► EventMeasure data ----
   points <- list.files(path = data.dir, recursive = T, pattern = "_Points.txt", full.names = T) %>%
@@ -166,6 +182,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(scientific = paste(genus, species, sep = " "))
 
   abundance <- dplyr::bind_rows(maxn, count.summary, count.maxn)
+  abundance$marine.park <- forcats::fct_relevel(abundance$marine.park, c(unique(lats$marine.park)))
 
   ## _______________________________________________________ ----
   ##                      ABUNDANCE METRICS                  ----
@@ -227,6 +244,8 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::select(marine.park, campaignid, method, sample, family, genus, species, number, length) %>%
     dplyr::left_join(metadata) %>%
     dplyr::mutate(scientific = paste(genus, species, sep = " "))
+
+  complete.length$marine.park <- forcats::fct_relevel(complete.length$marine.park, c(unique(lats$marine.park)))
 
 
   ## _______________________________________________________ ----
