@@ -60,7 +60,8 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(month = substr(date, 5, 6)) %>%
     dplyr::mutate(day = substr(date, 7, 8)) %>%
     dplyr::mutate(latitude = as.numeric(latitude), longitude = as.numeric(longitude)) %>%
-    dplyr::left_join(zoning)
+    dplyr::left_join(zoning) %>%
+    dplyr::mutate(status = stringr::str_replace_all(.$status, c("Sanctuary" = "No-take")))
   # dplyr::mutate(year = as.Date(year, "%Y")) %>%
   # dplyr::mutate(year = format(year, "%Y"))
 
@@ -85,21 +86,21 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(count = as.numeric(count))
 
   count.txt <- list.files(path = data.dir, recursive = T, pattern = "_Count.txt", full.names = T)  %>%
-    purrr::map_df(~read.dbca.files_txt(.)) %>% # combine into dataframe
+    purrr::map_df(~read_dbca_files_txt(.)) %>% # combine into dataframe
     dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Count.txt" = ""))) %>%
     dplyr::mutate(count = as.numeric(count))
 
   count <- dplyr::bind_rows(count.csv, count.txt)
 
   ### ► Length ----
-  length <- list.files(path = data.dir, recursive = T, pattern = "_Length.csv", full.names = T) %>% # list all files ending in "_Length.csv"
+  length.csv <- list.files(path = data.dir, recursive = T, pattern = "_Length.csv", full.names = T) %>% # list all files ending in "_Length.csv"
     purrr::map_df(~ read_dbca_files_csv(.)) %>% # combine into dataframe
     dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Length.csv" = ""))) %>%
     dplyr::mutate(count = as.numeric(count)) %>%
     dplyr::mutate(length = as.numeric(length))
 
   length.txt <- list.files(path = data.dir, recursive = T, pattern = "_Length.txt", full.names = T) %>% # list all files ending in "_Length.csv"
-    purrr::map_df(~read.dbca.files_txt(.)) %>% # combine into dataframe
+    purrr::map_df(~read_dbca_files_txt(.)) %>% # combine into dataframe
     dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Length.txt" = ""))) %>%
     dplyr::mutate(count = as.numeric(count)) %>%
     dplyr::mutate(length = as.numeric(length))
@@ -339,6 +340,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   x <- structure(
     list(
       downloaded_on = Sys.time(),
+      lats = lats,
       abundance = abundance,
       total.abundance = total.abundance,
       trophic.abundance = trophic.abundance,

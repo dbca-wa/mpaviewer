@@ -1,16 +1,8 @@
 Package: mpaviewer
 Title: MPA Viewer
-Version: 0.1.0
-Authors@R: c(
-    person("Brooke", "Gibbons", , email="Brooke.Gibbons@uwa.edu.au", 
-           role = c("aut"), comment = c(ORCID = "0000-0002-0628-7781")),
-    person(c("Florian", "W."), "Mayer", , "Florian.Mayer@dbca.wa.gov.au", 
-           role = c("aut", "cre"), comment = c(ORCID = "0000-0003-4269-4242")),
-    person("DBCA", role = c("cph", "fnd")),
-    person("WAMMP", role = "fnd")
-  )
-Description: An interactive overview of selected biodiversity assets in 
-    Marine Protected Areas of Western Australia.
+Version: 0.0.0.9000
+Authors@R: person('Brooke', 'Gibbons', email = 'brooke.gibbons@uwa.edu.au', role = c('cre', 'aut'))
+Description: An interactive overview of selected biodiversity assets in Marine Protected Areas of Western Australia.
 License: MIT + file LICENSE
 Imports: 
     config (>= 0.3.1),
@@ -42,7 +34,11 @@ Imports:
     shinyalert,
     shinycssloaders,
     shinydashboardPlus,
-    tidyr
+    tidyr,
+    attempt,
+    DT,
+    htmltools,
+    thinkr
 Remotes:
     github::UWAMEGFisheries/GlobalArchive
 Encoding: UTF-8
@@ -55,7 +51,6 @@ Suggests:
     data.table,
     grid,
     scales,
-    thinkr,
     rmarkdown,
     knitr,
     pkgload,

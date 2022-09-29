@@ -1,0 +1,43 @@
+---
+title: "Accessibility"
+author: "Brooke Gibbons"
+date: "26/09/2022"
+output: html_document
+  css: style.css
+---
+# Accessibility
+This website has been designed to meet the Government of Western Australia's standard established for web accessibility.
+
+## Tab-based navigation and skip to links
+This website allows full tab-based navigation:
+- when you are on a menu item or hyperlink, press enter to activate
+- hold down shift and tab to reverse the tab cycle
+- at the top of each page there are options to skip to various areas of the page to assist users of screenreaders and users that are viewing the website zoomed in
+
+## Text resizing
+Text on this site can be resized by:
+- using the zoom and increase font options from your browser’s menu
+- press the Ctrl key (Microsoft Windows) or the Apple key (Mac OS) on your keyboard and use the + or – key to zoom in and out
+- press Ctrl on your keyboard and scroll with your mouse wheel
+
+## Hyperlinks
+Wherever possible, hyperlinks contain descriptions of information found in the link’s destination.
+
+All links open in the same window to improve usability for people with vision impairment, with the exception of links to documents, which open in a new window.
+
+## Images
+All images that are used to display a meaning will have alternative text available. Some browsers may also display a tooltip of this alternative text when the cursor hovers or focuses on the image. Images that are used for decorative purposes only do not contain any alternative text.
+
+## Our commitment to web accessibility
+Our website aims to meet the West Australian Government’s web accessibility requirements, including meeting the World Wide Web Consortium’s Web Content Accessibility Guidelines version 2.1 (WCAG 2.1) at level A.
+
+No responsibility is taken for the accessibility levels of external websites linked to from this website.
+
+For more information about customising your web browser and computer set up, visit the W3C website.
+
+This accessibility statement was last reviewed in September 2022.
+
+## Contact us
+Providing our information to all users, including those with a disability, is important to us. If anything on this site is inaccessible to you, or you are experiencing problems accessing content for any reason, please contact us.
+
+**Page reviewed 28 September 2022**

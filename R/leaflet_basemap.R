@@ -18,7 +18,7 @@ leaflet_basemap <- function(data = NULL, l_width = NULL, l_height = NULL) {
       group = "Basemap",
       options = leaflet::providerTileOptions(opacity = 0.35)
     ) %>%
-    leaflet.extras::addFullscreenControl(pseudoFullscreen = TRUE, position = "topleft") %>%
+    # leaflet.extras::addFullscreenControl(pseudoFullscreen = TRUE, position = "bottomright") %>%
     leaflet::addScaleBar(
       position = "bottomleft",
       options = leaflet::scaleBarOptions(

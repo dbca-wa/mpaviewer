@@ -42,12 +42,20 @@ app_server <- function(input, output, session) {
     )
   }
 
+  observeEvent(input$access, {
+    updateTabItems(session, "tabs", "info")
+  })
+
   # State image
   # NOTE this depends on the image filename being identical to the data folders
   # in the source data (data/Ningaloo or data/Ningaloo Marine Park)
   output$ui.fish.park.image <- renderUI({
-    park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), " ", ".")
+    park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", " " = ""))
+
+    print(park)
+
     img(src = paste0("www/", park, ".jpg"), align = "right", width = "100%")
+    # img(src = paste0("www/", "ningaloo", ".jpg"), align = "right", width = "100%")
   })
 
   # State data ----
@@ -61,9 +69,9 @@ app_server <- function(input, output, session) {
     pickerInput(
       inputId = "fish.state.park.dropdown",
       label = "Choose Marine Parks to include:",
-      choices = choices,
+      choices = c(unique(mpa_data()$lats$marine.park)), #choices,
       multiple = TRUE,
-      selected = choices,
+      selected = c(unique(mpa_data()$lats$marine.park)), # choices,
       options = list(`actions-box` = TRUE, `live-search` = TRUE)
     )
   })
@@ -502,12 +510,14 @@ app_server <- function(input, output, session) {
       annotation_custom(label) +
       stat_smooth(
         method = "gam",
-        formula = y ~ mgcv::s(x, k = 3),
+        formula = y ~ s(x, k = 3), # Removed all the mgcv:: as it was breaking the plots
         size = 1,
         col = "black"
       ) +
       # scale_y_continuous(expand = expansion(mult = 10)) +
       scale_x_continuous(breaks = c(unique(fish_ta()$year))) +
+      scale_fill_manual(values = c("#b9e6fb",
+                                   "#7bbc63")) +
       ggplot_mpatheme() +
       facet_wrap(marine.park ~ ., scales = "free", ncol = 1) +
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
@@ -558,7 +568,9 @@ app_server <- function(input, output, session) {
       ggplot_mpatheme() +
       scale_y_continuous(expand = c(0, 0.1)) +
       scale_x_continuous(breaks = c(unique(dat$year))) +
-      stat_smooth(method = "gam", formula = y ~ mgcv::s(x, k = 3), size = 1, col = "black") +
+      scale_fill_manual(values = c("#b9e6fb",
+                                   "#7bbc63")) +
+      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(marine.park ~ ., scales = "free", ncol = 1) +
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
       geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA)
@@ -610,7 +622,9 @@ app_server <- function(input, output, session) {
       ylab("Average abundance per sample \n(+/- SE)") +
       scale_y_continuous(expand = c(0, 0.1)) +
       scale_x_continuous(breaks = c(unique(dat$year))) +
-      stat_smooth(method = "gam", formula = y ~ mgcv::s(x, k = 3), size = 1, col = "black") +
+      scale_fill_manual(values = c("#b9e6fb",
+                                   "#7bbc63")) +
+      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(marine.park ~ trophic.group, scales = "free", ncol = length(unique(dat$trophic.group))) +
       ggplot_mpatheme() +
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
@@ -663,6 +677,8 @@ app_server <- function(input, output, session) {
           panel.grid.minor = element_blank()
         ) +
         scale_y_continuous(expand = c(0, 0.1)) +
+        scale_fill_manual(values = c("#b9e6fb",
+                                     "#7bbc63")) +
         ylab("Weighted KDE (*1000)") +
         xlab("Total Length (mm)") +
         ggtitle(dat$marine.park) +
@@ -711,7 +727,9 @@ app_server <- function(input, output, session) {
       ylab("Average abundance of target species per sample \n(+/- SE)") +
       scale_y_continuous(expand = c(0, 0.1)) +
       scale_x_continuous(breaks = c(unique(dat$year))) +
-      stat_smooth(method = "gam", formula = y ~ mgcv::s(x, k = 3), size = 1, col = "black") +
+      scale_fill_manual(values = c("#b9e6fb",
+                                   "#7bbc63")) +
+      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(marine.park ~ scientific, scales = "free", ncol = length(unique(dat$scientific))) +
       ggplot_mpatheme() +
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
@@ -746,7 +764,9 @@ app_server <- function(input, output, session) {
       ylab("Average abundance of target species per sample \n(+/- SE)") +
       scale_y_continuous(expand = c(0, 0.1)) +
       scale_x_continuous(breaks = c(unique(dat$year))) +
-      stat_smooth(method = "gam", formula = y ~ mgcv::s(x, k = 3), size = 1, col = "black") +
+      scale_fill_manual(values = c("#b9e6fb",
+                                   "#7bbc63")) +
+      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(marine.park ~ scientific, scales = "free", ncol = length(unique(dat$scientific))) +
       ggplot_mpatheme() +
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
@@ -885,8 +905,10 @@ app_server <- function(input, output, session) {
       xlab("Year") +
       ylab("Average total abundance per sample \n(+/- SE)") +
       annotation_custom(label) +
-      stat_smooth(method = "gam", formula = y ~ mgcv::s(x, k = 3), size = 1, col = "black") +
+      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       scale_x_continuous(breaks = c(unique(dat$year))) +
+      scale_fill_manual(values = c("#b9e6fb",
+                                   "#7bbc63")) +
       ggplot_mpatheme() +
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
       geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA)
@@ -913,8 +935,10 @@ app_server <- function(input, output, session) {
       xlab("Year") +
       ylab("Average number of species per sample \n(+/- SE)") +
       annotation_custom(label) +
-      stat_smooth(method = "gam", formula = y ~ mgcv::s(x, k = 3), size = 1, col = "black") +
+      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       scale_x_continuous(breaks = c(unique(dat$year))) +
+      scale_fill_manual(values = c("#b9e6fb",
+                                   "#7bbc63")) +
       ggplot_mpatheme() +
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
       geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA)
@@ -961,7 +985,9 @@ app_server <- function(input, output, session) {
       ylab("Average abundance per sample \n(+/- SE)") +
       scale_y_continuous(expand = c(0, 0.1)) +
       scale_x_continuous(breaks = c(unique(dat$year))) +
-      stat_smooth(method = "gam", formula = y ~ mgcv::s(x, k = 3), size = 1, col = "black") +
+      scale_fill_manual(values = c("#b9e6fb",
+                                   "#7bbc63")) +
+      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(trophic.group ~ ., scales = "free", ncol = 1) +
       ggplot_mpatheme() +
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
@@ -1055,6 +1081,8 @@ app_server <- function(input, output, session) {
         panel.grid.minor = element_blank()
       ) +
       scale_y_continuous(expand = c(0, 0.1)) +
+      scale_fill_manual(values = c("#b9e6fb",
+                                   "#7bbc63")) +
       ylab("Weighted KDE (*1000)") +
       xlab("Total Length (mm)") +
       facet_grid(year ~ scientific)
@@ -1082,7 +1110,9 @@ app_server <- function(input, output, session) {
       ylab("Average abundance of target species per sample \n(+/- SE)") +
       scale_y_continuous(expand = c(0, 0.1)) +
       scale_x_continuous(breaks = c(unique(dat$year))) +
-      stat_smooth(method = "gam", formula = y ~ mgcv::s(x, k = 3), size = 1, col = "black") +
+      scale_fill_manual(values = c("#b9e6fb",
+                                   "#7bbc63")) +
+      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(scientific ~ ., scales = "free", ncol = 1) +
       ggplot_mpatheme() +
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
@@ -1111,7 +1141,9 @@ app_server <- function(input, output, session) {
       ylab("Average abundance of target species per sample \n(+/- SE)") +
       scale_y_continuous(expand = c(0, 0.1)) +
       scale_x_continuous(breaks = c(unique(dat$year))) +
-      stat_smooth(method = "gam", formula = y ~ mgcv::s(x, k = 3), size = 1, col = "black") +
+      scale_fill_manual(values = c("#b9e6fb",
+                                   "#7bbc63")) +
+      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(scientific ~ ., scales = "free", ncol = 1) +
       ggplot_mpatheme() +
       geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +

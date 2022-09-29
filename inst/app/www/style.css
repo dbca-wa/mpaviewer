@@ -8,3 +8,119 @@ div.outer {
   overflow: hidden;
   padding: 0;
 }
+
+h1 {
+  font-family: 'Heebo',Arial,Helvetica,sans-serif;
+  font-weight: 900;
+  line-height: 1.2;
+  color: #1a1a1a
+  font-size: 2.5rem;
+  margin-bottom: 1.25rem;
+}
+
+h2 {
+    font-family: 'Heebo',Arial,Helvetica,sans-serif;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #1a1a1a;
+    font-size: 2rem;
+    margin-top: 0;
+}
+
+h3 {
+  font-family: 'Heebo',Arial,Helvetica,sans-serif;
+  font-weight: 700;
+  line-height: 1.0;
+  color: #000;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+h4 {
+  font-family: 'Heebo',Arial,Helvetica,sans-serif;
+  font-weight: 700;
+  line-height: 132%;
+  color: rgba(0,0,0,0.9);
+  letter-spacing: 0;
+  font-size: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+
+
+.nav-tabs-custom .nav-tabs li.active {
+    border-top-color: #d14210;
+}
+
+.nav-tabs a:focus {
+      border: 2px dotted;
+  border-color: #d54614;
+}
+
+body, html {
+    font-family: 'Heebo',Arial,Helvetica,sans-serif;
+    font-size: 16px;
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    margin: 0px;
+    line-height: 125%;
+    min-width: 320px;
+    background: #fff;
+    color: #000;
+}
+      #sidebarItemExpanded > ul > :last-child {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+      }
+
+      .btn-btn-lg {
+font-size: 1.12rem;
+line-height: 1.5rem;
+font-weight: 300;
+background-color: #2d2f32;
+border-color: #2d2f32;
+color: #fff;
+border-bottom: 2px dotted;
+          }
+
+                .btn-btn-lg:hover {
+font-size: 1.12rem;
+line-height: 1.5rem;
+font-weight: 300;
+background-color: #2d2f32;
+border-color: #2d2f32;
+color: #fff;
+text-decoration: underline;
+          }
+
+                          .btn-btn-lg:focus {
+font-size: 1.12rem;
+line-height: 1.5rem;
+font-weight: 300;
+background-color: #2d2f32;
+color: #fff;
+text-decoration: underline;
+border: 2px dotted;
+border-color: #d54614;
+          }
+
+a  {
+  color: #2d2f32;
+}
+
+a:focus {
+  border: 2px dotted;
+  border-color: #d54614;
+}
+
+a:hover {
+  color: #2d2f32;
+}
+
+       .skin-blue .main-header .logo:hover {
+    background-color: #2d2f32;
+      }
+
+      .sticky_footer {    position:fixed;    bottom:0;    right:0;    left:0;    background:#3c8dbc;    z-index: 1000;    opacity: 0.9; }

@@ -14,23 +14,54 @@ app_ui <- function(request) {
 
     shinydashboardPlus::dashboardPage(
       shinydashboardPlus::dashboardHeader(
+
+        tags$li(class = "dropdown",
+                tags$style(".main-header {max-height: 75px}"),
+                tags$style(".main-header .logo {height: 75px;}"),
+                tags$style(".sidebar-toggle {height: 75px; padding-top: 1px !important;}"),
+                tags$style(".navbar {min-height:75px !important}")
+        ),
+
         title = tags$a(
           href = "https://www.dbca.wa.gov.au/",
           tags$img(
-            src = "www/dbca_logo_white_cropped.png",
-            height = "65", width = "65"
+            src = "www/DBCA_logo1_reversed_BCS.png",
+            width = "465px"#,
+            # height = "90px"#,
+            #style = "margin-top:-15px; padding-top:-50px; margin-bottom:-15px; padding-bottom:-50px;"#, width = "65"
           )
         ),
-        titleWidth = "90px",
-        tags$li(a(
-          href = "https://www.dbca.wa.gov.au/", target = "_blank",
-          img(
-            src = "www/DBCA_logo1_reversed_BCS.png",
-            title = "DBCA",
-            height = "67px",
-            style = "margin-top:-15px; padding-top:-50px; margin-bottom:-15px; padding-bottom:-50px;"
-          )
-        ), class = "dropdown")
+        titleWidth = "500px",
+
+        # tags$li(a(href = "https://www.dbca.wa.gov.au/", target = "_blank", "DBCA Marine Monitoring Dashboard"), class = "myClass"),
+
+        tags$li(actionButton("access", "Accessibility", class = "btn-btn-lg")
+          # a(href = "https://www.dbca.wa.gov.au/", target = "_blank", "Accessibility")
+          , class = "dropdown"
+          )#,
+
+        # shinydashboardPlus::dropdownBlock(
+        #   id = "dropdown",
+        #   title = "DBCA Marine Monitoring Dashboard",
+        #   # icon = "sliders-h",
+        #
+        #   tagList(a("Accessibility", href="https://www.google.com/")),
+        #   tagList(a("About", href="https://www.google.com/")),
+        #   tagList(a("Contact", href="https://www.google.com/"))
+
+          # tags$li(a(href = "https://www.dbca.wa.gov.au/", target = "_blank", "Accessibility"), class = "dropdown")
+        # )#,
+
+
+        # tags$li(a(
+        #   href = "https://www.dbca.wa.gov.au/", target = "_blank",
+        #   img(
+        #     src = "www/DBCA_logo1_reversed_BCS.png",
+        #     title = "DBCA",
+        #     height = "67px",
+        #     style = "margin-top:-15px; padding-top:-50px; margin-bottom:-15px; padding-bottom:-50px;"
+        #   )
+        # ), class = "dropdown")
         # tags$li(a(
         #   href = "https://www.dbca.wa.gov.au/", target = "_blank",
         #   img(
@@ -48,35 +79,65 @@ app_ui <- function(request) {
         # )
       ),
       shinydashboardPlus::dashboardSidebar(
-        width = "90px",
-        shinydashboard::sidebarMenu(
+        # div(class = "sticky_footer", p("test footer")),
+
+        tags$style(".left-side, .main-sidebar {padding-top: 55px}"),
+
+        width = "150px",
+        shinydashboard::sidebarMenu(id = "tabs",
           h1(" "), # to move the fish down a lil bit
-          menuItem("", tabName = "fishtab", icon = icon("fish")),
-          menuItem("", tabName = "benthictab", icon = icon("pagelines"))
+          h1(" "), # to move the fish down a lil bit
+          menuItem(tags$div(tags$i(icon("fish")), tags$span("Fish")),
+                   tabName = "fishtab"), #, icon = icon("fish")
+
+          menuItem(tags$div(tags$img(src = "www/coral.png", width="30px"),
+            # tags$i(icon("pagelines")),
+            tags$span("Benthic")),
+                   tabName = "benthictab"),
+
+          menuItem(tags$div(tags$i(icon("info")), tags$span("Info")),
+                   tabName = "info")#, icon = icon("pagelines")
           # div(tags$img(src = "www/coral.png", width="15px")))
         )
       ),
       shinydashboard::dashboardBody(
         tags$head(
-          tags$style(HTML(".main-sidebar { font-size: 45px; }
+          tags$style(HTML(".main-sidebar { font-size: 20px; }
                        .skin-blue .main-header .navbar .sidebar-toggle {display: none;}
-                      .main-header .navbar {height: 70px;; padding-top: 0px;}
-                      .navbar-statis-top {height: 70px;}
-                      .main-header .logo {height: 70px; padding-top: 0%;}"))
+                      .main-header .navbar {height: 75px;; padding-top: 0px;}
+                      .navbar-statis-top {height: 75px;}
+                      .main-header .logo {height: 75px; padding-top: 0%;}
+                      .content-wrapper {background-colour: #602727;}"))
         ),
         tags$style("html, body {overflow: hidden !important;"),
+
+        #  Links with dotted underline
+        # a {
+        #   font-weight: 500;
+        #   border-bottom: dotted 2px #7f7f7f;
+        #   text-decoration: none;
+        #   -moz-transition: all .3s ease;
+        #   -o-transition: all .3s ease;
+        #   -webkit-transition: all .3s ease;
+        #   transition: all .3s ease;
+        # }
+
         tags$head(tags$style(HTML(
-          '.myClass {
-        font-size: 20px;
+
+          # font-size: 20px;
+          ".myClass {
         line-height: 50px;
         text-align: left;
-        font-family: "Source Sans Pro",sans-serif;
+        font-family: 'Heebo',Arial,Helvetica,sans-serif;
         padding: -0 10px;
         overflow: hidden;
         color: white;
+        font-weight: 600;
+        font-size: 1.5rem;
+        margin-bottom: 1.25rem;
           }
 
-      .skin-blue .main-header .navbar {
+       .skin-blue .main-header .navbar {
     background-color: #2d2f32;
       }
 
@@ -87,13 +148,17 @@ app_ui <- function(request) {
       }
 
 .skin-blue .sidebar-menu>li.active>a {
-    border-left-color: #2d2f32;
+    border-left-color: #d14210;
+}
+
+.skin-blue .main-sidebar, .skin-blue .wrapper {
+    background-color: #3b3e42;
 }
 
 
 
 
-    '
+    "
         ))),
         tags$script(HTML('
       $(document).ready(function() {
@@ -253,7 +318,8 @@ app_ui <- function(request) {
                     width = 12, title = "Sampling locations",
                     conditionalPanel(
                       'input.tabset1 == "State-wide"',
-                      withSpinner(leafletOutput(width = "100%", "fish.state.sampling.leaflet", height = "78vh"))
+                      withSpinner(leafletOutput(width = "100%", "fish.state.sampling.leaflet", height = "78vh")),
+                      style="z-index:1002;"
                     ),
                     conditionalPanel(
                       'input.tabset1 == "Marine park"',
@@ -267,15 +333,53 @@ app_ui <- function(request) {
                 ))
               )
             )
-          )
+          ),
 
           # Second tab content - enable when content is ready
-          # tabItem(
-          #   tabName = "benthictab",
-          #   h2("to add to")
+          tabItem(
+            tabName = "benthictab",
+            h2("to add to")
+          ),
+
+          tabItem(
+            tabName = "info",
+          #   fluidRow(width = 12,
+          #            box(#style = "overflow: visible;",
+          #       width = 12, #height = "900", # 60vh shows all text but not all box
+          #       collapsible = FALSE, solidHeader = FALSE,
+          #       htmltools::includeMarkdown("inst/app/www/accessibility.Rmd"))
           # )
+
+          fluidRow(
+            tabBox(
+              title = "Info",
+              width = 12,
+              # width = "55%", # was 95%
+              id = "tabset1", height = "78vh",
+              tabPanel("Accessibility",
+                       style = "overflow: visible",
+                       # column(width = 5,
+                       htmltools::includeMarkdown("inst/app/www/accessibility.Rmd")
+              ),
+              tabPanel("Contact",
+                       style = "overflow: visible",
+                       # column(width = 5,
+                       htmltools::includeMarkdown("inst/app/www/accessibility.Rmd")
+              )
+
+              ))
+
+
+
+
+          )
         )
       )
+# ,
+# footer = shinydashboardPlus::dashboardFooter(
+#   left = "By Divad Nojnarg",
+#   right = "Zurich, 2019"
+# )
     )
   )
 }
