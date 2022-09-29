@@ -362,9 +362,9 @@ app_ui <- function(request) {
                        htmltools::includeMarkdown("inst/app/www/accessibility.Rmd")
               ),
               tabPanel("Contact",
-                       style = "overflow: visible",
+                       style = "overflow: visible"#,
                        # column(width = 5,
-                       htmltools::includeMarkdown("inst/app/www/accessibility.Rmd")
+                       #htmltools::includeMarkdown("inst/app/www/accessibility.Rmd")
               )
 
               ))
