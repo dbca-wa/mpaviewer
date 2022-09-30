@@ -18,6 +18,42 @@
 generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds")) {
   data.dir <- here::here("inst/data")
 
+  # Benthic data
+  # Currently not very pretty. Just saving csv files of the dataframes that Claire uses to create her plots.
+
+  coral.cover_site.means <- list.files(path = data.dir, recursive = T, pattern = "_site_means.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
+    purrr::map_df(~ read_dbca_files_csv(.)) %>%
+    dplyr::mutate(year = as.numeric(year),
+           mean = as.numeric(mean),
+           sd = as.numeric(sd),
+           se = as.numeric(se))
+
+  coral.cover_mean_sector <- list.files(path = data.dir, recursive = T, pattern = "_mean_sector.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
+    purrr::map_df(~ read_dbca_files_csv(.)) %>%
+    dplyr::mutate(year = as.numeric(year),
+                  mean = as.numeric(mean),
+                  sd = as.numeric(sd),
+                  se = as.numeric(se))
+
+  coral.cover_mean_site <- list.files(path = data.dir, recursive = T, pattern = "_mean_site.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
+    purrr::map_df(~ read_dbca_files_csv(.)) %>%
+    dplyr::mutate(year = as.numeric(year),
+                  mean = as.numeric(mean),
+                  sd = as.numeric(sd),
+                  se = as.numeric(se))
+
+  rec_3b <- list.files(path = data.dir, recursive = T, pattern = "REC3b.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
+    purrr::map_df(~ read_dbca_files_csv(.)) %>%
+    dplyr::mutate(year = as.numeric(year),
+                  mean = as.numeric(mean))
+
+  rec_3c2 <- list.files(path = data.dir, recursive = T, pattern = "REC3c2.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
+    purrr::map_df(~ read_dbca_files_csv(.)) %>%
+    dplyr::mutate(year = as.numeric(year),
+                  mean = as.numeric(mean),
+                  sd = as.numeric(sd),
+                  se = as.numeric(se))
+
   ### ► Life history sheet ----
   ## Will need to replace with DBCA's own version eventually but this will work for time being
   life.history <- here::here("inst/data/australia.life.history.csv") |>
@@ -351,8 +387,13 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
       sampling.effort = sampling.effort,
       state.mp = state.mp,
       state.pal = state.pal,
-      park.popups = park.popups
-    ),
+      park.popups = park.popups,
+      coral.cover_mean_sector = coral.cover_mean_sector,
+      coral.cover_mean_site = coral.cover_mean_site,
+      coral.cover_site.means = coral.cover_site.means,
+      rec_3b = rec_3b,
+      rec_3c2 = rec_3c2
+      ),
     class = "mpa_data"
   )
 

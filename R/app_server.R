@@ -57,7 +57,7 @@ app_server <- function(input, output, session) {
     img(src = paste0("www/", park, ".jpg"), align = "right", width = "100%")
     # img(src = paste0("www/", "ningaloo", ".jpg"), align = "right", width = "100%")
   })
-
+### FISH ----
   # State data ----
   # Create a marine park dropdown ----
   output$fish.state.park.dropdown <- renderUI({
@@ -1173,4 +1173,84 @@ app_server <- function(input, output, session) {
       animation = FALSE
     )
   )
+
+  # BENTHIC ----
+  # State data ----
+  # Create a marine park dropdown ----
+  output$benthic.state.park.coralcover.dropdown <- renderUI({
+    pickerInput(
+      inputId = "benthic.state.park.coralcover.dropdown",
+      label = "Choose Marine Parks to include:",
+      choices = c(unique(mpa_data()$coral.cover_site.means$marine.park)), #choices,
+      multiple = TRUE,
+      selected = c(unique(mpa_data()$coral.cover_site.means$marine.park)), # choices,
+      options = list(`actions-box` = TRUE, `live-search` = TRUE)
+    )
+  })
+
+  output$benthic.state.park.coralrecruitment.dropdown <- renderUI({
+    pickerInput(
+      inputId = "benthic.state.park.coralrecruitment.dropdown",
+      label = "Choose Marine Parks to include:",
+      choices = c(unique(mpa_data()$rec_3b$marine.park)), #choices,
+      multiple = TRUE,
+      selected = c(unique(mpa_data()$rec_3b$marine.park)), # choices,
+      options = list(`actions-box` = TRUE, `live-search` = TRUE)
+    )
+  })
+
+  # Data filtered by dropdowns fpr All marine park coral cover
+  benthic_coral.cover_mean_site <- reactive({
+    req(mpa_data(), input$benthic.state.park.coralcover.dropdown)
+
+    mpa_data()$coral.cover_mean_site %>%
+      dplyr::filter(marine.park %in% c(input$benthic.state.park.coralcover.dropdown))
+  })
+
+  # Total abundance ----
+  output$benthic.state.coralcover.plot <- renderPlot({
+    req(benthic_coral.cover_mean_site())
+
+
+    p <- ggplot(data=subset(benthic_coral.cover_mean_site(), !year %in% c("1999")), aes(x=year, y=mean)) +
+      geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), width=.025) +
+      stat_smooth(method = "gam", formula = y ~ s(x, k=5), se=T, size = 1,col="black",linetype="solid") +
+      geom_point(size=2) +
+      xlab("") +
+      ylab("% Coral Cover (mean ± SE)") +
+      # scale_y_continuous(limits=c(-5,80)) +
+      scale_x_continuous(limits=c(1990,max(benthic_coral.cover_mean_site()$year)+1), breaks = seq(min(benthic_coral.cover_mean_site()$year), max(benthic_coral.cover_mean_site()$year), 2)) +
+      ggplot_mpatheme() +
+      scale_y_continuous(expand = c(0, 0.1)) +
+      facet_wrap(marine.park ~ ., scales = "free", ncol = 1)
+
+    p
+  })
+
+  benthic_rec_3c2 <- reactive({
+    req(mpa_data(), input$benthic.state.park.coralcover.dropdown)
+
+    mpa_data()$rec_3c2 %>%
+      dplyr::filter(marine.park %in% c(input$benthic.state.park.coralrecruitment.dropdown))
+  })
+
+  output$benthic.state.coralrecruitment.all.plot <- renderPlot({
+    req(benthic_rec_3c2())
+
+    pd <- position_dodge(.25)
+
+    p <- ggplot(benthic_rec_3c2(), aes(x=year, y=mean)) +
+      geom_smooth(method = "gam", formula = y ~  s(x, k=length(unique(benthic_rec_3c2()$year)-2)), se=F, size = 1, col="black") +
+      geom_point(position = pd, size = 2)+
+      xlab("") +
+      ylab("Number of coral recruits per tile") +
+      scale_x_continuous(limits=c(min(benthic_rec_3c2()$year-0.125), max(benthic_rec_3c2()$year+0.125)), breaks=min(benthic_rec_3c2()$year):max(benthic_rec_3c2()$year)) +
+      ggplot_mpatheme() +
+      scale_y_continuous(expand = c(0, 0.1)) +
+      facet_wrap(marine.park ~ ., scales = "free", ncol = 1)
+
+    p
+  })
+
+
 }

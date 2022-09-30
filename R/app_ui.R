@@ -275,41 +275,6 @@ app_ui <- function(request) {
                     withSpinner(plotOutput("fish.park.trophic.plot", height = 750))
                   )
                 )
-                # tabPanel(
-                #   "Location",
-                #   selectInput(
-                #     width = "100%",
-                #     "fishlocationpark",
-                #     "Choose a marine park:",
-                #     choices = c("Ningaloo", "Jurien", "Rottnest"),
-                #     multiple = FALSE,
-                #     selectize = TRUE
-                #   ),
-                #   selectInput(
-                #     width = "100%",
-                #     "fishlocationlocation",
-                #     "Choose a location:",
-                #     choices = c("Location 1", "Location 2", "Location 3"),
-                #     multiple = FALSE,
-                #     selectize = TRUE
-                #   ),
-                #   selectInput(
-                #     width = "100%",
-                #     "fishlocationmethod",
-                #     "Choose a method:",
-                #     choices = c("DOVs", "BRUVs", "ROV"),
-                #     multiple = FALSE,
-                #     selectize = TRUE
-                #   ),
-                #   selectInput(
-                #     width = "100%",
-                #     "fishlocationmetric",
-                #     "Choose a metric:",
-                #     choices = c("Total abundance", "Species richness", "Targeted abundance"),
-                #     multiple = FALSE,
-                #     selectize = TRUE
-                #   )
-                # )
               ),
               fluidRow(
                 div(column(
@@ -338,7 +303,125 @@ app_ui <- function(request) {
           # Second tab content - enable when content is ready
           tabItem(
             tabName = "benthictab",
-            h2("to add to")
+            fluidRow(
+              tabBox(
+                title = "Choose a spatial scale to plot",
+                width = 8,
+                # width = "55%", # was 95%
+                id = "tabset2", height = "78vh",
+                tabPanel("State-wide",
+                         style = "overflow: visible",
+                         # column(width = 5,
+
+                         selectInput(
+                           width = "100%",
+                           "benthicstatemethoddropdown",
+                           "Choose a metric to plot:",
+                           choices = c("Coral cover", "Coral recruitment"),
+                           multiple = FALSE,
+                           selectize = TRUE
+                         ),
+
+                         conditionalPanel('input.benthicstatemethoddropdown == "Coral cover"',
+                           htmlOutput("benthic.state.park.coralcover.dropdown"),
+                           withSpinner(plotOutput("benthic.state.coralcover.plot", height = 500))
+                           ),
+
+                         conditionalPanel(
+                           'input.benthicstatemethoddropdown == "Coral recruitment"',
+
+                           htmlOutput("benthic.state.park.coralrecruitment.dropdown"),
+
+                           selectInput(
+                             width = "100%",
+                             "benthicstatecoralrecruitmentmetric",
+                             "Plot by:",
+                             choices = c("All park", "Taxa"),
+                             multiple = FALSE,
+                             selectize = TRUE
+                           ),
+
+                           conditionalPanel(
+                             'input.benthicstatecoralrecruitmentmetric == "All park"',
+                             withSpinner(plotOutput("benthic.state.coralrecruitment.all.plot", height = 500))
+                           ),
+
+                           conditionalPanel(
+                             'input.benthicstatecoralrecruitmentmetric == "Taxa"',
+                             htmlOutput("benthic.state.coralrecruitment.taxa.dropdown"),
+                             withSpinner(plotOutput("benthic.state.coralrecruitment.taxa.plot", height = 500))
+                           )
+
+                         )
+                ),
+                tabPanel(
+                  "Marine park",
+                  column(
+                    width = 6,
+                    htmlOutput("benthic.park.dropdown"),
+                    htmlOutput("benthic.park.method.dropdown"),
+                    htmlOutput("benthic.park.site.dropdown")
+                  ),
+                  column(
+                    width = 6,
+                    column(
+                      width = 11,
+                      uiOutput("ui.benthic.park.image")
+                    ),
+                    column(
+                      width = 1,
+                      actionBttn(
+                        inputId = "alert.benthic.marinepark",
+                        label = NULL,
+                        style = "material-circle",
+                        color = "primary",
+                        icon = icon("info")
+                      )
+                    )
+                  ),
+
+                  selectInput(
+                    width = "100%",
+                    "benthic.park.metric",
+                    "Choose a group of metrics to plot:",
+                    choices = c("Whole assemblage", "Individual species", "Target species", "Life history traits"),
+                    multiple = FALSE,
+                    selectize = TRUE
+                  ),
+                  conditionalPanel(
+                    'input.benthic.park.metric == "Whole assemblage"',
+                    withSpinner(plotOutput("benthic.park.total.plot", height = 250)),
+                    withSpinner(plotOutput("benthic.park.rich.plot", height = 250)),
+                    withSpinner(plotOutput("benthic.park.stack.plot", height = 500))
+                    # leafletOutput("fish.park.total.leaflet", height = 400)
+                  ),
+                  conditionalPanel(
+                    'input.benthic.park.metric == "Target species"',
+                    htmlOutput("benthic.park.fished.species.dropdown")#,
+                    # withSpinner(plotOutput("benthic.park.fished.species.abundance.plot", height = 500)),
+                    # withSpinner(plotOutput("fish.park.fished.species.kde.plot", height = 500))
+                  )
+                )
+              ),
+              fluidRow(
+                div(column(
+                  width = 4,
+                  box(
+                    width = 12, title = "Sampling locations",
+                    conditionalPanel(
+                      'input.tabset2 == "State-wide"',
+                      withSpinner(leafletOutput(width = "100%", "benthic.state.sampling.leaflet", height = "78vh")),
+                      style = "z-index:1002;"
+                    ),
+                    conditionalPanel(
+                      'input.tabset2 == "Marine park"',
+                      withSpinner(leafletOutput(width = "100%", "benthic.park.sampling.leaflet", height = "78vh"))
+                    )
+                    ), # end of box
+                  style = "position:fixed; right: 0;"
+                ))
+              )
+            )
           ),
 
           tabItem(
