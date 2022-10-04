@@ -97,14 +97,15 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(day = substr(date, 7, 8)) %>%
     dplyr::mutate(latitude = as.numeric(latitude), longitude = as.numeric(longitude)) %>%
     dplyr::left_join(zoning) %>%
-    dplyr::mutate(status = stringr::str_replace_all(.$status, c("Sanctuary" = "No-take")))
-  # dplyr::mutate(year = as.Date(year, "%Y")) %>%
-  # dplyr::mutate(year = format(year, "%Y"))
+    dplyr::mutate(status = stringr::str_replace_all(.$status, c("Sanctuary" = "No-take"))) %>%
+    dplyr::select(marine.park, method, campaignid, sample, latitude, longitude, date, time, location, status, site, successful.count, successful.length, depth, observer, year, month, day, year.zoned) # Trying to remove columns to save space/time to load the app
+
+  names(metadata)
 
   lats <- metadata %>%
     dplyr::group_by(marine.park) %>%
     dplyr::summarise(mean.lat = mean(latitude)) %>% # biggest is the most north
-    dplyr::arrange(desc(mean.lat))
+    dplyr::arrange(desc(mean.lat)) # Could make this again on the server side
 
   metadata$marine.park <- forcats::fct_relevel(metadata$marine.park, c(unique(lats$marine.park)))
 
@@ -112,7 +113,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   sampling.effort <- metadata %>%
     dplyr::group_by(marine.park, method, sample, status, site, location, latitude, longitude, depth) %>%
     dplyr::summarise(number.of.times.sampled = dplyr::n()) %>%
-    dplyr::ungroup()
+    dplyr::ungroup() # Could also make this on the server side
 
   ### ► Generic data (still using "sample") ----
   ### ► Count ----
@@ -127,6 +128,8 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(count = as.numeric(count))
 
   count <- dplyr::bind_rows(count.csv, count.txt)
+
+  names(count)
 
   ### ► Length ----
   length.csv <- list.files(path = data.dir, recursive = T, pattern = "_Length.csv", full.names = T) %>% # list all files ending in "_Length.csv"
@@ -143,6 +146,8 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   length <- dplyr::bind_rows(length.csv, length.txt) %>%
     dplyr::filter(!is.na(length))
+
+  names(length)
 
   ### ► EventMeasure data ----
   points <- list.files(path = data.dir, recursive = T, pattern = "_Points.txt", full.names = T) %>%
@@ -189,7 +194,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::group_by(marine.park, campaignid, method, sample, family, genus, species) %>%
     dplyr::summarise(maxn = sum(count)) %>%
     dplyr::ungroup() %>%
-    tidyr::complete(tidyr::nesting(marine.park, method, campaignid, sample), tidyr::nesting(family, genus, species)) %>%
+    # tidyr::complete(tidyr::nesting(marine.park, method, campaignid, sample), tidyr::nesting(family, genus, species)) %>%
     tidyr::replace_na(list(maxn = 0)) %>%
     dplyr::left_join(metadata) %>%
     dplyr::mutate(scientific = paste(genus, species, sep = " ")) %>%
@@ -213,12 +218,14 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(maxn = as.numeric(maxn)) %>%
     dplyr::full_join(metadata) %>%
     dplyr::select(marine.park, method, campaignid, sample, family, genus, species, maxn) %>%
-    tidyr::complete(tidyr::nesting(marine.park, method, campaignid, sample), tidyr::nesting(family, genus, species)) %>%
+    # tidyr::complete(tidyr::nesting(marine.park, method, campaignid, sample), tidyr::nesting(family, genus, species)) %>%
     tidyr::replace_na(list(maxn = 0)) %>%
     dplyr::left_join(metadata) %>%
     dplyr::mutate(scientific = paste(genus, species, sep = " "))
 
   abundance <- dplyr::bind_rows(maxn, count.summary, count.maxn)
+  unique(abundance$marine.park)
+
   abundance$marine.park <- forcats::fct_relevel(abundance$marine.park, c(unique(lats$marine.park)))
 
   ## _______________________________________________________ ----
@@ -276,7 +283,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(number = 1) %>%
     dplyr::bind_rows(threed.points) %>%
     dplyr::full_join(metadata) %>%
-    tidyr::complete(tidyr::nesting(marine.park, method, campaignid, sample), tidyr::nesting(family, genus, species)) %>%
+    # tidyr::complete(tidyr::nesting(marine.park, method, campaignid, sample), tidyr::nesting(family, genus, species)) %>%
     tidyr::replace_na(list(number = 0)) %>%
     dplyr::select(marine.park, campaignid, method, sample, family, genus, species, number, length) %>%
     dplyr::left_join(metadata) %>%
@@ -378,7 +385,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
       downloaded_on = Sys.time(),
       lats = lats,
       abundance = abundance,
-      total.abundance = total.abundance,
+      # total.abundance = total.abundance, # I don't think this is being used
       trophic.abundance = trophic.abundance,
       all.data = all.data,
       fished.complete.length = fished.complete.length,
@@ -398,7 +405,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   )
 
   if (save == TRUE) {
-    saveRDS(x, dest, compress = "xz")
+    saveRDS(x, dest, compress = FALSE) #"xz"
   }
 
   x
@@ -416,7 +423,7 @@ print.mpa_data <- function(x, ...) {
     glue::glue(
       "<MPA Data> accessed on {x$downloaded_on}\n",
       "  Abundance:   {nrow(x$abundance)}\n",
-      "  total.abundance:   {nrow(x$total.abundance)}\n",
+      # "  total.abundance:   {nrow(x$total.abundance)}\n",
       "  trophic.abundance:   {nrow(x$trophic.abundance)}\n",
       "  all.data:    {nrow(x$all.data)}\n",
       "  fished.complete.length:    {nrow(x$fished.complete.length)}\n",

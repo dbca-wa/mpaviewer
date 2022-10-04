@@ -8,21 +8,25 @@ app_server <- function(input, output, session) {
   # mod_assetmap_server("assetmap_ui_1")
   #
   # Load data: generate with generate_data()
-  fn_mpa_data <- here::here("inst/data/mpa_data.rds")
-  mpa_data <- if (!fs::file_exists(fn_mpa_data)) {
-    # Download mpa_data.rds from the DBCA CKAN data catalogue
-    # TODO schedule download_data() to run e.g. every hour
-    # TODO automate generate_data() after moving all data assets to DBCA's CKAN
-    message("Data file not found, downloading from DBCA data catalogue...")
-    download_data()
-  } else {
-    reactiveFileReader(
-      1000, # Poll data file for changes every 1 second
-      NULL, # across sessions
-      fn_mpa_data, # relative to project or Dockerfile workdir
-      readRDS # using function readRDS
-    )
-  }
+
+  # Have turned this off for now to see if it makes the app faster
+  # fn_mpa_data <- here::here("inst/data/mpa_data.rds")
+  # mpa_data <- if (!fs::file_exists(fn_mpa_data)) {
+  #   # Download mpa_data.rds from the DBCA CKAN data catalogue
+  #   # TODO schedule download_data() to run e.g. every hour
+  #   # TODO automate generate_data() after moving all data assets to DBCA's CKAN
+  #   message("Data file not found, downloading from DBCA data catalogue...")
+  #   download_data()
+  # } else {
+  #   reactiveFileReader(
+  #     1000, # Poll data file for changes every 1 second
+  #     NULL, # across sessions
+  #     fn_mpa_data, # relative to project or Dockerfile workdir
+  #     readRDS # using function readRDS
+  #   )
+  # }
+
+  mpa_data <- reactive({readRDS(here::here("inst/data/mpa_data.rds"))})
 
   ## FUNCTIONS -----
   # TODO refactor as R/create_dropdown.R
@@ -536,14 +540,15 @@ app_server <- function(input, output, session) {
     # ggplotly(p)
   })
 
-  # Make total abundance plot interactive so the height changes with the number of inputs ----
-  output$ui.fish.state.total.plot <- renderUI({
-    dat <- mpa_data()$all.data %>%
-      dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
-      dplyr::filter(method %in% c(input$fish.state.method.dropdown))
-
-    plotOutput("fish.state.total.plot", height = 300 * length(unique(dat$marine.park)))
-  })
+  # THIS DOESN'T WORK ANYMORE AFTER FLORIAN'S CHANGES
+  # # Make total abundance plot interactive so the height changes with the number of inputs ----
+  # output$ui.fish.state.total.plot <- renderUI({
+  #   dat <- mpa_data()$all.data %>%
+  #     dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
+  #     dplyr::filter(method %in% c(input$fish.state.method.dropdown))
+  #
+  #   plotOutput("fish.state.total.plot", height = 300 * length(unique(dat$marine.park)))
+  # })
 
   # Species richness ----
   output$fish.state.rich.plot <- renderPlot({
@@ -1211,7 +1216,6 @@ app_server <- function(input, output, session) {
   output$benthic.state.coralcover.plot <- renderPlot({
     req(benthic_coral.cover_mean_site())
 
-
     p <- ggplot(data=subset(benthic_coral.cover_mean_site(), !year %in% c("1999")), aes(x=year, y=mean)) +
       geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), width=.025) +
       stat_smooth(method = "gam", formula = y ~ s(x, k=5), se=T, size = 1,col="black",linetype="solid") +
@@ -1228,7 +1232,7 @@ app_server <- function(input, output, session) {
   })
 
   benthic_rec_3c2 <- reactive({
-    req(mpa_data(), input$benthic.state.park.coralcover.dropdown)
+    req(mpa_data(), input$benthic.state.park.coralrecruitment.dropdown)
 
     mpa_data()$rec_3c2 %>%
       dplyr::filter(marine.park %in% c(input$benthic.state.park.coralrecruitment.dropdown))
@@ -1252,5 +1256,47 @@ app_server <- function(input, output, session) {
     p
   })
 
+  output$benthic.state.sampling.leaflet <- renderLeaflet({
+    #req(input$fish.state.park.dropdown, input$fish.state.method.dropdown)
+
+    map <- leaflet_basemap(fish_samplingeffort()) %>%
+      fitBounds(
+        ~ min(longitude),
+        ~ min(latitude),
+        ~ max(longitude),
+        ~ max(latitude)
+      ) %>%
+      # addMarkers(
+      #   lng = ~longitude,
+      #   lat = ~latitude,
+      #   label = ~ as.character(sample),
+      #   popup = ~content,
+      #   group = "Sampling locations"
+      # ) %>%
+      addGlPolygons(
+        data =  mpa_data()$state.mp,
+        color = ~ mpa_data()$state.pal(zone),
+        popup =  mpa_data()$state.mp$COMMENTS,
+        group = "Marine Parks"
+      ) %>%
+      addLegend(
+        pal = mpa_data()$state.pal,
+        values = mpa_data()$state.mp$zone,
+        opacity = 1,
+        title = "Zones",
+        position = "bottomright",
+        group = "Marine Parks"
+      ) %>%
+      addLayersControl(
+        overlayGroups = c(
+          #"Sampling locations",
+          "Marine Parks"),
+        options = layersControlOptions(collapsed = FALSE)
+      )
+
+
+
+    map
+  })
 
 }

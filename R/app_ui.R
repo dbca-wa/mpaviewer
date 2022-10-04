@@ -83,7 +83,7 @@ app_ui <- function(request) {
 
         tags$style(".left-side, .main-sidebar {padding-top: 55px}"),
 
-        width = "150px",
+        width = "125px",
         shinydashboard::sidebarMenu(id = "tabs",
           h1(" "), # to move the fish down a lil bit
           h1(" "), # to move the fish down a lil bit
@@ -102,7 +102,7 @@ app_ui <- function(request) {
       ),
       shinydashboard::dashboardBody(
         tags$head(
-          tags$style(HTML(".main-sidebar { font-size: 20px; }
+          tags$style(HTML(".main-sidebar { font-size: 18px; }
                        .skin-blue .main-header .navbar .sidebar-toggle {display: none;}
                       .main-header .navbar {height: 75px;; padding-top: 0px;}
                       .navbar-statis-top {height: 75px;}
@@ -339,21 +339,20 @@ app_ui <- function(request) {
                              choices = c("All park", "Taxa"),
                              multiple = FALSE,
                              selectize = TRUE
-                           ),
+                           )
+                         ),
 
                            conditionalPanel(
-                             'input.benthicstatecoralrecruitmentmetric == "All park"',
+                             'input.benthicstatemethoddropdown == "Coral recruitment" && input.benthicstatecoralrecruitmentmetric == "All park"',
                              withSpinner(plotOutput("benthic.state.coralrecruitment.all.plot", height = 500))
                            ),
 
                            conditionalPanel(
-                             'input.benthicstatecoralrecruitmentmetric == "Taxa"',
+                             'input.benthicstatemethoddropdown == "Coral recruitment" && input.benthicstatecoralrecruitmentmetric == "Taxa"',
                              htmlOutput("benthic.state.coralrecruitment.taxa.dropdown"),
                              withSpinner(plotOutput("benthic.state.coralrecruitment.taxa.plot", height = 500))
                            )
-
-                         )
-                ),
+                ), # end tab panel
                 tabPanel(
                   "Marine park",
                   column(
@@ -378,31 +377,32 @@ app_ui <- function(request) {
                         icon = icon("info")
                       )
                     )
-                  ),
-
-                  selectInput(
-                    width = "100%",
-                    "benthic.park.metric",
-                    "Choose a group of metrics to plot:",
-                    choices = c("Whole assemblage", "Individual species", "Target species", "Life history traits"),
-                    multiple = FALSE,
-                    selectize = TRUE
-                  ),
-                  conditionalPanel(
-                    'input.benthic.park.metric == "Whole assemblage"',
-                    withSpinner(plotOutput("benthic.park.total.plot", height = 250)),
-                    withSpinner(plotOutput("benthic.park.rich.plot", height = 250)),
-                    withSpinner(plotOutput("benthic.park.stack.plot", height = 500))
-                    # leafletOutput("fish.park.total.leaflet", height = 400)
-                  ),
-                  conditionalPanel(
-                    'input.benthic.park.metric == "Target species"',
-                    htmlOutput("benthic.park.fished.species.dropdown")#,
-                    # withSpinner(plotOutput("benthic.park.fished.species.abundance.plot", height = 500)),
-                    # withSpinner(plotOutput("fish.park.fished.species.kde.plot", height = 500))
                   )
+                #,
+                #
+                #   selectInput(
+                #     width = "100%",
+                #     "benthic.park.metric",
+                #     "Choose a group of metrics to plot:",
+                #     choices = c("Whole assemblage", "Individual species", "Target species", "Life history traits"),
+                #     multiple = FALSE,
+                #     selectize = TRUE
+                #   ),
+                #   conditionalPanel(
+                #     'input.benthic.park.metric == "Whole assemblage"',
+                #     withSpinner(plotOutput("benthic.park.total.plot", height = 250)),
+                #     withSpinner(plotOutput("benthic.park.rich.plot", height = 250)),
+                #     withSpinner(plotOutput("benthic.park.stack.plot", height = 500))
+                #     # leafletOutput("fish.park.total.leaflet", height = 400)
+                #   ),
+                #   conditionalPanel(
+                #     'input.benthic.park.metric == "Target species"',
+                #     htmlOutput("benthic.park.fished.species.dropdown")#,
+                #     # withSpinner(plotOutput("benthic.park.fished.species.abundance.plot", height = 500)),
+                #     # withSpinner(plotOutput("fish.park.fished.species.kde.plot", height = 500))
+                #   )
                 )
-              ),
+              ), # end tab box
               fluidRow(
                 div(column(
                   width = 4,
@@ -426,14 +426,8 @@ app_ui <- function(request) {
 
           tabItem(
             tabName = "info",
-          #   fluidRow(width = 12,
-          #            box(#style = "overflow: visible;",
-          #       width = 12, #height = "900", # 60vh shows all text but not all box
-          #       collapsible = FALSE, solidHeader = FALSE,
-          #       htmltools::includeMarkdown("inst/app/www/accessibility.Rmd"))
-          # )
 
-          fluidRow(
+            fluidRow(
             tabBox(
               title = "Info",
               width = 12,
