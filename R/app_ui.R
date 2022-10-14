@@ -353,30 +353,74 @@ app_ui <- function(request) {
                              withSpinner(plotOutput("benthic.state.coralrecruitment.taxa.plot", height = 500))
                            )
                 ), # end tab panel
-                tabPanel(
-                  "Marine park",
-                  column(
-                    width = 6,
+
+
+                tabPanel("Marine park",
+                         style = "overflow: visible",
+
+                         column(
+                           width = 6,
+
+                         selectInput(
+                           width = "100%",
+                           "benthicparkmethoddropdown",
+                           "Choose a metric to plot:",
+                           choices = c("Coral cover", "Coral recruitment"),
+                           multiple = FALSE,
+                           selectize = TRUE
+                         )
+                         # )
+                         ,
+
+                         conditionalPanel('input.benthicparkmethoddropdown == "Coral cover"', width = 6,
+                                          htmlOutput("benthic.park.coralcover.dropdown"),
+                                          htmlOutput("benthic.park.site.coralcover.dropdown"),
+
+                                             )
+                                          )
+
+                         ,
+
+                         column(
+                           width = 6,
+                           column(
+                             width = 11,
+                             uiOutput("ui.benthic.park.image")
+                           ),
+                           column(
+                             width = 1,
+                             actionBttn(
+                               inputId = "alert.benthic.marinepark",
+                               label = NULL,
+                               style = "material-circle",
+                               color = "primary",
+                               icon = icon("info")
+                             )
+                           )
+                         ),
+
+
+
+                    # column(width = 12,
+                           conditionalPanel('input.benthicparkmethoddropdown == "Coral cover"',
+                                     htmlOutput("benthic.park.sites.coralcover.dropdown"),
+                                     h4("Whole park:"),
+                                     withSpinner(plotOutput("benthic.park.coralcover.plot", height = 500)),
+
+                                     h4("By sector:"),
+                                     withSpinner(plotOutput("benthic.sector.coralcover.plot", height = 500)),
+
+                                     h4("By site:"),
+                                     withSpinner(plotOutput("benthic.site.coralcover.plot", height = 1000))
+                    # )
+                    ),
+
+
                     htmlOutput("benthic.park.dropdown"),
                     htmlOutput("benthic.park.method.dropdown"),
                     htmlOutput("benthic.park.site.dropdown")
-                  ),
-                  column(
-                    width = 6,
-                    column(
-                      width = 11,
-                      uiOutput("ui.benthic.park.image")
-                    ),
-                    column(
-                      width = 1,
-                      actionBttn(
-                        inputId = "alert.benthic.marinepark",
-                        label = NULL,
-                        style = "material-circle",
-                        color = "primary",
-                        icon = icon("info")
-                      )
-                    )
+
+
                   )
                 #,
                 #
@@ -401,7 +445,7 @@ app_ui <- function(request) {
                 #     # withSpinner(plotOutput("benthic.park.fished.species.abundance.plot", height = 500)),
                 #     # withSpinner(plotOutput("fish.park.fished.species.kde.plot", height = 500))
                 #   )
-                )
+
               ), # end tab box
               fluidRow(
                 div(column(
@@ -436,7 +480,7 @@ app_ui <- function(request) {
               tabPanel("Accessibility",
                        style = "overflow: visible",
                        # column(width = 5,
-                       htmltools::includeMarkdown("inst/app/www/accessibility.Rmd")
+                       htmltools::includeMarkdown("inst/app/www/accessibility.md")
               ),
               tabPanel("Contact",
                        style = "overflow: visible"#,

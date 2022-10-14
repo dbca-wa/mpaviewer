@@ -61,6 +61,15 @@ app_server <- function(input, output, session) {
     img(src = paste0("www/", park, ".jpg"), align = "right", width = "100%")
     # img(src = paste0("www/", "ningaloo", ".jpg"), align = "right", width = "100%")
   })
+
+  output$ui.benthic.park.image <- renderUI({
+    park <- stringr::str_replace_all(tolower(input$benthic.park.coralcover.dropdown), c("marine park" = "", " " = ""))
+
+    print(park)
+
+    img(src = paste0("www/coral_", park, ".jpg"), align = "right", width = "100%")
+    # img(src = paste0("www/", "ningaloo", ".jpg"), align = "right", width = "100%")
+  })
 ### FISH ----
   # State data ----
   # Create a marine park dropdown ----
@@ -1161,22 +1170,30 @@ app_server <- function(input, output, session) {
 
   observeEvent(
     input$alert.marinepark,
-    shinyalert::shinyalert(
+    # shinyalert::shinyalert(
+    #   title = input$fish.park.dropdown,
+    #   # text = "test", #filter(mpa_data()$park.popups, marine.park %in% c(input$fish.park.dropdown))$info,
+    #   size = "s",
+    #   closeOnEsc = TRUE,
+    #   closeOnClickOutside = FALSE,
+    #   html = FALSE,
+    #   type = "info",
+    #   showConfirmButton = TRUE,
+    #   showCancelButton = FALSE,
+    #   confirmButtonText = "OK",
+    #   confirmButtonCol = "#AEDEF4",
+    #   timer = 0,
+    #   imageUrl = "",
+    #   animation = FALSE
+    # )
+
+    showModal(modalDialog(
       title = input$fish.park.dropdown,
-      text = filter(mpa_data()$park.popups, marine.park %in% c(input$fish.park.dropdown))$info,
-      size = "s",
-      closeOnEsc = TRUE,
-      closeOnClickOutside = FALSE,
-      html = FALSE,
-      type = "info",
-      showConfirmButton = TRUE,
-      showCancelButton = FALSE,
-      confirmButtonText = "OK",
-      confirmButtonCol = "#AEDEF4",
-      timer = 0,
-      imageUrl = "",
-      animation = FALSE
-    )
+      htmltools::includeMarkdown(#"inst/app/www/popups/ningaloo.md"
+                                 paste0("inst/app/www/popups/", stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", " " = "")), ".md"))
+      # filter(mpa_data()$park.popups, marine.park %in% c(input$fish.park.dropdown))$info
+    ))
+
   )
 
   # BENTHIC ----
@@ -1186,9 +1203,9 @@ app_server <- function(input, output, session) {
     pickerInput(
       inputId = "benthic.state.park.coralcover.dropdown",
       label = "Choose Marine Parks to include:",
-      choices = c(unique(mpa_data()$coral.cover_site.means$marine.park)), #choices,
+      choices = c(unique(mpa_data()$coral_cover_metadata$marine.park)), #choices,
       multiple = TRUE,
-      selected = c(unique(mpa_data()$coral.cover_site.means$marine.park)), # choices,
+      selected = c(unique(mpa_data()$coral_cover_metadata$marine.park)), # choices,
       options = list(`actions-box` = TRUE, `live-search` = TRUE)
     )
   })
@@ -1204,32 +1221,155 @@ app_server <- function(input, output, session) {
     )
   })
 
-  # Data filtered by dropdowns fpr All marine park coral cover
-  benthic_coral.cover_mean_site <- reactive({
+  # Filter coral cover data to marine park and summarise per marine park per year
+  benthic_state_coral_cover <- reactive({
     req(mpa_data(), input$benthic.state.park.coralcover.dropdown)
 
-    mpa_data()$coral.cover_mean_site %>%
+    dat <- mpa_data()$coral_cover_transect %>%
       dplyr::filter(marine.park %in% c(input$benthic.state.park.coralcover.dropdown))
+
+
+
+    plyr::ddply(dat, plyr::.(marine.park, method, plot_year), .inform=TRUE, plyr::summarise,
+          n    = length(unique(site)),
+          mean = mean(percent_cover),
+          sd   = sd(percent_cover),
+          se   = sd(percent_cover) / sqrt(length(unique(site))))
+
   })
 
-  # Total abundance ----
+# Create state plot for coral cover per year faceted by marine park
   output$benthic.state.coralcover.plot <- renderPlot({
-    req(benthic_coral.cover_mean_site())
+    req(benthic_state_coral_cover())
 
-    p <- ggplot(data=subset(benthic_coral.cover_mean_site(), !year %in% c("1999")), aes(x=year, y=mean)) +
-      geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), width=.025) +
-      stat_smooth(method = "gam", formula = y ~ s(x, k=5), se=T, size = 1,col="black",linetype="solid") +
-      geom_point(size=2) +
+    p <- ggplot(data = subset(benthic_state_coral_cover(), !plot_year %in% c("1999")), aes(x = plot_year, y = mean)) +
+      geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = .025) +
+      stat_smooth(method = "gam", formula = y ~ s(x, k = 5), se = TRUE, size = 1, col = "black", linetype = "solid") +
+      geom_point(size = 2) +
       xlab("") +
       ylab("% Coral Cover (mean ± SE)") +
-      # scale_y_continuous(limits=c(-5,80)) +
-      scale_x_continuous(limits=c(1990,max(benthic_coral.cover_mean_site()$year)+1), breaks = seq(min(benthic_coral.cover_mean_site()$year), max(benthic_coral.cover_mean_site()$year), 2)) +
+      # scale_x_continuous(limits = c(1990, max(benthic_state_coral_cover()$plot_year) + 1), breaks = seq(min(benthic_state_coral_cover()$plot_year), max(benthic_state_coral_cover()$plot_year), 2)) +
       ggplot_mpatheme() +
       scale_y_continuous(expand = c(0, 0.1)) +
       facet_wrap(marine.park ~ ., scales = "free", ncol = 1)
 
     p
   })
+
+  # Marine park data
+  # Create a marine park dropdown ----
+  output$benthic.park.coralcover.dropdown <- renderUI({
+
+    options <- mpa_data()$coral_cover_metadata %>%
+      dplyr::distinct(marine.park) %>%
+      dplyr::pull("marine.park")
+
+    create_dropdown("benthic.park.coralcover.dropdown", options, "Choose a marine park:", FALSE)
+
+  })
+
+  # Create a site dropdown ----
+  output$benthic.park.site.coralcover.dropdown <- renderUI({
+    options <- mpa_data()$coral_cover_metadata %>%
+      dplyr::filter(marine.park %in% c(input$benthic.park.coralcover.dropdown)) %>%
+      dplyr::distinct(site) %>%
+      dplyr::arrange() %>%
+      dplyr::pull("site")
+
+    pickerInput(
+      inputId = "benthic.park.site.coralcover.dropdown",
+      label = "Choose sites to include:",
+      choices = options,
+      multiple = TRUE,
+      selected = options,
+      options = list(`actions-box` = TRUE, `live-search` = TRUE),
+      width = "100%"
+    )
+  })
+
+# Create marine park specific data
+  benthic_park_coral_cover <- reactive({
+    req(mpa_data(), input$benthic.park.coralcover.dropdown)
+
+    dat <- mpa_data()$coral_cover_transect %>%
+      dplyr::filter(marine.park %in% c(input$benthic.park.coralcover.dropdown)) %>%
+      dplyr::filter(site %in% c(input$benthic.park.site.coralcover.dropdown))
+
+    plyr::ddply(dat, plyr::.(plot_year), .inform = TRUE, summarise,
+          n    = length(unique(site)),
+          mean = mean(percent_cover),
+          sd   = sd(percent_cover),
+          se   = sd(percent_cover) / sqrt(length(unique(site))))
+
+  })
+
+  # Create plot for coral cover for one marine park
+  output$benthic.park.coralcover.plot <- renderPlot({
+    req(benthic_park_coral_cover())
+
+    p <- ggplot(data = subset(benthic_park_coral_cover(), !plot_year %in% c("1999")), aes(x = plot_year, y = mean)) +
+      geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = .025) +
+      stat_smooth(method = "gam", formula = y ~ s(x, k = 5), se = TRUE, size = 1, col = "black", linetype = "solid") +
+      geom_point(size = 2) +
+      xlab("") +
+      ylab("% Coral Cover (mean ± SE)") +
+      ggplot_mpatheme() +
+      scale_y_continuous(expand = c(0, 0.1))
+
+    p
+  })
+
+  # Create marine park specific data for sector/site
+  benthic_park_coral_cover_sector <- reactive({
+    req(mpa_data(), input$benthic.park.coralcover.dropdown)
+
+    dat <- mpa_data()$coral_cover_transect %>%
+      dplyr::filter(marine.park %in% c(input$benthic.park.coralcover.dropdown))%>%
+      dplyr::filter(site %in% c(input$benthic.park.site.coralcover.dropdown))
+
+    plyr::ddply(dat, plyr::.(plot_year, sector, site), .inform = TRUE, summarise,
+                n    = length(unique(site)),
+                mean = mean(percent_cover),
+                sd   = sd(percent_cover),
+                se   = sd(percent_cover) / sqrt(length(unique(site))))
+
+  })
+
+  # Create plot for coral cover for one marine park by sector
+  output$benthic.sector.coralcover.plot <- renderPlot({
+    req(benthic_park_coral_cover_sector())
+
+    p <- ggplot(data = subset(benthic_park_coral_cover_sector(), !plot_year %in% c("1999")), aes(x = plot_year, y = mean)) +
+      geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = .025) +
+      stat_smooth(method = "gam", formula = y ~ s(x, k = 5), se = TRUE, size = 1, col = "black", linetype = "solid") +
+      geom_point(size = 2) +
+      xlab("") +
+      ylab("% Coral Cover (mean ± SE)") +
+      ggplot_mpatheme() +
+      scale_y_continuous(expand = c(0, 0.1)) +
+      facet_wrap(sector ~ ., scales = "free", ncol = 1)
+
+    p
+  })
+
+  # Create plot for coral cover for one marine park by site
+  output$benthic.site.coralcover.plot <- renderPlot({
+    req(benthic_park_coral_cover_sector())
+
+    p <- ggplot(data = subset(benthic_park_coral_cover_sector(), !plot_year %in% c("1999")), aes(x = plot_year, y = mean)) +
+      geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = .025) + # error bars
+      stat_smooth(method = "gam", formula = y ~ poly(x, 3), se = F, size = 0.3, col = "black", linetype = "dashed") +
+      geom_hline(yintercept = 0, linetype = 2, colour = "grey") +
+      geom_point(size=1) +
+      xlab("") +
+      ylab(" % Coral Cover (mean ? SE)") +
+      ggplot_mpatheme() +
+      scale_y_continuous(expand = c(0, 0.1)) +
+      facet_wrap(site ~ ., scales = "free", ncol = 3)
+
+    p
+  })
+
 
   benthic_rec_3c2 <- reactive({
     req(mpa_data(), input$benthic.state.park.coralrecruitment.dropdown)
@@ -1256,23 +1396,38 @@ app_server <- function(input, output, session) {
     p
   })
 
+
+  benthic_coralcover_state_samplingeffort <- reactive({
+    req(mpa_data(), input$benthic.state.park.coralcover.dropdown)
+
+    mpa_data()$coral_cover_metadata %>%
+      dplyr::distinct(marine.park, zone, sector, site, latitude, longitude) %>%
+      dplyr::filter(marine.park %in% c(input$benthic.state.park.coralcover.dropdown)) %>%
+      dplyr::mutate(content = paste(
+        sep = " ",
+        "<b>Site:", site, "</b>", "<br/>",
+        "<b>Sector:</b>", sector, "<br/>",
+        "<b>Zone:</b>", zone, "<br/>"))%>%
+      dplyr::filter(!is.na(latitude))
+  })
+
   output$benthic.state.sampling.leaflet <- renderLeaflet({
     #req(input$fish.state.park.dropdown, input$fish.state.method.dropdown)
 
-    map <- leaflet_basemap(fish_samplingeffort()) %>%
+    map <- leaflet_basemap(benthic_coralcover_state_samplingeffort()) %>%
       fitBounds(
         ~ min(longitude),
         ~ min(latitude),
         ~ max(longitude),
         ~ max(latitude)
       ) %>%
-      # addMarkers(
-      #   lng = ~longitude,
-      #   lat = ~latitude,
-      #   label = ~ as.character(sample),
-      #   popup = ~content,
-      #   group = "Sampling locations"
-      # ) %>%
+      addMarkers(
+        lng = ~longitude,
+        lat = ~latitude,
+        label = ~ as.character(site),
+        popup = ~content,
+        group = "Sampling locations"
+      ) %>%
       addGlPolygons(
         data =  mpa_data()$state.mp,
         color = ~ mpa_data()$state.pal(zone),
@@ -1289,7 +1444,7 @@ app_server <- function(input, output, session) {
       ) %>%
       addLayersControl(
         overlayGroups = c(
-          #"Sampling locations",
+          "Sampling locations",
           "Marine Parks"),
         options = layersControlOptions(collapsed = FALSE)
       )
@@ -1298,5 +1453,64 @@ app_server <- function(input, output, session) {
 
     map
   })
+
+  benthic_coralcover_park_samplingeffort <- reactive({
+    req(mpa_data(), input$benthic.park.coralcover.dropdown)
+
+    mpa_data()$coral_cover_metadata %>%
+      dplyr::distinct(marine.park, zone, sector, site, latitude, longitude) %>%
+      dplyr::filter(marine.park %in% c(input$benthic.park.coralcover.dropdown)) %>%
+      dplyr::filter(site %in% c(input$benthic.park.site.coralcover.dropdown)) %>%
+      dplyr::mutate(content = paste(
+        sep = " ",
+        "<b>Site:", site, "</b>", "<br/>",
+        "<b>Sector:</b>", sector, "<br/>",
+        "<b>Zone:</b>", zone, "<br/>"))%>%
+      dplyr::filter(!is.na(latitude))
+  })
+
+  output$benthic.park.sampling.leaflet <- renderLeaflet({
+    #req(input$fish.state.park.dropdown, input$fish.state.method.dropdown)
+
+    map <- leaflet_basemap(benthic_coralcover_park_samplingeffort()) %>%
+      fitBounds(
+        ~ min(longitude),
+        ~ min(latitude),
+        ~ max(longitude),
+        ~ max(latitude)
+      ) %>%
+      addMarkers(
+        lng = ~longitude,
+        lat = ~latitude,
+        label = ~ as.character(site),
+        popup = ~content,
+        group = "Sampling locations"
+      ) %>%
+      addGlPolygons(
+        data =  mpa_data()$state.mp,
+        color = ~ mpa_data()$state.pal(zone),
+        popup =  mpa_data()$state.mp$COMMENTS,
+        group = "Marine Parks"
+      ) %>%
+      addLegend(
+        pal = mpa_data()$state.pal,
+        values = mpa_data()$state.mp$zone,
+        opacity = 1,
+        title = "Zones",
+        position = "bottomright",
+        group = "Marine Parks"
+      ) %>%
+      addLayersControl(
+        overlayGroups = c(
+          "Sampling locations",
+          "Marine Parks"),
+        options = layersControlOptions(collapsed = FALSE)
+      )
+
+
+
+    map
+  })
+
 
 }

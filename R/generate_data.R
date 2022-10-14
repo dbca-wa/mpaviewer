@@ -21,26 +21,60 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   # Benthic data
   # Currently not very pretty. Just saving csv files of the dataframes that Claire uses to create her plots.
 
-  coral.cover_site.means <- list.files(path = data.dir, recursive = T, pattern = "_site_means.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
-    purrr::map_df(~ read_dbca_files_csv(.)) %>%
-    dplyr::mutate(year = as.numeric(year),
-           mean = as.numeric(mean),
-           sd = as.numeric(sd),
-           se = as.numeric(se))
+  # coral.cover_site.means <- list.files(path = data.dir, recursive = T, pattern = "_site_means.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
+  #   purrr::map_df(~ read_dbca_files_csv(.)) %>%
+  #   dplyr::mutate(year = as.numeric(year),
+  #          mean = as.numeric(mean),
+  #          sd = as.numeric(sd),
+  #          se = as.numeric(se))
+  #
+  # coral.cover_mean_sector <- list.files(path = data.dir, recursive = T, pattern = "_mean_sector.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
+  #   purrr::map_df(~ read_dbca_files_csv(.)) %>%
+  #   dplyr::mutate(year = as.numeric(year),
+  #                 mean = as.numeric(mean),
+  #                 sd = as.numeric(sd),
+  #                 se = as.numeric(se))
+  #
+  # coral.cover_mean_site <- list.files(path = data.dir, recursive = T, pattern = "_mean_site.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
+  #   purrr::map_df(~ read_dbca_files_csv(.)) %>%
+  #   dplyr::mutate(year = as.numeric(year),
+  #                 mean = as.numeric(mean),
+  #                 sd = as.numeric(sd),
+  #                 se = as.numeric(se))
 
-  coral.cover_mean_sector <- list.files(path = data.dir, recursive = T, pattern = "_mean_sector.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
+  # New coral data in dashboard format
+  coral_cover <- list.files(path = data.dir, recursive = T, pattern = "_coralcover.csv", full.names = T) %>%
     purrr::map_df(~ read_dbca_files_csv(.)) %>%
+    dplyr::filter(level2class %in% c("Hard coral", "Octocorals - Hard")) %>%
     dplyr::mutate(year = as.numeric(year),
-                  mean = as.numeric(mean),
-                  sd = as.numeric(sd),
-                  se = as.numeric(se))
+                  percent_cover = as.numeric(percent_cover),
+                  plot_year = as.numeric(year),
+                  latitude = as.numeric(latitude),
+                  longitude = as.numeric(longitude))
 
-  coral.cover_mean_site <- list.files(path = data.dir, recursive = T, pattern = "_mean_site.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
-    purrr::map_df(~ read_dbca_files_csv(.)) %>%
-    dplyr::mutate(year = as.numeric(year),
-                  mean = as.numeric(mean),
-                  sd = as.numeric(sd),
-                  se = as.numeric(se))
+
+  coral_cover_metadata <- coral_cover %>%
+    dplyr::select(zone, sector, site, site_code, latitude, longitude, replicate, survey, year, date, plot_year, analysis, software, marine.park, method) %>%
+    dplyr::distinct()
+
+  coral_cover_transect <- plyr::ddply(coral_cover, plyr::.(marine.park, method, survey, plot_year, sector, site), plyr::summarize, percent_cover = sum(percent_cover))
+
+  # test <- anti_join(coral_cover_metadata, coral_cover_transect)
+  #
+  # test <- coral_cover_metadata %>%
+  #   group_by(sector, site, survey, plot_year) %>%
+  #   summarise(n=n())
+
+  # test <- plyr::ddply(coral_cover_transect, plyr::.(marine.park, method, plot_year), .inform=TRUE, plyr::summarise,
+  #             n    = length(unique(site)),
+  #             mean = mean(percent_cover),
+  #             sd   = sd(percent_cover),
+  #             se   = sd(percent_cover) / sqrt(length(unique(site))))
+
+
+
+
+
 
   rec_3b <- list.files(path = data.dir, recursive = T, pattern = "REC3b.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
     purrr::map_df(~ read_dbca_files_csv(.)) %>%
@@ -395,9 +429,8 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
       state.mp = state.mp,
       state.pal = state.pal,
       park.popups = park.popups,
-      coral.cover_mean_sector = coral.cover_mean_sector,
-      coral.cover_mean_site = coral.cover_mean_site,
-      coral.cover_site.means = coral.cover_site.means,
+      coral_cover_transect = coral_cover_transect,
+      coral_cover_metadata = coral_cover_metadata,
       rec_3b = rec_3b,
       rec_3c2 = rec_3c2
       ),

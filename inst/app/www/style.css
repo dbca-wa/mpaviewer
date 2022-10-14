@@ -124,3 +124,17 @@ a:hover {
       }
 
       .sticky_footer {    position:fixed;    bottom:0;    right:0;    left:0;    background:#3c8dbc;    z-index: 1000;    opacity: 0.9; }
+
+
+
+.modal-dialog {
+    border-radius: 20px;
+}
+
+.modal-body {
+    border-radius: 20px;
+}
+
+.modal-content {
+    border-radius: 20px;
+}
