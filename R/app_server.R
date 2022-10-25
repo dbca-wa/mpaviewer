@@ -197,7 +197,7 @@ app_server <- function(input, output, session) {
     pickerInput(
       inputId = "fish.park.site.dropdown",
       label = "Choose sites include:",
-      choices = options,
+      choices = sort(options),
       multiple = TRUE,
       selected = options,
       options = list(`actions-box` = TRUE, `live-search` = TRUE),
@@ -533,16 +533,29 @@ app_server <- function(input, output, session) {
                                    "#7bbc63")) +
       ggplot_mpatheme() +
       facet_wrap(marine.park ~ ., scales = "free", ncol = 1) +
-      geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
+      geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+      geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+
+      scale_x_break(c(fish_ta()$gazetted + 1 , min(fish_ta()$year)-1)) +
+
       geom_label(
-        x = fish_ta()$year.zoned,
+        x = fish_ta()$gazetted,
         y = +Inf,
-        label = "\n zoned",
+        label = "\n\n gazetted",
         size = 5,
         fill = "white",
         check_overlap = TRUE,
         label.size = NA
-      ) # +
+      ) +
+      geom_label(
+        x = fish_ta()$re.zoned,
+        y = +Inf,
+        label = "\n\n re-zoned",
+        size = 5,
+        fill = "white",
+        check_overlap = TRUE,
+        label.size = NA
+      )# +
     # annotate(x = fish_ta()$year.zoned, y = +Inf, label = "\n zoned", size = 6, fill = "white", geom = "text")
 
     p
@@ -586,8 +599,26 @@ app_server <- function(input, output, session) {
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(marine.park ~ ., scales = "free", ncol = 1) +
-      geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
-      geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA)
+      geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+      geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+      geom_label(
+        x = fish_ta()$gazetted,
+        y = +Inf,
+        label = "\n\n gazetted",
+        size = 5,
+        fill = "white",
+        check_overlap = TRUE,
+        label.size = NA
+      ) +
+      geom_label(
+        x = fish_ta()$re.zoned,
+        y = +Inf,
+        label = "\n\n re-zoned",
+        size = 5,
+        fill = "white",
+        check_overlap = TRUE,
+        label.size = NA
+      )
   })
 
   # Make species richness plot interactive so the height changes with the number of inputs ----
@@ -639,10 +670,29 @@ app_server <- function(input, output, session) {
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+      geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+      geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+      geom_label(
+        x = fish_ta()$gazetted,
+        y = +Inf,
+        label = "\n\n gazetted",
+        size = 5,
+        fill = "white",
+        check_overlap = TRUE,
+        label.size = NA
+      ) +
+      geom_label(
+        x = fish_ta()$re.zoned,
+        y = +Inf,
+        label = "\n\n re-zoned",
+        size = 5,
+        fill = "white",
+        check_overlap = TRUE,
+        label.size = NA
+      ) +
       facet_wrap(marine.park ~ trophic.group, scales = "free", ncol = length(unique(dat$trophic.group))) +
-      ggplot_mpatheme() +
-      geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
-      geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA)
+      ggplot_mpatheme()
+
   })
 
   # Make species richness plot interactive so the height changes with the number of inputs ----
@@ -746,8 +796,26 @@ app_server <- function(input, output, session) {
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(marine.park ~ scientific, scales = "free", ncol = length(unique(dat$scientific))) +
       ggplot_mpatheme() +
-      geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
-      geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA)
+      geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+      geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+      geom_label(
+        x = fish_ta()$gazetted,
+        y = +Inf,
+        label = "\n\n gazetted",
+        size = 5,
+        fill = "white",
+        check_overlap = TRUE,
+        label.size = NA
+      ) +
+      geom_label(
+        x = fish_ta()$re.zoned,
+        y = +Inf,
+        label = "\n\n re-zoned",
+        size = 5,
+        fill = "white",
+        check_overlap = TRUE,
+        label.size = NA
+      )
   })
 
 
@@ -783,8 +851,26 @@ app_server <- function(input, output, session) {
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(marine.park ~ scientific, scales = "free", ncol = length(unique(dat$scientific))) +
       ggplot_mpatheme() +
-      geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
-      geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA)
+      geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+      geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+      geom_label(
+        x = fish_ta()$gazetted,
+        y = +Inf,
+        label = "\n\n gazetted",
+        size = 5,
+        fill = "white",
+        check_overlap = TRUE,
+        label.size = NA
+      ) +
+      geom_label(
+        x = fish_ta()$re.zoned,
+        y = +Inf,
+        label = "\n\n re-zoned",
+        size = 5,
+        fill = "white",
+        check_overlap = TRUE,
+        label.size = NA
+      )
   })
 
 
@@ -924,8 +1010,26 @@ app_server <- function(input, output, session) {
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       ggplot_mpatheme() +
-      geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
-      geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA)
+      geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+      geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+      geom_label(
+        x = fish_ta()$gazetted,
+        y = +Inf,
+        label = "\n\n gazetted",
+        size = 5,
+        fill = "white",
+        check_overlap = TRUE,
+        label.size = NA
+      ) +
+      geom_label(
+        x = fish_ta()$re.zoned,
+        y = +Inf,
+        label = "\n\n re-zoned",
+        size = 5,
+        fill = "white",
+        check_overlap = TRUE,
+        label.size = NA
+      )
   })
 
   # Species richness ----
@@ -954,8 +1058,26 @@ app_server <- function(input, output, session) {
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       ggplot_mpatheme() +
-      geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
-      geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA)
+      geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+      geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+      geom_label(
+        x = fish_ta()$gazetted,
+        y = +Inf,
+        label = "\n\n gazetted",
+        size = 5,
+        fill = "white",
+        check_overlap = TRUE,
+        label.size = NA
+      ) +
+      geom_label(
+        x = fish_ta()$re.zoned,
+        y = +Inf,
+        label = "\n\n re-zoned",
+        size = 5,
+        fill = "white",
+        check_overlap = TRUE,
+        label.size = NA
+      )
   })
 
   ## ►  Stacked Abundance Plot ----
@@ -1004,8 +1126,26 @@ app_server <- function(input, output, session) {
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(trophic.group ~ ., scales = "free", ncol = 1) +
       ggplot_mpatheme() +
-      geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
-      geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA)
+      geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+      geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+      geom_label(
+        x = fish_ta()$gazetted,
+        y = +Inf,
+        label = "\n\n gazetted",
+        size = 5,
+        fill = "white",
+        check_overlap = TRUE,
+        label.size = NA
+      ) +
+      geom_label(
+        x = fish_ta()$re.zoned,
+        y = +Inf,
+        label = "\n\n re-zoned",
+        size = 5,
+        fill = "white",
+        check_overlap = TRUE,
+        label.size = NA
+      )
   })
 
 
@@ -1129,8 +1269,26 @@ app_server <- function(input, output, session) {
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(scientific ~ ., scales = "free", ncol = 1) +
       ggplot_mpatheme() +
-      geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
-      geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA)
+      geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+      geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+      geom_label(
+        x = fish_ta()$gazetted,
+        y = +Inf,
+        label = "\n\n gazetted",
+        size = 5,
+        fill = "white",
+        check_overlap = TRUE,
+        label.size = NA
+      ) +
+      geom_label(
+        x = fish_ta()$re.zoned,
+        y = +Inf,
+        label = "\n\n re-zoned",
+        size = 5,
+        fill = "white",
+        check_overlap = TRUE,
+        label.size = NA
+      )
   })
 
   # Make all species abundance plot interactive so the height changes with the number of inputs ----
@@ -1160,8 +1318,26 @@ app_server <- function(input, output, session) {
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(scientific ~ ., scales = "free", ncol = 1) +
       ggplot_mpatheme() +
-      geom_vline(aes(xintercept = year.zoned), linetype = "dashed") +
-      geom_label(x = dat$year.zoned, y = +Inf, label = "\n zoned", size = 5, fill = "white", check_overlap = TRUE, label.size = NA)
+      geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+      geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+      geom_label(
+        x = fish_ta()$gazetted,
+        y = +Inf,
+        label = "\n\n gazetted",
+        size = 5,
+        fill = "white",
+        check_overlap = TRUE,
+        label.size = NA
+      ) +
+      geom_label(
+        x = fish_ta()$re.zoned,
+        y = +Inf,
+        label = "\n\n re-zoned",
+        size = 5,
+        fill = "white",
+        check_overlap = TRUE,
+        label.size = NA
+      )
   })
 
 
@@ -1226,15 +1402,21 @@ app_server <- function(input, output, session) {
     req(mpa_data(), input$benthic.state.park.coralcover.dropdown)
 
     dat <- mpa_data()$coral_cover_transect %>%
-      dplyr::filter(marine.park %in% c(input$benthic.state.park.coralcover.dropdown))
+      dplyr::filter(marine.park %in% c(input$benthic.state.park.coralcover.dropdown)) %>%
+      dplyr::group_by(marine.park, method, plot_year) %>%
+      dplyr::summarise(n    = length(unique(site)),
+                       mean = mean(percent_cover),
+                       sd   = sd(percent_cover),
+                       se   = sd(percent_cover) / sqrt(length(unique(site))))
 
 
 
-    plyr::ddply(dat, plyr::.(marine.park, method, plot_year), .inform=TRUE, plyr::summarise,
-          n    = length(unique(site)),
-          mean = mean(percent_cover),
-          sd   = sd(percent_cover),
-          se   = sd(percent_cover) / sqrt(length(unique(site))))
+    # plyr::ddply(dat, plyr::.(marine.park, method, plot_year), .inform=TRUE, dplyr::summarise,
+    #       n    = length(unique(site)),
+    #       mean = mean(percent_cover),
+    #       sd   = sd(percent_cover),
+    #       se   = sd(percent_cover) / sqrt(length(unique(site))))
+
 
   })
 
@@ -1293,13 +1475,18 @@ app_server <- function(input, output, session) {
 
     dat <- mpa_data()$coral_cover_transect %>%
       dplyr::filter(marine.park %in% c(input$benthic.park.coralcover.dropdown)) %>%
-      dplyr::filter(site %in% c(input$benthic.park.site.coralcover.dropdown))
+      dplyr::filter(site %in% c(input$benthic.park.site.coralcover.dropdown)) %>%
+      dplyr::group_by(marine.park, method, plot_year) %>%
+      dplyr::summarise(n    = length(unique(site)),
+                       mean = mean(percent_cover),
+                       sd   = sd(percent_cover),
+                       se   = sd(percent_cover) / sqrt(length(unique(site))))
 
-    plyr::ddply(dat, plyr::.(plot_year), .inform = TRUE, summarise,
-          n    = length(unique(site)),
-          mean = mean(percent_cover),
-          sd   = sd(percent_cover),
-          se   = sd(percent_cover) / sqrt(length(unique(site))))
+    # plyr::ddply(dat, plyr::.(plot_year), .inform = TRUE, summarise,
+    #       n    = length(unique(site)),
+    #       mean = mean(percent_cover),
+    #       sd   = sd(percent_cover),
+    #       se   = sd(percent_cover) / sqrt(length(unique(site))))
 
   })
 
@@ -1325,13 +1512,18 @@ app_server <- function(input, output, session) {
 
     dat <- mpa_data()$coral_cover_transect %>%
       dplyr::filter(marine.park %in% c(input$benthic.park.coralcover.dropdown))%>%
-      dplyr::filter(site %in% c(input$benthic.park.site.coralcover.dropdown))
+      dplyr::filter(site %in% c(input$benthic.park.site.coralcover.dropdown)) %>%
+      dplyr::group_by(marine.park, method, plot_year, sector, site) %>%
+      dplyr::summarise(n    = length(unique(site)),
+                       mean = mean(percent_cover),
+                       sd   = sd(percent_cover),
+                       se   = sd(percent_cover) / sqrt(length(unique(site))))
 
-    plyr::ddply(dat, plyr::.(plot_year, sector, site), .inform = TRUE, summarise,
-                n    = length(unique(site)),
-                mean = mean(percent_cover),
-                sd   = sd(percent_cover),
-                se   = sd(percent_cover) / sqrt(length(unique(site))))
+    # plyr::ddply(dat, plyr::.(plot_year, sector, site), .inform = TRUE, summarise,
+    #             n    = length(unique(site)),
+    #             mean = mean(percent_cover),
+    #             sd   = sd(percent_cover),
+    #             se   = sd(percent_cover) / sqrt(length(unique(site))))
 
   })
 

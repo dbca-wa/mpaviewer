@@ -132,7 +132,42 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(latitude = as.numeric(latitude), longitude = as.numeric(longitude)) %>%
     dplyr::left_join(zoning) %>%
     dplyr::mutate(status = stringr::str_replace_all(.$status, c("Sanctuary" = "No-take"))) %>%
-    dplyr::select(marine.park, method, campaignid, sample, latitude, longitude, date, time, location, status, site, successful.count, successful.length, depth, observer, year, month, day, year.zoned) # Trying to remove columns to save space/time to load the app
+    dplyr::select(marine.park, method, campaignid, sample, latitude, longitude, date, time, location, status, site, successful.count, successful.length, depth, observer, year, month, day, gazetted, re.zoned) # Trying to remove columns to save space/time to load the app
+
+  #Check sites that were not sampled consitantly across all years
+
+  # Me trying to work out complete sites
+
+  years <- metadata %>%
+    dplyr::group_by(marine.park, method) %>%
+    dplyr::summarise(no.years.sampled = length(unique(year)))
+
+  times.sites.sampled <- metadata %>%
+    dplyr::group_by(marine.park, method, site) %>%
+    dplyr::summarise(no.times.site.sampled = length(unique(year))) %>%
+    dplyr::left_join(years) %>%
+    dplyr::mutate(complete.site = dplyr::if_else(no.times.site.sampled == no.years.sampled, "Yes", "No"))
+
+
+
+  # test <- metadata %>% dplyr::filter(marine.park %in% "Ngari Capes Marine Park", method %in% "stereo-BRUVs") %>%
+  #   dplyr::distinct(marine.park, site, year)
+  #
+  # test2 <- test %>% dplyr::group_by(marine.park, site) %>% dplyr::summarise(n = length(unique(year)))
+  #
+  # unique(test$year)
+  #
+  # table = table(test$site, test$year)
+  # table
+  # row_sub = apply(table, 1, function(row) all(row !=0 ))
+  # finalsites = table[row_sub,]
+  # finalsites
+  # #Have also removed L2 due to abnormally large schools of nebs in 2014
+  # #Note will show all sites in separate plot
+  # sites.limited = long.ab %>% filter(Site %in% rownames(finalsites))%>%
+  #   filter(!Site %in% "L2")
+
+
 
   names(metadata)
 

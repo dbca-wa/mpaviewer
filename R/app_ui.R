@@ -320,7 +320,8 @@ app_ui <- function(request) {
                            choices = c("Coral cover", "Coral recruitment"),
                            multiple = FALSE,
                            selectize = TRUE
-                         ),
+                         )
+                         ,
 
                          conditionalPanel('input.benthicstatemethoddropdown == "Coral cover"',
                            htmlOutput("benthic.state.park.coralcover.dropdown"),
@@ -369,10 +370,9 @@ app_ui <- function(request) {
                            multiple = FALSE,
                            selectize = TRUE
                          )
-                         # )
                          ,
 
-                         conditionalPanel('input.benthicparkmethoddropdown == "Coral cover"', width = 6,
+                         conditionalPanel('input.benthicparkmethoddropdown == "Coral cover"', #width = 6,
                                           htmlOutput("benthic.park.coralcover.dropdown"),
                                           htmlOutput("benthic.park.site.coralcover.dropdown"),
 
@@ -422,31 +422,9 @@ app_ui <- function(request) {
 
 
                   )
-                #,
-                #
-                #   selectInput(
-                #     width = "100%",
-                #     "benthic.park.metric",
-                #     "Choose a group of metrics to plot:",
-                #     choices = c("Whole assemblage", "Individual species", "Target species", "Life history traits"),
-                #     multiple = FALSE,
-                #     selectize = TRUE
-                #   ),
-                #   conditionalPanel(
-                #     'input.benthic.park.metric == "Whole assemblage"',
-                #     withSpinner(plotOutput("benthic.park.total.plot", height = 250)),
-                #     withSpinner(plotOutput("benthic.park.rich.plot", height = 250)),
-                #     withSpinner(plotOutput("benthic.park.stack.plot", height = 500))
-                #     # leafletOutput("fish.park.total.leaflet", height = 400)
-                #   ),
-                #   conditionalPanel(
-                #     'input.benthic.park.metric == "Target species"',
-                #     htmlOutput("benthic.park.fished.species.dropdown")#,
-                #     # withSpinner(plotOutput("benthic.park.fished.species.abundance.plot", height = 500)),
-                #     # withSpinner(plotOutput("fish.park.fished.species.kde.plot", height = 500))
-                #   )
 
-              ), # end tab box
+              )
+, # end tab box
               fluidRow(
                 div(column(
                   width = 4,

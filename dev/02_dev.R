@@ -23,6 +23,7 @@ usethis::use_package( "devtools" )
 usethis::use_package( "fs" )
 usethis::use_package( "here" )
 usethis::use_package( "rlang" )
+usethis::use_package( "ggbreak" )
 usethis::use_pipe()
 
 ## Add modules ----
