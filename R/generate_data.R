@@ -94,19 +94,34 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     read.csv(na.strings = c("NA", "NaN", " ", "", NA)) |>
     GlobalArchive::ga.clean.names()
 
+  life.history <- here::here("inst/data/DBCA.fish.feeding.guilds.target.status.csv") %>%
+    read.csv(na.strings = c("NA", "NaN", " ", "", NA)) |>
+    GlobalArchive::ga.clean.names()
+
   # unique(life.history$fishing.type)
   # unique(life.history$rls.trophic.group)
+  unique(life.history$target.code)
 
   fished.species <- life.history %>%
-    dplyr::filter(fishing.type %in% c("B/R", "B/C/R", "R", "C/R", "B/C", "C")) %>% # could minimise these
-    dplyr::select(genus, species) # turn on for testing Rottnest data
+    # dplyr::filter(fishing.type %in% c("B/R", "B/C/R", "R", "C/R", "B/C", "C")) %>% # could minimise these
+    dplyr::filter(target.code %in% c("HT", "T")) %>%
+    dplyr::select(genus, species) %>%
+    dplyr::distinct() #TODO keep the marine park column in this
+
+  unique(life.history$trophic.guild)
 
   trophic.groups <- life.history %>%
-    dplyr::mutate(trophic.group = GlobalArchive::ga.capitalise(rls.trophic.group)) %>%
-    dplyr::select(scientific, family, genus, species, trophic.group) %>%
-    dplyr::mutate(trophic.group = stringr::str_replace_all(.$trophic.group, c("NANA" = "Unknown")))
+    # dplyr::mutate(trophic.group = GlobalArchive::ga.capitalise(rls.trophic.group)) %>%
+    # dplyr::select(scientific, family, genus, species, trophic.group) %>%
+    # dplyr::mutate(trophic.group = stringr::str_replace_all(.$trophic.group, c("NANA" = "Unknown"))) %>%
+    dplyr::mutate(trophic.group = stringr::str_replace_all(.$trophic.guild, c("NANA" = "Unknown",
+                                                                              "NA" = "Unknown",
+                                                                              "planktivore" = "Planktivore",
+                                                                              "Algal Feeder" = "Algal feeder"))) %>%
+    tidyr::replace_na(list(trophic.group = "Unknown"))
 
-  # unique(trophic.groups$trophic.group)
+
+  unique(trophic.groups$trophic.group) %>%sort()
 
   park.popups <- here::here("inst/data/parks.popups.csv") |>
     read.csv(na.strings = c("NA", "NaN", " ", "", NA)) |>
@@ -378,38 +393,74 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   state.mp <- rgdal::readOGR(here::here("inst/data/spatial/WA_MPA_2018.shp"))
 
-  # filter out unassigned and unclassified
-  state.mp <- state.mp[!state.mp$ZONE_TYPE %in% c("Unassigned (IUCN IA)", "Unassigned (IUCN II)", "Unassigned (IUCN III)", "Unassigned (IUCN IV)", "Unassigned (IUCN VI)", "MMA (Unclassified) (IUCN VI)", "MP (Unclassified) (IUCN VI)"), ]
-  state.mp$zone <- stringr::str_replace_all(state.mp$ZONE_TYPE, c("[^[:alnum:]]" = " "))
-  state.mp$zone <- stringr::str_replace_all(state.mp$zone, c(
-    "Conservation Area  IUCN IA " = "Conservation (no-take)",
-    "General Use  IUCN II " = "General Use",
-    "General Use Area  IUCN VI " = "General Use",
-    "General Use Zone  IUCN II " = "General Use",
-    "Recreation Area  IUCN II " = "Recreation",
-    "Recreation Zone  IUCN II " = "Recreation",
-    "Sanctuary Area  IUCN VI " = "Sanctuary (no-take)",
-    "Sanctuary Zone  IUCN IA " = "Sanctuary (no-take)",
-    "Special Purpose Zone  Aquaculture   IUCN VI " = "Special Purpose",
-    "Special Purpose Zone  Benthic Protection   IUCN IV " = "Special Purpose",
-    "Special Purpose Zone  Dugong Protection   IUCN IV " = "Special Purpose",
-    "Special Purpose Zone  Habitat Protection   IUCN IV " = "Special Purpose",
-    "Special Purpose Zone  Pearling   IUCN VI " = "Special Purpose",
-    "Special Purpose Zone  Puerulus   IUCN IA " = "Special Purpose",
-    "Special Purpose Zone  Scientific Reference   IUCN II " = "Special Purpose",
-    "Special Purpose Zone  Scientific Reference   IUCN VI " = "Special Purpose",
-    "Special Purpose Zone  Seagrass Protection   IUCN IV " = "Special Purpose",
-    "Special Purpose Zone  Shore Based Activities   IUCN II " = "Special Purpose",
-    "Special Purpose Zone  Wildlife Conservation   IUCN VI " = "Special Purpose",
-    "Special Purpose Zone  Wildlife Viewing and Protection   IUCN IV " = "Special Purpose",
-    "Special Purpose Zone 1  Shore based Activities   IUCN II " = "Special Purpose",
-    "Special Purpose Zone 2  Shore based Activities   IUCN II " = "Special Purpose",
-    "Special Purpose Zone 3  Shore based Activities   IUCN II " = "Special Purpose",
-    "Special Purpose Zone 3  Shore based Activities   IUCN VI " = "Special Purpose",
-    "Special Purpose Zone 4  Shore based Activities   IUCN II " = "Special Purpose"
-  ))
 
-  state.mp$zone <- as.factor(state.mp$zone)
+  wampa  <- sf::st_read(here::here("inst/data/spatial/WA_MPA_2020_SP.shp"))                          # all wa mpas
+  # simplify state parks names
+  wampa$waname <- gsub("( \\().+(\\))", "", wampa$ZONE_TYPE)
+  wampa$waname <- gsub(" [1-4]", "", wampa$waname)
+  # ab_mpa$waname[ab_mpa$ZONE_TYPE == unique(ab_mpa$ZONE_TYPE)[14]] <-
+  #   c("Special Purpose Zone\n(Habitat Protection)")
+
+  wampa$waname[wampa$NAME == "Hamelin Pool"]     <- "Marine Nature Reserve"
+  wampa$waname[wampa$NAME == "Abrolhos Islands"] <- "Fish Habitat Protection Area"
+
+  wampa$waname <- dplyr::recode(wampa$waname,
+                                 "General Use" = "General Use",
+                                 "Special Purpose Zone (Shore Based Activities)" =
+                                   "Special Purpose Zone\n(Shore Based Activities)",
+                                 "Special Purpose Zone (Seagrass Protection) (IUCN IV)" = "Special Purpose Zone",
+                                "MMA" = "Marine Management Area",
+                                "MP" = "Marine Park",
+                                "Special Purpose Zone" = "Special Purpose",
+                                "Sanctuary Zone" = "Sanctuary (no-take)",
+                                "General Use Zone" = "General Use",
+                                "Recreation Area" = "Recreation",
+                                "Sanctuary Area" = "Sanctuary (no-take)",
+                                "Recreation Zone" = "Recreation",
+                                "Conservation Area" = "Conservation (no-take)",
+                                "General Use Area" = "General Use",
+
+  )
+
+  wampa <- wampa %>% dplyr::filter(!waname %in% c("Unassigned", "Marine Management Area", "Marine Nature Reserve", "Fish Habitat Protection Area", "Marine Park")) # TODO will need to include marine park soon
+  unique(test$NAME)
+
+  unique(wampa$waname)
+
+
+  # # filter out unassigned and unclassified
+  # state.mp <- state.mp[!state.mp$ZONE_TYPE %in% c("Unassigned (IUCN IA)", "Unassigned (IUCN II)", "Unassigned (IUCN III)", "Unassigned (IUCN IV)", "Unassigned (IUCN VI)", "MMA (Unclassified) (IUCN VI)", "MP (Unclassified) (IUCN VI)"), ]
+  # state.mp$zone <- stringr::str_replace_all(state.mp$ZONE_TYPE, c("[^[:alnum:]]" = " "))
+  # state.mp$zone <- stringr::str_replace_all(state.mp$zone, c(
+  #   "Conservation Area  IUCN IA " = "Conservation (no-take)",
+  #   "General Use  IUCN II " = "General Use",
+  #   "General Use Area  IUCN VI " = "General Use",
+  #   "General Use Zone  IUCN II " = "General Use",
+  #   "Recreation Area  IUCN II " = "Recreation",
+  #   "Recreation Zone  IUCN II " = "Recreation",
+  #   "Sanctuary Area  IUCN VI " = "Sanctuary (no-take)",
+  #   "Sanctuary Zone  IUCN IA " = "Sanctuary (no-take)",
+  #   "Special Purpose Zone  Aquaculture   IUCN VI " = "Special Purpose",
+  #   "Special Purpose Zone  Benthic Protection   IUCN IV " = "Special Purpose",
+  #   "Special Purpose Zone  Dugong Protection   IUCN IV " = "Special Purpose",
+  #   "Special Purpose Zone  Habitat Protection   IUCN IV " = "Special Purpose",
+  #   "Special Purpose Zone  Pearling   IUCN VI " = "Special Purpose",
+  #   "Special Purpose Zone  Puerulus   IUCN IA " = "Special Purpose",
+  #   "Special Purpose Zone  Scientific Reference   IUCN II " = "Special Purpose",
+  #   "Special Purpose Zone  Scientific Reference   IUCN VI " = "Special Purpose",
+  #   "Special Purpose Zone  Seagrass Protection   IUCN IV " = "Special Purpose",
+  #   "Special Purpose Zone  Shore Based Activities   IUCN II " = "Special Purpose",
+  #   "Special Purpose Zone  Wildlife Conservation   IUCN VI " = "Special Purpose",
+  #   "Special Purpose Zone  Wildlife Viewing and Protection   IUCN IV " = "Special Purpose",
+  #   "Special Purpose Zone 1  Shore based Activities   IUCN II " = "Special Purpose",
+  #   "Special Purpose Zone 2  Shore based Activities   IUCN II " = "Special Purpose",
+  #   "Special Purpose Zone 3  Shore based Activities   IUCN II " = "Special Purpose",
+  #   "Special Purpose Zone 3  Shore based Activities   IUCN VI " = "Special Purpose",
+  #   "Special Purpose Zone 4  Shore based Activities   IUCN II " = "Special Purpose"
+  # ))
+
+  state.mp <- wampa
+  state.mp$zone <- as.factor(state.mp$waname)
   state.mp$zone <- forcats::fct_relevel(
     state.mp$zone,
     "Conservation (no-take)",
@@ -428,7 +479,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   ), state.mp$zone)
 
 
-  spatial.data <- state.mp@data
+  # spatial.data <- state.mp@data
 
   # -----------------------------------------------------------------------------#
   # Write data to .rds

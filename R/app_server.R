@@ -158,7 +158,7 @@ app_server <- function(input, output, session) {
     pickerInput(
       inputId = "fish.state.trophic.dropdown",
       label = "Choose trophic groups to plot:",
-      choices = choices,
+      choices = sort(choices),
       multiple = TRUE,
       selected = choices,
       options = list(`actions-box` = TRUE, `live-search` = TRUE)
@@ -265,7 +265,7 @@ app_server <- function(input, output, session) {
     pickerInput(
       inputId = "fish.park.trophic.dropdown",
       label = "Choose trophic groups to plot:",
-      choices = choices,
+      choices = sort(choices),
       multiple = TRUE,
       selected = choices,
       options = list(`actions-box` = TRUE, `live-search` = TRUE)
@@ -532,32 +532,30 @@ app_server <- function(input, output, session) {
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       ggplot_mpatheme() +
-      facet_wrap(marine.park ~ ., scales = "free", ncol = 1) +
-      geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-      geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
 
-      scale_x_break(c(fish_ta()$gazetted + 1 , min(fish_ta()$year)-1)) +
+      # ggbreak::scale_x_break(c(1989, 2006)) + Maybe investigate this later
 
-      geom_label(
-        x = fish_ta()$gazetted,
-        y = +Inf,
-        label = "\n\n gazetted",
-        size = 5,
-        fill = "white",
-        check_overlap = TRUE,
-        label.size = NA
-      ) +
-      geom_label(
-        x = fish_ta()$re.zoned,
-        y = +Inf,
-        label = "\n\n re-zoned",
-        size = 5,
-        fill = "white",
-        check_overlap = TRUE,
-        label.size = NA
-      )# +
-    # annotate(x = fish_ta()$year.zoned, y = +Inf, label = "\n zoned", size = 6, fill = "white", geom = "text")
-
+      facet_wrap(marine.park ~ ., scales = "free", ncol = 1) #+
+      # geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+      # geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+      # geom_label(
+      #   x = fish_ta()$gazetted,
+      #   y = +Inf,
+      #   label = "\n\n gazetted",
+      #   size = 5,
+      #   fill = "white",
+      #   check_overlap = TRUE,
+      #   label.size = NA
+      # ) +
+      # geom_label(
+      #   x = fish_ta()$re.zoned,
+      #   y = +Inf,
+      #   label = "\n\n re-zoned",
+      #   size = 5,
+      #   fill = "white",
+      #   check_overlap = TRUE,
+      #   label.size = NA
+      # )
     p
     # ggplotly(p)
   })
@@ -598,27 +596,27 @@ app_server <- function(input, output, session) {
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
-      facet_wrap(marine.park ~ ., scales = "free", ncol = 1) +
-      geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-      geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
-      geom_label(
-        x = fish_ta()$gazetted,
-        y = +Inf,
-        label = "\n\n gazetted",
-        size = 5,
-        fill = "white",
-        check_overlap = TRUE,
-        label.size = NA
-      ) +
-      geom_label(
-        x = fish_ta()$re.zoned,
-        y = +Inf,
-        label = "\n\n re-zoned",
-        size = 5,
-        fill = "white",
-        check_overlap = TRUE,
-        label.size = NA
-      )
+      facet_wrap(marine.park ~ ., scales = "free", ncol = 1) #+
+      # geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+      # geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+      # geom_label(
+      #   x = fish_ta()$gazetted,
+      #   y = +Inf,
+      #   label = "\n\n gazetted",
+      #   size = 5,
+      #   fill = "white",
+      #   check_overlap = TRUE,
+      #   label.size = NA
+      # ) +
+      # geom_label(
+      #   x = fish_ta()$re.zoned,
+      #   y = +Inf,
+      #   label = "\n\n re-zoned",
+      #   size = 5,
+      #   fill = "white",
+      #   check_overlap = TRUE,
+      #   label.size = NA
+      # )
   })
 
   # Make species richness plot interactive so the height changes with the number of inputs ----
@@ -670,26 +668,26 @@ app_server <- function(input, output, session) {
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
-      geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-      geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
-      geom_label(
-        x = fish_ta()$gazetted,
-        y = +Inf,
-        label = "\n\n gazetted",
-        size = 5,
-        fill = "white",
-        check_overlap = TRUE,
-        label.size = NA
-      ) +
-      geom_label(
-        x = fish_ta()$re.zoned,
-        y = +Inf,
-        label = "\n\n re-zoned",
-        size = 5,
-        fill = "white",
-        check_overlap = TRUE,
-        label.size = NA
-      ) +
+      # geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+      # geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+      # geom_label(
+      #   x = fish_ta()$gazetted,
+      #   y = +Inf,
+      #   label = "\n\n gazetted",
+      #   size = 5,
+      #   fill = "white",
+      #   check_overlap = TRUE,
+      #   label.size = NA
+      # ) +
+      # geom_label(
+      #   x = fish_ta()$re.zoned,
+      #   y = +Inf,
+      #   label = "\n\n re-zoned",
+      #   size = 5,
+      #   fill = "white",
+      #   check_overlap = TRUE,
+      #   label.size = NA
+      # ) +
       facet_wrap(marine.park ~ trophic.group, scales = "free", ncol = length(unique(dat$trophic.group))) +
       ggplot_mpatheme()
 
@@ -795,27 +793,27 @@ app_server <- function(input, output, session) {
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(marine.park ~ scientific, scales = "free", ncol = length(unique(dat$scientific))) +
-      ggplot_mpatheme() +
-      geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-      geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
-      geom_label(
-        x = fish_ta()$gazetted,
-        y = +Inf,
-        label = "\n\n gazetted",
-        size = 5,
-        fill = "white",
-        check_overlap = TRUE,
-        label.size = NA
-      ) +
-      geom_label(
-        x = fish_ta()$re.zoned,
-        y = +Inf,
-        label = "\n\n re-zoned",
-        size = 5,
-        fill = "white",
-        check_overlap = TRUE,
-        label.size = NA
-      )
+      ggplot_mpatheme() #+
+      # geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+      # geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+      # geom_label(
+      #   x = fish_ta()$gazetted,
+      #   y = +Inf,
+      #   label = "\n\n gazetted",
+      #   size = 5,
+      #   fill = "white",
+      #   check_overlap = TRUE,
+      #   label.size = NA
+      # ) +
+      # geom_label(
+      #   x = fish_ta()$re.zoned,
+      #   y = +Inf,
+      #   label = "\n\n re-zoned",
+      #   size = 5,
+      #   fill = "white",
+      #   check_overlap = TRUE,
+      #   label.size = NA
+      # )
   })
 
 
@@ -850,27 +848,27 @@ app_server <- function(input, output, session) {
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(marine.park ~ scientific, scales = "free", ncol = length(unique(dat$scientific))) +
-      ggplot_mpatheme() +
-      geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-      geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
-      geom_label(
-        x = fish_ta()$gazetted,
-        y = +Inf,
-        label = "\n\n gazetted",
-        size = 5,
-        fill = "white",
-        check_overlap = TRUE,
-        label.size = NA
-      ) +
-      geom_label(
-        x = fish_ta()$re.zoned,
-        y = +Inf,
-        label = "\n\n re-zoned",
-        size = 5,
-        fill = "white",
-        check_overlap = TRUE,
-        label.size = NA
-      )
+      ggplot_mpatheme() #+
+      # geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+      # geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+      # geom_label(
+      #   x = fish_ta()$gazetted,
+      #   y = +Inf,
+      #   label = "\n\n gazetted",
+      #   size = 5,
+      #   fill = "white",
+      #   check_overlap = TRUE,
+      #   label.size = NA
+      # ) +
+      # geom_label(
+      #   x = fish_ta()$re.zoned,
+      #   y = +Inf,
+      #   label = "\n\n re-zoned",
+      #   size = 5,
+      #   fill = "white",
+      #   check_overlap = TRUE,
+      #   label.size = NA
+      # )
   })
 
 
@@ -1009,27 +1007,85 @@ app_server <- function(input, output, session) {
       scale_x_continuous(breaks = c(unique(dat$year))) +
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
+      ggplot_mpatheme() #+
+      # geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+      # geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+      # geom_label(
+      #   x = fish_ta()$gazetted,
+      #   y = +Inf,
+      #   label = "\n\n gazetted",
+      #   size = 5,
+      #   fill = "white",
+      #   check_overlap = TRUE,
+      #   label.size = NA
+      # ) +
+      # geom_label(
+      #   x = fish_ta()$re.zoned,
+      #   y = +Inf,
+      #   label = "\n\n re-zoned",
+      #   size = 5,
+      #   fill = "white",
+      #   check_overlap = TRUE,
+      #   label.size = NA
+      # )
+  })
+
+  # Total abundance by site ----
+  output$fish.park.total.site.plot <- renderPlot({
+    req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.site.dropdown)
+
+    dat <- mpa_data()$all.data %>%
+      dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
+      dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
+      dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
+      dplyr::filter(metric %in% c("Total abundance"))
+
+    label <- grobTree(textGrob(as.character("Total abundance"),
+                               x = 0.01, y = 0.97, hjust = 0,
+                               gp = gpar(col = "black", fontsize = 13, fontface = "italic")
+    ))
+
+    ggplot(dat, aes(x = year, y = value, fill = status)) +
+      stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
+      stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
+      xlab("Year") +
+      ylab("Average total abundance per sample \n(+/- SE)") +
+      annotation_custom(label) +
+      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+      scale_x_continuous(breaks = c(unique(dat$year))) +
+      scale_fill_manual(values = c("#b9e6fb",
+                                   "#7bbc63")) +
       ggplot_mpatheme() +
-      geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-      geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
-      geom_label(
-        x = fish_ta()$gazetted,
-        y = +Inf,
-        label = "\n\n gazetted",
-        size = 5,
-        fill = "white",
-        check_overlap = TRUE,
-        label.size = NA
-      ) +
-      geom_label(
-        x = fish_ta()$re.zoned,
-        y = +Inf,
-        label = "\n\n re-zoned",
-        size = 5,
-        fill = "white",
-        check_overlap = TRUE,
-        label.size = NA
-      )
+      facet_wrap(site ~ ., scales = "free", ncol = 3) # +
+    # geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+    # geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+    # geom_label(
+    #   x = fish_ta()$gazetted,
+    #   y = +Inf,
+    #   label = "\n\n gazetted",
+    #   size = 5,
+    #   fill = "white",
+    #   check_overlap = TRUE,
+    #   label.size = NA
+    # ) +
+    # geom_label(
+    #   x = fish_ta()$re.zoned,
+    #   y = +Inf,
+    #   label = "\n\n re-zoned",
+    #   size = 5,
+    #   fill = "white",
+    #   check_overlap = TRUE,
+    #   label.size = NA
+    # )
+  })
+
+  output$ui.fish.park.total.site.plot <- renderUI({
+    dat <- mpa_data()$all.data %>%
+      dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
+      dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
+      dplyr::filter(site %in% c(input$fish.park.site.dropdown))
+
+    plotOutput("fish.park.total.site.plot", height = 200 * length(unique(dat$site))/3)
   })
 
   # Species richness ----
@@ -1057,27 +1113,27 @@ app_server <- function(input, output, session) {
       scale_x_continuous(breaks = c(unique(dat$year))) +
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
-      ggplot_mpatheme() +
-      geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-      geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
-      geom_label(
-        x = fish_ta()$gazetted,
-        y = +Inf,
-        label = "\n\n gazetted",
-        size = 5,
-        fill = "white",
-        check_overlap = TRUE,
-        label.size = NA
-      ) +
-      geom_label(
-        x = fish_ta()$re.zoned,
-        y = +Inf,
-        label = "\n\n re-zoned",
-        size = 5,
-        fill = "white",
-        check_overlap = TRUE,
-        label.size = NA
-      )
+      ggplot_mpatheme()# +
+      # geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+      # geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+      # geom_label(
+      #   x = fish_ta()$gazetted,
+      #   y = +Inf,
+      #   label = "\n\n gazetted",
+      #   size = 5,
+      #   fill = "white",
+      #   check_overlap = TRUE,
+      #   label.size = NA
+      # ) +
+      # geom_label(
+      #   x = fish_ta()$re.zoned,
+      #   y = +Inf,
+      #   label = "\n\n re-zoned",
+      #   size = 5,
+      #   fill = "white",
+      #   check_overlap = TRUE,
+      #   label.size = NA
+      # )
   })
 
   ## ►  Stacked Abundance Plot ----
@@ -1125,27 +1181,27 @@ app_server <- function(input, output, session) {
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(trophic.group ~ ., scales = "free", ncol = 1) +
-      ggplot_mpatheme() +
-      geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-      geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
-      geom_label(
-        x = fish_ta()$gazetted,
-        y = +Inf,
-        label = "\n\n gazetted",
-        size = 5,
-        fill = "white",
-        check_overlap = TRUE,
-        label.size = NA
-      ) +
-      geom_label(
-        x = fish_ta()$re.zoned,
-        y = +Inf,
-        label = "\n\n re-zoned",
-        size = 5,
-        fill = "white",
-        check_overlap = TRUE,
-        label.size = NA
-      )
+      ggplot_mpatheme() #+
+      # geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+      # geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+      # geom_label(
+      #   x = fish_ta()$gazetted,
+      #   y = +Inf,
+      #   label = "\n\n gazetted",
+      #   size = 5,
+      #   fill = "white",
+      #   check_overlap = TRUE,
+      #   label.size = NA
+      # ) +
+      # geom_label(
+      #   x = fish_ta()$re.zoned,
+      #   y = +Inf,
+      #   label = "\n\n re-zoned",
+      #   size = 5,
+      #   fill = "white",
+      #   check_overlap = TRUE,
+      #   label.size = NA
+      # )
   })
 
 
@@ -1268,27 +1324,27 @@ app_server <- function(input, output, session) {
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(scientific ~ ., scales = "free", ncol = 1) +
-      ggplot_mpatheme() +
-      geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-      geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
-      geom_label(
-        x = fish_ta()$gazetted,
-        y = +Inf,
-        label = "\n\n gazetted",
-        size = 5,
-        fill = "white",
-        check_overlap = TRUE,
-        label.size = NA
-      ) +
-      geom_label(
-        x = fish_ta()$re.zoned,
-        y = +Inf,
-        label = "\n\n re-zoned",
-        size = 5,
-        fill = "white",
-        check_overlap = TRUE,
-        label.size = NA
-      )
+      ggplot_mpatheme() #+
+      # geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+      # geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+      # geom_label(
+      #   x = fish_ta()$gazetted,
+      #   y = +Inf,
+      #   label = "\n\n gazetted",
+      #   size = 5,
+      #   fill = "white",
+      #   check_overlap = TRUE,
+      #   label.size = NA
+      # ) +
+      # geom_label(
+      #   x = fish_ta()$re.zoned,
+      #   y = +Inf,
+      #   label = "\n\n re-zoned",
+      #   size = 5,
+      #   fill = "white",
+      #   check_overlap = TRUE,
+      #   label.size = NA
+      # )
   })
 
   # Make all species abundance plot interactive so the height changes with the number of inputs ----
@@ -1317,27 +1373,27 @@ app_server <- function(input, output, session) {
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(scientific ~ ., scales = "free", ncol = 1) +
-      ggplot_mpatheme() +
-      geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-      geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
-      geom_label(
-        x = fish_ta()$gazetted,
-        y = +Inf,
-        label = "\n\n gazetted",
-        size = 5,
-        fill = "white",
-        check_overlap = TRUE,
-        label.size = NA
-      ) +
-      geom_label(
-        x = fish_ta()$re.zoned,
-        y = +Inf,
-        label = "\n\n re-zoned",
-        size = 5,
-        fill = "white",
-        check_overlap = TRUE,
-        label.size = NA
-      )
+      ggplot_mpatheme() #+
+      # geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+      # geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+      # geom_label(
+      #   x = fish_ta()$gazetted,
+      #   y = +Inf,
+      #   label = "\n\n gazetted",
+      #   size = 5,
+      #   fill = "white",
+      #   check_overlap = TRUE,
+      #   label.size = NA
+      # ) +
+      # geom_label(
+      #   x = fish_ta()$re.zoned,
+      #   y = +Inf,
+      #   label = "\n\n re-zoned",
+      #   size = 5,
+      #   fill = "white",
+      #   check_overlap = TRUE,
+      #   label.size = NA
+      # )
   })
 
 
@@ -1461,7 +1517,7 @@ app_server <- function(input, output, session) {
     pickerInput(
       inputId = "benthic.park.site.coralcover.dropdown",
       label = "Choose sites to include:",
-      choices = options,
+      choices = sort(options),
       multiple = TRUE,
       selected = options,
       options = list(`actions-box` = TRUE, `live-search` = TRUE),
