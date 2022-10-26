@@ -263,7 +263,7 @@ app_ui <- function(request) {
                     h4("Species richness:"),
                     withSpinner(plotOutput("fish.park.rich.plot", height = 250)),
                     h4("Species richness by site:"),
-                    withSpinner(plotOutput("fish.park.rich.site.plot", height = 250)),
+                    withSpinner(uiOutput("ui.fish.park.rich.site.plot")),
                     h4("Most abundant species:"),
                     withSpinner(plotOutput("fish.park.stack.plot", height = 500))
                     # leafletOutput("fish.park.total.leaflet", height = 400)

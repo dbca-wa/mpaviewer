@@ -528,9 +528,9 @@ app_server <- function(input, output, session) {
         col = "black"
       ) +
       # scale_y_continuous(expand = expansion(mult = 10)) +
-      scale_x_continuous(breaks = c(unique(fish_ta()$year))) +
-      scale_fill_manual(values = c("#b9e6fb",
-                                   "#7bbc63")) +
+      # scale_x_continuous(breaks = c(unique(fish_ta()$year))) +
+      scale_x_continuous(breaks = seq(min(fish_ta()$year), max(fish_ta()$year), 2)) +
+      scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
       ggplot_mpatheme() +
 
       # ggbreak::scale_x_break(c(1989, 2006)) + Maybe investigate this later
@@ -592,7 +592,8 @@ app_server <- function(input, output, session) {
       annotation_custom(label) +
       ggplot_mpatheme() +
       scale_y_continuous(expand = c(0, 0.1)) +
-      scale_x_continuous(breaks = c(unique(dat$year))) +
+      # scale_x_continuous(breaks = c(unique(dat$year))) +
+      scale_x_continuous(breaks = seq(min(dat$year), max(dat$year), 2)) +
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
@@ -664,7 +665,8 @@ app_server <- function(input, output, session) {
       xlab("Year") +
       ylab("Average abundance per sample \n(+/- SE)") +
       scale_y_continuous(expand = c(0, 0.1)) +
-      scale_x_continuous(breaks = c(unique(dat$year))) +
+      # scale_x_continuous(breaks = c(unique(dat$year))) +
+      scale_x_continuous(breaks = seq(min(dat$year), max(dat$year), 2)) +
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
@@ -788,7 +790,8 @@ app_server <- function(input, output, session) {
       xlab("Year") +
       ylab("Average abundance of target species per sample \n(+/- SE)") +
       scale_y_continuous(expand = c(0, 0.1)) +
-      scale_x_continuous(breaks = c(unique(dat$year))) +
+      # scale_x_continuous(breaks = c(unique(dat$year))) +
+      scale_x_continuous(breaks = seq(min(dat$year), max(dat$year), 2)) +
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
@@ -843,7 +846,8 @@ app_server <- function(input, output, session) {
       xlab("Year") +
       ylab("Average abundance of target species per sample \n(+/- SE)") +
       scale_y_continuous(expand = c(0, 0.1)) +
-      scale_x_continuous(breaks = c(unique(dat$year))) +
+      # scale_x_continuous(breaks = c(unique(dat$year))) +
+      scale_x_continuous(breaks = seq(min(dat$year), max(dat$year), 2)) +
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
@@ -1004,7 +1008,8 @@ app_server <- function(input, output, session) {
       ylab("Average total abundance per sample \n(+/- SE)") +
       annotation_custom(label) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
-      scale_x_continuous(breaks = c(unique(dat$year))) +
+      # scale_x_continuous(breaks = c(unique(dat$year))) +
+      scale_x_continuous(breaks = seq(min(dat$year), max(dat$year), 2)) +
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       ggplot_mpatheme() #+
@@ -1052,7 +1057,8 @@ app_server <- function(input, output, session) {
       ylab("Average total abundance per sample \n(+/- SE)") +
       annotation_custom(label) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
-      scale_x_continuous(breaks = c(unique(dat$year))) +
+      # scale_x_continuous(breaks = c(unique(dat$year))) +
+      scale_x_continuous(breaks = seq(min(dat$year), max(dat$year), 2)) +
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       ggplot_mpatheme() +
@@ -1110,7 +1116,8 @@ app_server <- function(input, output, session) {
       ylab("Average number of species per sample \n(+/- SE)") +
       annotation_custom(label) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
-      scale_x_continuous(breaks = c(unique(dat$year))) +
+      # scale_x_continuous(breaks = c(unique(dat$year))) +
+      scale_x_continuous(breaks = seq(min(dat$year), max(dat$year), 2)) +
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       ggplot_mpatheme()# +
@@ -1134,6 +1141,65 @@ app_server <- function(input, output, session) {
       #   check_overlap = TRUE,
       #   label.size = NA
       # )
+  })
+
+  # Species richness by site ----
+  output$fish.park.rich.site.plot <- renderPlot({
+    req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.site.dropdown)
+
+    dat <- mpa_data()$all.data %>%
+      dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
+      dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
+      dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
+      dplyr::filter(metric %in% c("Species richness"))
+
+    label <- grobTree(textGrob(as.character("Species richness"),
+                               x = 0.01, y = 0.97, hjust = 0,
+                               gp = gpar(col = "black", fontsize = 13, fontface = "italic")
+    ))
+
+    ggplot(dat, aes(x = year, y = value, fill = status)) +
+      stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
+      stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
+      xlab("Year") +
+      ylab("Average number of species per sample \n(+/- SE)") +
+      annotation_custom(label) +
+      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+      # scale_x_continuous(breaks = c(unique(dat$year))) +
+      scale_x_continuous(breaks = seq(min(dat$year), max(dat$year), 2)) +
+      scale_fill_manual(values = c("#b9e6fb",
+                                   "#7bbc63")) +
+      ggplot_mpatheme() +
+      facet_wrap(site ~ ., scales = "free", ncol = 3)# +
+    # geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+    # geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+    # geom_label(
+    #   x = fish_ta()$gazetted,
+    #   y = +Inf,
+    #   label = "\n\n gazetted",
+    #   size = 5,
+    #   fill = "white",
+    #   check_overlap = TRUE,
+    #   label.size = NA
+    # ) +
+    # geom_label(
+    #   x = fish_ta()$re.zoned,
+    #   y = +Inf,
+    #   label = "\n\n re-zoned",
+    #   size = 5,
+    #   fill = "white",
+    #   check_overlap = TRUE,
+    #   label.size = NA
+    # )
+  })
+
+  output$ui.fish.park.rich.site.plot <- renderUI({
+    dat <- mpa_data()$all.data %>%
+      dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
+      dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
+      dplyr::filter(site %in% c(input$fish.park.site.dropdown))
+
+    plotOutput("fish.park.rich.site.plot", height = 200 * length(unique(dat$site))/3)
   })
 
   ## ►  Stacked Abundance Plot ----
@@ -1176,7 +1242,8 @@ app_server <- function(input, output, session) {
       xlab("Year") +
       ylab("Average abundance per sample \n(+/- SE)") +
       scale_y_continuous(expand = c(0, 0.1)) +
-      scale_x_continuous(breaks = c(unique(dat$year))) +
+      # scale_x_continuous(breaks = c(unique(dat$year))) +
+      scale_x_continuous(breaks = seq(min(dat$year), max(dat$year), 2)) +
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
@@ -1319,7 +1386,8 @@ app_server <- function(input, output, session) {
       xlab("Year") +
       ylab("Average abundance of target species per sample \n(+/- SE)") +
       scale_y_continuous(expand = c(0, 0.1)) +
-      scale_x_continuous(breaks = c(unique(dat$year))) +
+      # scale_x_continuous(breaks = c(unique(dat$year))) +
+      scale_x_continuous(breaks = seq(min(dat$year), max(dat$year), 2)) +
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
@@ -1368,7 +1436,8 @@ app_server <- function(input, output, session) {
       xlab("Year") +
       ylab("Average abundance of target species per sample \n(+/- SE)") +
       scale_y_continuous(expand = c(0, 0.1)) +
-      scale_x_continuous(breaks = c(unique(dat$year))) +
+      # scale_x_continuous(breaks = c(unique(dat$year))) +
+      scale_x_continuous(breaks = seq(min(dat$year), max(dat$year), 2)) +
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
