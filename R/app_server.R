@@ -187,6 +187,39 @@ app_server <- function(input, output, session) {
 
   # Create a site dropdown ----
   output$fish.park.site.dropdown <- renderUI({
+
+    if(input$fish.park.method.dropdown %in% "stereo-DOVs"){
+
+    options.complete <- mpa_data()$metadata %>%
+      dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
+      dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
+      dplyr::filter(complete %in% "Yes") %>%
+      dplyr::distinct(site) %>%
+      dplyr::arrange() %>%
+      dplyr::pull("site") %>%
+      sort()
+
+    options.incomplete <- mpa_data()$metadata %>%
+      dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
+      dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
+      dplyr::filter(!complete %in% "Yes") %>%
+      dplyr::distinct(site) %>%
+      dplyr::arrange() %>%
+      dplyr::pull("site") %>%
+      sort()
+
+    pickerInput(
+      inputId = "fish.park.site.dropdown",
+      label = "Choose sites to include:",
+      choices = list("Sites consistently sampled" = options.complete, "Other sites" = options.incomplete),
+      multiple = TRUE,
+      selected = options.complete,
+      options = list(`actions-box` = TRUE, `live-search` = TRUE),
+      width = "100%"
+    )
+
+    } else {
+
     options <- mpa_data()$metadata %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
@@ -196,13 +229,14 @@ app_server <- function(input, output, session) {
 
     pickerInput(
       inputId = "fish.park.site.dropdown",
-      label = "Choose sites include:",
+      label = "Choose sites to include:",
       choices = sort(options),
       multiple = TRUE,
       selected = options,
       options = list(`actions-box` = TRUE, `live-search` = TRUE),
       width = "100%"
     )
+    }
   })
 
   # Create a fished species dropdown ----
@@ -1480,6 +1514,17 @@ app_server <- function(input, output, session) {
 
 
   # Info buttons ----
+  observeEvent(input$state.ta,
+    showModal(modalDialog(
+      title = "How do we measure total abundance?",
+      htmltools::includeMarkdown(paste0("inst/app/www/popups/state_total.abundance.md"))))
+  )
+
+  observeEvent(input$state.sr,
+               showModal(modalDialog(
+                 title = "How do we measure species richness?",
+                 htmltools::includeMarkdown(paste0("inst/app/www/popups/state_species.richness.md"))))
+  )
 
   observeEvent(
     input$alert.marinepark,

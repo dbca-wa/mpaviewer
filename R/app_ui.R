@@ -123,8 +123,6 @@ app_ui <- function(request) {
         # }
 
         tags$head(tags$style(HTML(
-
-          # font-size: 20px;
           ".myClass {
         line-height: 50px;
         text-align: left;
@@ -153,12 +151,7 @@ app_ui <- function(request) {
 
 .skin-blue .main-sidebar, .skin-blue .wrapper {
     background-color: #3b3e42;
-}
-
-
-
-
-    "
+} "
         ))),
         tags$script(HTML('
       $(document).ready(function() {
@@ -190,9 +183,10 @@ app_ui <- function(request) {
                   ),
                   conditionalPanel(
                     'input.fishstatemetric == "Whole assemblage"',
-                    h4("Total abundance:"),
+                    h4("Total abundance  ", actionButton("state.ta", label = " ", icon = icon("info"), icon.library = "font awesome", style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
+                    # h4("Total abundance:"),
                     withSpinner(plotOutput("fish.state.total.plot", height = 500)), # ui.
-                    h4("Species richness:"),
+                    h4("Species richness  ", actionButton("state.sr", label = " ", icon = icon("info"), icon.library = "font awesome", style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
                     withSpinner(plotOutput("fish.state.rich.plot", height = 500)) # ui.
                     # plotOutput("fish.state.stack.plot", height = 500)
                   ),

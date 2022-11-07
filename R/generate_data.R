@@ -73,9 +73,6 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
 
 
-
-
-
   rec_3b <- list.files(path = data.dir, recursive = T, pattern = "REC3b.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
     purrr::map_df(~ read_dbca_files_csv(.)) %>%
     dplyr::mutate(year = as.numeric(year),
@@ -90,13 +87,25 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   ### ► Life history sheet ----
   ## Will need to replace with DBCA's own version eventually but this will work for time being
-  life.history <- here::here("inst/data/australia.life.history.csv") |>
+  common.names <- here::here("inst/data/australia.life.history.csv") |>
     read.csv(na.strings = c("NA", "NaN", " ", "", NA)) |>
-    GlobalArchive::ga.clean.names()
+    GlobalArchive::ga.clean.names() %>%
+    dplyr::select(scientific, family, genus, species, australian.common.name)
 
   life.history <- here::here("inst/data/DBCA.fish.feeding.guilds.target.status.csv") %>%
     read.csv(na.strings = c("NA", "NaN", " ", "", NA)) |>
     GlobalArchive::ga.clean.names()
+
+  complete.sites <- here::here("inst/data/temporal_years_sites.csv") %>%
+    read.csv(na.strings = c("NA", "NaN", " ", "", NA)) |>
+    dplyr::mutate(year = strsplit(as.character(include_years), split = ", "))%>%
+    tidyr::unnest(year) %>%
+    dplyr::mutate(site = strsplit(as.character(include_sites), split = ", "))%>%
+    tidyr::unnest(site) %>%
+    dplyr::distinct() %>%
+    dplyr::mutate(year = as.numeric(year)) %>%
+    dplyr::select(marine.park, method, year, site) %>%
+    dplyr::mutate(complete = "Yes")
 
   # unique(life.history$fishing.type)
   # unique(life.history$rls.trophic.group)
@@ -147,7 +156,8 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(latitude = as.numeric(latitude), longitude = as.numeric(longitude)) %>%
     dplyr::left_join(zoning) %>%
     dplyr::mutate(status = stringr::str_replace_all(.$status, c("Sanctuary" = "No-take"))) %>%
-    dplyr::select(marine.park, method, campaignid, sample, latitude, longitude, date, time, location, status, site, successful.count, successful.length, depth, observer, year, month, day, gazetted, re.zoned) # Trying to remove columns to save space/time to load the app
+    dplyr::left_join(complete.sites) %>%
+    dplyr::select(marine.park, method, campaignid, sample, latitude, longitude, date, time, location, status, site, successful.count, successful.length, depth, observer, year, month, day, gazetted, re.zoned, complete) # Trying to remove columns to save space/time to load the app
 
   #Check sites that were not sampled consitantly across all years
 
@@ -289,7 +299,8 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   count.maxn <- count %>%
     dplyr::filter(method %in% c("stereo-BRUVs")) %>%
     dplyr::group_by(marine.park, method, campaignid, sample, family, genus, species) %>%
-    dplyr::summarise(maxn = sum(count))
+    dplyr::summarise(maxn = sum(count)) %>%
+    dplyr::mutate(scientific = paste(genus, species, sep = " "))
 
   maxn <- points %>%
     dplyr::group_by(marine.park, method, campaignid, sample, filename, period, periodtime, frame, family, genus, species) %>%
@@ -307,7 +318,10 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::left_join(metadata) %>%
     dplyr::mutate(scientific = paste(genus, species, sep = " "))
 
-  abundance <- dplyr::bind_rows(maxn, count.summary, count.maxn)
+  abundance <- dplyr::bind_rows(maxn, count.summary, count.maxn) %>%
+    dplyr::left_join(common.names) %>%
+    dplyr::mutate(scientific = paste0(scientific, " (", australian.common.name, ")"))
+
   unique(abundance$marine.park)
 
   abundance$marine.park <- forcats::fct_relevel(abundance$marine.park, c(unique(lats$marine.park)))
@@ -317,10 +331,10 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   ## _______________________________________________________ ----
 
   fished.abundance <- dplyr::semi_join(abundance, fished.species) %>%
-    dplyr::group_by(marine.park, campaignid, method, sample, family, genus, species) %>%
+    dplyr::group_by(marine.park, campaignid, method, sample, scientific, family, genus, species) %>%
     dplyr::summarise(total.abundance = sum(maxn)) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(scientific = paste(genus, species, sep = " ")) %>%
+    # dplyr::mutate(scientific = paste(genus, species, sep = " ")) %>%
     dplyr::select(marine.park, campaignid, sample, total.abundance, method, scientific) %>%
     dplyr::left_join(metadata)
 
@@ -339,7 +353,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::select(marine.park, campaignid, sample, total.abundance, method)
 
   species.richness <- abundance %>%
-    dplyr::mutate(scientific = paste(family, genus, species, sep = " ")) %>%
+    # dplyr::mutate(scientific = paste(family, genus, species, sep = " ")) %>%
     dplyr::filter(maxn > 0) %>%
     dplyr::select(marine.park, method, campaignid, sample, scientific, maxn) %>%
     dplyr::group_by(marine.park, method, campaignid, sample) %>%
@@ -371,7 +385,9 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     tidyr::replace_na(list(number = 0)) %>%
     dplyr::select(marine.park, campaignid, method, sample, family, genus, species, number, length) %>%
     dplyr::left_join(metadata) %>%
-    dplyr::mutate(scientific = paste(genus, species, sep = " "))
+    dplyr::mutate(scientific = paste(genus, species, sep = " ")) %>%
+    dplyr::left_join(common.names) %>%
+    dplyr::mutate(scientific = paste0(scientific, " (", australian.common.name, ")"))
 
   complete.length$marine.park <- forcats::fct_relevel(complete.length$marine.park, c(unique(lats$marine.park)))
 
@@ -518,7 +534,8 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
       coral_cover_transect = coral_cover_transect,
       coral_cover_metadata = coral_cover_metadata,
       rec_3b = rec_3b,
-      rec_3c2 = rec_3c2
+      rec_3c2 = rec_3c2,
+      common.names = common.names
       ),
     class = "mpa_data"
   )
