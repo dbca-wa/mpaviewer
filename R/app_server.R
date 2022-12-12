@@ -1024,11 +1024,14 @@ app_server <- function(input, output, session) {
   output$fish.park.total.plot <- renderPlot({
     req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.site.dropdown)
 
+    print("fish.park.total.plot")
+
     dat <- mpa_data()$all.data %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
       dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
-      dplyr::filter(metric %in% c("Total abundance"))
+      dplyr::filter(metric %in% c("Total abundance")) %>%
+      glimpse()
 
     label <- grobTree(textGrob(as.character("Total abundance"),
       x = 0.01, y = 0.97, hjust = 0,

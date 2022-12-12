@@ -92,12 +92,19 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     GlobalArchive::ga.clean.names() %>%
     dplyr::select(scientific, family, genus, species, australian.common.name)
 
-  life.history <- here::here("inst/data/DBCA.fish.feeding.guilds.target.status.csv") %>%
-    read.csv(na.strings = c("NA", "NaN", " ", "", NA)) |>
+  # life.history <- here::here("inst/data/DBCA.fish.feeding.guilds.target.status.csv") %>%
+  #   read.csv(na.strings = c("NA", "NaN", " ", "", NA)) |>
+  #   GlobalArchive::ga.clean.names()
+
+
+  dbca.googlesheet.url <- "https://docs.google.com/spreadsheets/d/1qhqh1GSPWPaO6xRKAyI0FQEHVvlEOMnz_0hGqRKs5SA/edit#gid=0"
+
+  life.history <- googlesheets4::read_sheet(dbca.googlesheet.url, sheet = "life_history") %>%
     GlobalArchive::ga.clean.names()
 
-  complete.sites <- here::here("inst/data/temporal_years_sites.csv") %>%
-    read.csv(na.strings = c("NA", "NaN", " ", "", NA)) |>
+  1
+
+  complete.sites <- googlesheets4::read_sheet(dbca.googlesheet.url, sheet = "temporal_years_sites") %>%
     dplyr::mutate(year = strsplit(as.character(include_years), split = ", "))%>%
     tidyr::unnest(year) %>%
     dplyr::mutate(site = strsplit(as.character(include_sites), split = ", "))%>%
@@ -136,8 +143,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     read.csv(na.strings = c("NA", "NaN", " ", "", NA)) |>
     GlobalArchive::ga.clean.names()
 
-  zoning <- here::here("inst/data/zoning.csv") |>
-    read.csv(na.strings = c("NA", "NaN", " ", "", NA)) |>
+  zoning <- googlesheets4::read_sheet(dbca.googlesheet.url, sheet = "park_gazettal") %>%
     GlobalArchive::ga.clean.names()
 
   ## _______________________________________________________ ----
@@ -155,11 +161,16 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(day = substr(date, 7, 8)) %>%
     dplyr::mutate(latitude = as.numeric(latitude), longitude = as.numeric(longitude)) %>%
     dplyr::left_join(zoning) %>%
-    dplyr::mutate(status = stringr::str_replace_all(.$status, c("Sanctuary" = "No-take"))) %>%
+    dplyr::mutate(status = stringr::str_replace_all(.$status, c("Sanctuary" = "No-take",
+                                                                "No-Take" = "No-take",
+                                                                "Protected" = "No-take"))) %>%
     dplyr::left_join(complete.sites) %>%
+    dplyr::mutate(sample = dplyr::if_else(is.na(sample), paste(opcode, period, sep = "_"), sample)) %>%
     dplyr::select(marine.park, method, campaignid, sample, latitude, longitude, date, time, location, status, site, successful.count, successful.length, depth, observer, year, month, day, gazetted, re.zoned, complete) # Trying to remove columns to save space/time to load the app
 
-  #Check sites that were not sampled consitantly across all years
+    names(metadata)
+
+  #Check sites that were not sampled consistently across all years
 
   # Me trying to work out complete sites
 
@@ -203,6 +214,14 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   metadata$marine.park <- forcats::fct_relevel(metadata$marine.park, c(unique(lats$marine.park)))
 
+  # Testing
+  bruv.test <- metadata %>%
+    dplyr::filter(method %in% "stereo-BRUVs") %>%
+    dplyr::filter(marine.park %in% "Ningaloo Marine Park")
+
+
+
+
   ### ► Summarise to find sampling effort, this is used for the leaflet maps ----
   sampling.effort <- metadata %>%
     dplyr::group_by(marine.park, method, sample, status, site, location, latitude, longitude, depth) %>%
@@ -222,6 +241,8 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(count = as.numeric(count))
 
   count <- dplyr::bind_rows(count.csv, count.txt)
+
+  unique(count$campaignid)
 
   names(count)
 
@@ -244,24 +265,30 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   names(length)
 
   ### ► EventMeasure data ----
+  em.campaigns <- list.files(path = data.dir, recursive = T, pattern = "_Lengths.txt", full.names = T) %>%
+    purrr::map_df(~ read_dbca_files_txt(.)) %>%
+    dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Lengths.txt" = ""))) %>%
+    dplyr::distinct(campaignid) %>%
+    dplyr::pull("campaignid")
+
   points <- list.files(path = data.dir, recursive = T, pattern = "_Points.txt", full.names = T) %>%
     purrr::map_df(~ read_dbca_files_txt(.)) %>%
     dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Points.txt" = ""))) %>%
     dplyr::mutate(number = as.numeric(number)) %>%
-    dplyr::rename(sample = opcode)
+    dplyr::mutate(sample = dplyr::if_else(method %in% "stereo-DOVs", paste(opcode, period, sep = "_"), opcode))
 
   threed.points <- list.files(path = data.dir, recursive = T, pattern = "_3DPoints.txt", full.names = T) %>%
     purrr::map_df(~ read_dbca_files_txt(.)) %>%
     dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_3DPoints.txt" = ""))) %>%
     dplyr::mutate(number = as.numeric(number)) %>%
-    dplyr::rename(sample = opcode)
+    dplyr::mutate(sample = dplyr::if_else(method %in% "stereo-DOVs", paste(opcode, period, sep = "_"), opcode))
 
   lengths <- list.files(path = data.dir, recursive = T, pattern = "_Lengths.txt", full.names = T) %>%
     purrr::map_df(~ read_dbca_files_txt(.)) %>%
     dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Lengths.txt" = ""))) %>%
     dplyr::mutate(number = as.numeric(number)) %>%
     dplyr::mutate(length = as.numeric(length)) %>%
-    dplyr::rename(sample = opcode)
+    dplyr::mutate(sample = dplyr::if_else(method %in% "stereo-DOVs", paste(opcode, period, sep = "_"), opcode))
 
   ## _______________________________________________________ ----
   ##                   QUICK DATA CHECKS                     ----
@@ -278,11 +305,58 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   # samples not in count
   test <- dplyr::anti_join(metadata, count) # 138 samples without fish? does that make sense
 
+
+  ## _______________________________________________________ ----
+  ##                     COMPLETE LENGTH DATA                ----
+  ## _______________________________________________________ ----
+
+  # Have created length first to calc DOV abundance.
+
+  # Replicate rows where n is >1 for length dataframes
+  length <- length[rep(row.names(length), length$count), ]
+  lengths <- lengths[rep(row.names(lengths), lengths$number), ]
+
+  # names(threed.points)
+
+  generic <- length %>%
+    dplyr::mutate(number = 1) %>%
+    dplyr::select(!c(count))
+
+  complete.length <- generic %>%
+    dplyr::bind_rows(lengths) %>%
+    dplyr::mutate(number = 1) %>%
+    dplyr::bind_rows(threed.points) %>%
+    dplyr::full_join(metadata) %>%
+    # tidyr::complete(tidyr::nesting(marine.park, method, campaignid, sample), tidyr::nesting(family, genus, species)) %>%
+    tidyr::replace_na(list(number = 0)) %>%
+    dplyr::select(marine.park, campaignid, method, sample, family, genus, species, number, length) %>%
+    dplyr::left_join(metadata) %>%
+    dplyr::mutate(scientific = paste(genus, species, sep = " ")) %>%
+    dplyr::left_join(common.names) %>%
+    dplyr::mutate(scientific = paste0(scientific, " (", australian.common.name, ")"))
+
+  complete.length$marine.park <- forcats::fct_relevel(complete.length$marine.park, c(unique(lats$marine.park)))
+
+  unique(complete.length$marine.park)
+  names(complete.length)
   ## _______________________________________________________ ----
   ##                  COMPLETE ABUNDANCE DATA                ----
   ## _______________________________________________________ ----
 
-  # Create a complete total abundance dataset (For DOVs)
+  # stereo-DOV abundance from 3D points and lengths
+
+  dov.abundance <- dplyr::bind_rows(lengths, threed.points) %>%
+    dplyr::group_by(marine.park, campaignid, method, sample, family, genus, species) %>%
+    dplyr::summarise(maxn = sum(number)) %>%
+    dplyr::ungroup() %>%
+    dplyr::full_join(metadata) %>%
+    dplyr::mutate(scientific = paste(genus, species, sep = " ")) %>%
+    dplyr::filter(!method %in% c("stereo-BRUVs")) %>%
+    dplyr::filter(campaignid %in% c(em.campaigns))
+
+  unique(dov.abundance$campaignid)
+
+  # Create a complete total abundance dataset (For generic DOVs)
   count.summary <- count %>%
     dplyr::full_join(metadata) %>% # 2726 rows (527 samples)
     dplyr::group_by(marine.park, campaignid, method, sample, family, genus, species) %>%
@@ -292,7 +366,10 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     tidyr::replace_na(list(maxn = 0)) %>%
     dplyr::left_join(metadata) %>%
     dplyr::mutate(scientific = paste(genus, species, sep = " ")) %>%
-    dplyr::filter(!method %in% c("stereo-BRUVs"))
+    dplyr::filter(!method %in% c("stereo-BRUVs"))%>%
+    dplyr::filter(!campaignid %in% c(em.campaigns))
+
+  unique(count.summary$campaignid) %>%sort()
 
 
   ### MaxN (For BRUVs) ----
@@ -316,15 +393,23 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     # tidyr::complete(tidyr::nesting(marine.park, method, campaignid, sample), tidyr::nesting(family, genus, species)) %>%
     tidyr::replace_na(list(maxn = 0)) %>%
     dplyr::left_join(metadata) %>%
-    dplyr::mutate(scientific = paste(genus, species, sep = " "))
+    dplyr::mutate(scientific = paste(genus, species, sep = " ")) %>%
+    dplyr::filter(method %in% c("stereo-BRUVs"))
 
-  abundance <- dplyr::bind_rows(maxn, count.summary, count.maxn) %>%
+  unique(maxn$campaignid)
+
+  abundance <- dplyr::bind_rows(maxn, count.summary, dov.abundance) %>%
     dplyr::left_join(common.names) %>%
     dplyr::mutate(scientific = paste0(scientific, " (", australian.common.name, ")"))
 
   unique(abundance$marine.park)
 
   abundance$marine.park <- forcats::fct_relevel(abundance$marine.park, c(unique(lats$marine.park)))
+
+
+  abundance.test <- abundance %>%
+    dplyr::filter(marine.park %in% "Ningaloo Marine Park") %>%
+    dplyr::filter(method %in% "stereo-BRUVs")
 
   ## _______________________________________________________ ----
   ##                      ABUNDANCE METRICS                  ----
@@ -362,34 +447,6 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::full_join(metadata) %>%
     tidyr::replace_na(list(species.richness = 0))
 
-  ## _______________________________________________________ ----
-  ##                     COMPLETE LENGTH DATA                ----
-  ## _______________________________________________________ ----
-
-  # Replicate rows where n is >1 for length dataframes
-  length <- length[rep(row.names(length), length$count), ]
-  lengths <- lengths[rep(row.names(lengths), lengths$number), ]
-
-  # names(threed.points)
-
-  generic <- length %>%
-    dplyr::mutate(number = 1) %>%
-    dplyr::select(!c(count))
-
-  complete.length <- generic %>%
-    dplyr::bind_rows(lengths) %>%
-    dplyr::mutate(number = 1) %>%
-    dplyr::bind_rows(threed.points) %>%
-    dplyr::full_join(metadata) %>%
-    # tidyr::complete(tidyr::nesting(marine.park, method, campaignid, sample), tidyr::nesting(family, genus, species)) %>%
-    tidyr::replace_na(list(number = 0)) %>%
-    dplyr::select(marine.park, campaignid, method, sample, family, genus, species, number, length) %>%
-    dplyr::left_join(metadata) %>%
-    dplyr::mutate(scientific = paste(genus, species, sep = " ")) %>%
-    dplyr::left_join(common.names) %>%
-    dplyr::mutate(scientific = paste0(scientific, " (", australian.common.name, ")"))
-
-  complete.length$marine.park <- forcats::fct_relevel(complete.length$marine.park, c(unique(lats$marine.park)))
 
 
   ## _______________________________________________________ ----
@@ -542,6 +599,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   if (save == TRUE) {
     saveRDS(x, dest, compress = FALSE) #"xz"
+    # saveRDS(x, "inst/data/mpa_data.rds", compress = FALSE) #"xz"
   }
 
   x
