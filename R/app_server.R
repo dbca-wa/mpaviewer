@@ -54,7 +54,7 @@ app_server <- function(input, output, session) {
   # NOTE this depends on the image filename being identical to the data folders
   # in the source data (data/Ningaloo or data/Ningaloo Marine Park)
   output$ui.fish.park.image <- renderUI({
-    park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", " " = ""))
+    park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
 
     print(park)
 
@@ -63,16 +63,16 @@ app_server <- function(input, output, session) {
   })
 
   output$ui.benthic.park.image <- renderUI({
-    park <- stringr::str_replace_all(tolower(input$benthic.park.coralcover.dropdown), c("marine park" = "", " " = ""))
+    park <- stringr::str_replace_all(tolower(input$benthic.park.coralcover.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
 
     print(park)
 
     img(src = paste0("www/coral_", park, ".jpg"), align = "right", width = "100%")
     # img(src = paste0("www/", "ningaloo", ".jpg"), align = "right", width = "100%")
   })
-### FISH ----
-  # State data ----
-  # Create a marine park dropdown ----
+# FISH ----
+  #### STATE DROPDOWNS ----
+  ####### ►  Create a marine park dropdown ----
   output$fish.state.park.dropdown <- renderUI({
     choices <- mpa_data()$metadata %>%
       dplyr::distinct(marine.park) %>%
@@ -89,7 +89,7 @@ app_server <- function(input, output, session) {
     )
   })
 
-  # Create method dropdown ----
+  ####### ►  Create method dropdown ----
   output$fish.state.method.dropdown <- renderUI({
     choices <- mpa_data()$metadata %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
@@ -99,7 +99,7 @@ app_server <- function(input, output, session) {
     create_dropdown("fish.state.method.dropdown", choices, "Choose a method:", FALSE)
   })
 
-  # Create a fished species dropdown ----
+  ####### ►  Create a fished species dropdown ----
   output$fish.state.fished.species.dropdown <- renderUI({
     req(mpa_data())
 
@@ -117,13 +117,13 @@ app_server <- function(input, output, session) {
       inputId = "fish.state.fished.species.dropdown",
       label = "Choose target species to plot:",
       choices = choices,
-      multiple = TRUE,
-      selected = choices[1:3],
+      multiple = FALSE,
+      selected = choices[1],
       options = list(`actions-box` = TRUE, `live-search` = TRUE)
     )
   })
 
-  # Create a fished species dropdown ----
+  ####### ►  Create all species dropdown ----
   output$fish.state.all.species.dropdown <- renderUI({
     choices <- mpa_data()$abundance %>%
       dplyr::filter(maxn > 0) %>%
@@ -139,13 +139,13 @@ app_server <- function(input, output, session) {
       inputId = "fish.state.all.species.dropdown",
       label = "Choose species to plot:",
       choices = choices,
-      multiple = TRUE,
-      selected = choices[1:3],
+      multiple = FALSE,
+      selected = choices[1],
       options = list(`actions-box` = TRUE, `live-search` = TRUE)
     )
   })
 
-  # Create a trophic group dropdown ----
+  ####### ►  Create a trophic group dropdown ----
   output$fish.state.trophic.dropdown <- renderUI({
     choices <- mpa_data()$trophic.abundance %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
@@ -165,8 +165,8 @@ app_server <- function(input, output, session) {
     )
   })
 
-  # Marine Park dropdowns ----
-  # Create a marine park dropdown ----
+  #### MARINE PARK DROPDOWNS ----
+  ####### ►  Create a marine park dropdown ----
   output$fish.park.dropdown <- renderUI({
     options <- mpa_data()$metadata %>%
       dplyr::distinct(marine.park) %>%
@@ -175,7 +175,7 @@ app_server <- function(input, output, session) {
     create_dropdown("fish.park.dropdown", options, "Choose a marine park:", FALSE)
   })
 
-  # Create method dropdown ----
+  ####### ►  Create method dropdown ----
   output$fish.park.method.dropdown <- renderUI({
     options <- mpa_data()$metadata %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
@@ -185,7 +185,7 @@ app_server <- function(input, output, session) {
     create_dropdown("fish.park.method.dropdown", options, "Choose a method:", FALSE)
   })
 
-  # Create a site dropdown ----
+  ####### ►  Create a site dropdown ----
   output$fish.park.site.dropdown <- renderUI({
 
     if(input$fish.park.method.dropdown %in% "stereo-DOVs"){
@@ -239,7 +239,7 @@ app_server <- function(input, output, session) {
     }
   })
 
-  # Create a fished species dropdown ----
+  ####### ►  Create a fished species dropdown ----
   output$fish.park.fished.species.dropdown <- renderUI({
     choices <- mpa_data()$fished.complete.length %>%
       dplyr::filter(number > 0) %>%
@@ -256,13 +256,13 @@ app_server <- function(input, output, session) {
       inputId = "fish.park.fished.species.dropdown",
       label = "Choose target species to plot:",
       choices = choices,
-      multiple = TRUE,
+      multiple = FALSE,
       selected = choices[1],
       options = list(`actions-box` = TRUE, `live-search` = TRUE)
     )
   })
 
-  # Create an all species dropdown ----
+  ####### ►  Create an all species dropdown ----
   output$fish.park.all.species.dropdown <- renderUI({
     choices <- mpa_data()$abundance %>%
       dplyr::filter(maxn > 0) %>%
@@ -279,13 +279,13 @@ app_server <- function(input, output, session) {
       inputId = "fish.park.all.species.dropdown",
       label = "Choose species to plot:",
       choices = choices,
-      multiple = TRUE,
-      selected = choices[1:3],
+      multiple = FALSE,
+      selected = choices[1],
       options = list(`actions-box` = TRUE, `live-search` = TRUE)
     )
   })
 
-  # Create a trophic group dropdown ----
+  ####### ►  Create a trophic group dropdown ----
   output$fish.park.trophic.dropdown <- renderUI({
     choices <- mpa_data()$trophic.abundance %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
@@ -307,7 +307,7 @@ app_server <- function(input, output, session) {
   })
 
   #----------------------------------------------------------------------------#
-  # Data filtered by dropdowns
+  ####### ►  Data filtered by dropdowns ----
   fish_alldata <- reactive({
     req(mpa_data(), input$fish.state.park.dropdown, input$fish.state.method.dropdown)
 
@@ -349,8 +349,8 @@ app_server <- function(input, output, session) {
   })
 
   #----------------------------------------------------------------------------#
-  # State plots
-  # Sampling effort
+  #### STATE PLOTS ----
+  ####### ►  Sampling effort leaflet ----
   output$fish.state.sampling.leaflet <- renderLeaflet({
     req(input$fish.state.park.dropdown, input$fish.state.method.dropdown)
 
@@ -515,7 +515,8 @@ app_server <- function(input, output, session) {
       hideGroup("Species richness")
   })
 
-  # Total abundance ----
+
+  ####### ►  Total abundance ----
   output$fish.state.total.plot <- renderPlot({
     req(fish_ta())
 
@@ -604,7 +605,7 @@ app_server <- function(input, output, session) {
   #   plotOutput("fish.state.total.plot", height = 300 * length(unique(dat$marine.park)))
   # })
 
-  # Species richness ----
+  ####### ►  Species richness ----
   output$fish.state.rich.plot <- renderPlot({
     req(input$fish.state.park.dropdown, input$fish.state.method.dropdown)
 
@@ -654,7 +655,7 @@ app_server <- function(input, output, session) {
       # )
   })
 
-  # Make species richness plot interactive so the height changes with the number of inputs ----
+  ####### ►  Make species richness plot interactive so the height changes with the number of inputs ----
   output$ui.fish.state.rich.plot <- renderUI({
     dat <- mpa_data()$all.data %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
@@ -663,7 +664,7 @@ app_server <- function(input, output, session) {
     plotOutput("fish.state.rich.plot", height = 300 * length(unique(dat$marine.park)))
   })
 
-  ## ►  Stacked Abundance Plot ----
+  ####### ►  Stacked Abundance Plot ----
   output$fish.state.stack.plot <- renderPlot({
     maxn.sum <- mpa_data()$abundance %>%
       mutate(scientific = paste(genus, species, sep = " ")) %>%
@@ -673,7 +674,7 @@ app_server <- function(input, output, session) {
       arrange(desc(maxn)) %>%
       top_n(10)
 
-    ## ►  Total frequency of occurrence ----
+    ####### ►  Total frequency of occurrence ----
     ggplot(maxn.sum, aes(x = reorder(scientific, maxn), y = maxn)) +
       geom_bar(stat = "identity", position = position_dodge()) +
       coord_flip() +
@@ -684,7 +685,7 @@ app_server <- function(input, output, session) {
       scale_y_continuous(expand = expand_scale(mult = c(0, .1)))
   })
 
-  # Trophic group ----
+  ####### ►  Trophic group ----
   output$fish.state.trophic.plot <- renderPlot({
     req(input$fish.state.park.dropdown, input$fish.state.method.dropdown, input$fish.state.trophic.dropdown)
 
@@ -729,7 +730,7 @@ app_server <- function(input, output, session) {
 
   })
 
-  # Make species richness plot interactive so the height changes with the number of inputs ----
+  ####### ►  Make species richness plot interactive so the height changes with the number of inputs ----
   output$ui.fish.state.trophic.plot <- renderPlot({
     dat <- mpa_data()$all.data %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
@@ -738,7 +739,7 @@ app_server <- function(input, output, session) {
     plotOutput("fish.state.trophic.plot", height = 300 * length(unique(dat$marine.park)))
   })
 
-  # Fished species KDE ----
+  ####### ►  Fished species KDE ----
   output$fish.state.fished.species.kde.plot <- renderPlot({
     req(input$fish.state.park.dropdown, input$fish.state.method.dropdown, input$fish.state.fished.species.dropdown)
 
@@ -791,7 +792,7 @@ app_server <- function(input, output, session) {
     cowplot::plot_grid(plotlist = plot_list, ncol = 1)
   })
 
-  # Make KDE plot interactive so the height changes with the number of inputs ----
+  ####### ►  Make KDE plot interactive so the height changes with the number of inputs ----
   output$ui.fish.state.fished.species.kde.plot <- renderPlot({
     dat <- mpa_data()$all.data %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
@@ -800,7 +801,7 @@ app_server <- function(input, output, session) {
     plotOutput("fish.state.fished.species.kde.plot", height = 300 * length(unique(dat$marine.park)))
   })
 
-  # Make fished abundance plot interactive so the height changes with the number of inputs ----
+  ####### ►  Make fished abundance plot interactive so the height changes with the number of inputs ----
   output$ui.fish.state.fished.species.abundance.plot <- renderPlot({
     dat <- mpa_data()$all.data %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
@@ -809,7 +810,7 @@ app_server <- function(input, output, session) {
     plotOutput("fish.state.fished.species.abundance.plot", height = 300 * length(unique(dat$marine.park)))
   })
 
-  # Fished species abundance plot -----
+  ####### ►  Fished species abundance plot -----
   output$fish.state.fished.species.abundance.plot <- renderPlot({
     req(input$fish.state.park.dropdown, input$fish.state.method.dropdown, input$fish.state.fished.species.dropdown)
 
@@ -854,7 +855,7 @@ app_server <- function(input, output, session) {
   })
 
 
-  # Make all species abundance plot interactive so the height changes with the number of inputs ----
+  ####### ►  Make all species abundance plot interactive so the height changes with the number of inputs ----
   output$ui.fish.state.all.species.abundance.plot <- renderPlot({
     dat <- mpa_data()$all.data %>%
       dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
@@ -865,7 +866,7 @@ app_server <- function(input, output, session) {
     # plotOutput("fish.state.all.species.abundance.plot", height = 300 * length(input$fish.state.all.species.dropdown))
   })
 
-  # All species abundance ----
+  ####### ►  All species abundance ----
   output$fish.state.all.species.abundance.plot <- renderPlot({
     req(input$fish.state.method.dropdown, input$fish.state.park.dropdown, input$fish.state.all.species.dropdown)
 
@@ -909,9 +910,10 @@ app_server <- function(input, output, session) {
       # )
   })
 
-
+  #----------------------------------------------------------------------------#
+  #### MARINE PARK PLOTS ----
   # Start of marine park plots ----
-  # Sampling effort leaflet ----
+  ####### ►  Sampling effort leaflet ----
   output$fish.park.sampling.leaflet <- renderLeaflet({
     req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.site.dropdown)
 
@@ -1020,7 +1022,7 @@ app_server <- function(input, output, session) {
       hideGroup("Species richness")
   })
 
-  # Total abundance ----
+  ####### ►  Total abundance ----
   output$fish.park.total.plot <- renderPlot({
     req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.site.dropdown)
 
@@ -1072,7 +1074,7 @@ app_server <- function(input, output, session) {
       # )
   })
 
-  # Total abundance by site ----
+  ####### ►  Total abundance by site ----
   output$fish.park.total.site.plot <- renderPlot({
     req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.site.dropdown)
 
@@ -1137,7 +1139,7 @@ app_server <- function(input, output, session) {
     plotOutput("fish.park.total.site.plot", height = p.height)
   })
 
-  # Species richness ----
+  ####### ►  Species richness ----
   output$fish.park.rich.plot <- renderPlot({
     req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.site.dropdown)
 
@@ -1186,7 +1188,7 @@ app_server <- function(input, output, session) {
       # )
   })
 
-  # Species richness by site ----
+  ####### ►  Species richness by site ----
   output$fish.park.rich.site.plot <- renderPlot({
     req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.site.dropdown)
 
@@ -1251,7 +1253,7 @@ app_server <- function(input, output, session) {
     plotOutput("fish.park.rich.site.plot", height = p.height)
   })
 
-  ## ►  Stacked Abundance Plot ----
+  ####### ►  Stacked Abundance Plot ----
   output$fish.park.stack.plot <- renderPlot({
     maxn.sum <- mpa_data()$abundance %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
@@ -1275,7 +1277,7 @@ app_server <- function(input, output, session) {
       scale_y_continuous(expand = expand_scale(mult = c(0, .1)))
   })
 
-  # Trophic group ----
+  ####### ►  Trophic group ----
   output$fish.park.trophic.plot <- renderPlot({
     req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.site.dropdown, input$fish.park.trophic.dropdown)
 
@@ -1321,7 +1323,7 @@ app_server <- function(input, output, session) {
   })
 
 
-  # Total abundance leaflet ----
+  ####### ►  Total abundance leaflet ----
   output$fish.park.total.leaflet <- renderLeaflet({
     req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.site.dropdown)
 
@@ -1414,12 +1416,12 @@ app_server <- function(input, output, session) {
       facet_grid(year ~ scientific)
   })
 
-  # Make fished abundance plot interactive so the height changes with the number of inputs ----
+  ####### ►  Make fished abundance plot interactive so the height changes with the number of inputs ----
   output$ui.fish.park.fished.species.abundance.plot <- renderUI({
     plotOutput("fish.park.fished.species.abundance.plot", height = 300 * length(input$fish.park.fished.species.dropdown))
   })
 
-  # Fished abundance ----
+  ####### ►  Fished abundance ----
   output$fish.park.fished.species.abundance.plot <- renderPlot({
     req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.site.dropdown, input$fish.park.fished.species.dropdown)
 
@@ -1464,12 +1466,12 @@ app_server <- function(input, output, session) {
       # )
   })
 
-  # Make all species abundance plot interactive so the height changes with the number of inputs ----
+  ####### ►  Make all species abundance plot interactive so the height changes with the number of inputs ----
   output$ui.fish.park.all.species.abundance.plot <- renderUI({
     plotOutput("fish.park.all.species.abundance.plot", height = 300 * length(input$fish.park.all.species.dropdown))
   })
 
-  # All species abundance ----
+  ####### ►  All species abundance ----
   output$fish.park.all.species.abundance.plot <- renderPlot({
     req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.site.dropdown, input$fish.park.all.species.dropdown)
 
@@ -1515,8 +1517,56 @@ app_server <- function(input, output, session) {
   })
 
 
+# EXTRA CONTENT ----
+  # Species iFrames -----
+  ####### ►  State All species ----
+ output$fish.state.all.species.iframe <- renderUI({
+    dat <- mpa_data()$foa.codes %>%
+      dplyr::filter(scientific %in% c(input$fish.state.all.species.dropdown)) %>%
+      dplyr::distinct(url) %>%
+      dplyr::pull("url")
 
-  # Info buttons ----
+    frame <- tags$iframe(src = paste0(dat), height = 600, width = "100%")
+    frame
+
+  })
+
+  ####### ►  State Fished species ----
+  output$fish.state.fished.species.iframe <- renderUI({
+    dat <- mpa_data()$foa.codes %>%
+      dplyr::filter(scientific %in% c(input$fish.state.fished.species.dropdown)) %>%
+      dplyr::distinct(url) %>%
+      dplyr::pull("url")
+
+    frame <- tags$iframe(src = paste0(dat), height = 600, width = "100%")
+    frame
+
+  })
+
+  ####### ►  Marine Park All species ----
+  output$fish.park.all.species.iframe <- renderUI({
+    dat <- mpa_data()$foa.codes %>%
+      dplyr::filter(scientific %in% c(input$fish.park.all.species.dropdown)) %>%
+      dplyr::distinct(url) %>%
+      dplyr::pull("url")
+
+    frame <- tags$iframe(src = paste0(dat), height = 600, width = "100%")
+    frame
+
+  })
+  ####### ►  Marine Park Fished species ----
+  output$fish.park.fished.species.iframe <- renderUI({
+    dat <- mpa_data()$foa.codes %>%
+      dplyr::filter(scientific %in% c(input$fish.park.fished.species.dropdown)) %>%
+      dplyr::distinct(url) %>%
+      dplyr::pull("url")
+
+    frame <- tags$iframe(src = paste0(dat), height = 600, width = "100%")
+    frame
+
+  })
+
+  ####### ►  Info buttons ----
   observeEvent(input$state.ta,
     showModal(modalDialog(
       title = "How do we measure total abundance?",
@@ -1531,22 +1581,6 @@ app_server <- function(input, output, session) {
 
   observeEvent(
     input$alert.marinepark,
-    # shinyalert::shinyalert(
-    #   title = input$fish.park.dropdown,
-    #   # text = "test", #filter(mpa_data()$park.popups, marine.park %in% c(input$fish.park.dropdown))$info,
-    #   size = "s",
-    #   closeOnEsc = TRUE,
-    #   closeOnClickOutside = FALSE,
-    #   html = FALSE,
-    #   type = "info",
-    #   showConfirmButton = TRUE,
-    #   showCancelButton = FALSE,
-    #   confirmButtonText = "OK",
-    #   confirmButtonCol = "#AEDEF4",
-    #   timer = 0,
-    #   imageUrl = "",
-    #   animation = FALSE
-    # )
 
     showModal(modalDialog(
       title = input$fish.park.dropdown,
@@ -1559,7 +1593,7 @@ app_server <- function(input, output, session) {
 
   # BENTHIC ----
   # State data ----
-  # Create a marine park dropdown ----
+  ####### ►  Create a marine park dropdown ----
   output$benthic.state.park.coralcover.dropdown <- renderUI({
     pickerInput(
       inputId = "benthic.state.park.coralcover.dropdown",
@@ -1582,7 +1616,7 @@ app_server <- function(input, output, session) {
     )
   })
 
-  # Filter coral cover data to marine park and summarise per marine park per year
+  ####### ►  Filter coral cover data to marine park and summarise per marine park per year
   benthic_state_coral_cover <- reactive({
     req(mpa_data(), input$benthic.state.park.coralcover.dropdown)
 
@@ -1605,7 +1639,7 @@ app_server <- function(input, output, session) {
 
   })
 
-# Create state plot for coral cover per year faceted by marine park
+  ####### ►  Create state plot for coral cover per year faceted by marine park
   output$benthic.state.coralcover.plot <- renderPlot({
     req(benthic_state_coral_cover())
 
@@ -1623,8 +1657,8 @@ app_server <- function(input, output, session) {
     p
   })
 
-  # Marine park data
-  # Create a marine park dropdown ----
+  # Marine park data ----
+  ####### ►  Create a marine park dropdown ----
   output$benthic.park.coralcover.dropdown <- renderUI({
 
     options <- mpa_data()$coral_cover_metadata %>%
@@ -1635,7 +1669,7 @@ app_server <- function(input, output, session) {
 
   })
 
-  # Create a site dropdown ----
+  ####### ►  Create a site dropdown ----
   output$benthic.park.site.coralcover.dropdown <- renderUI({
     options <- mpa_data()$coral_cover_metadata %>%
       dplyr::filter(marine.park %in% c(input$benthic.park.coralcover.dropdown)) %>%
@@ -1654,7 +1688,7 @@ app_server <- function(input, output, session) {
     )
   })
 
-# Create marine park specific data
+  ####### ►  Create marine park specific data
   benthic_park_coral_cover <- reactive({
     req(mpa_data(), input$benthic.park.coralcover.dropdown)
 
@@ -1675,7 +1709,7 @@ app_server <- function(input, output, session) {
 
   })
 
-  # Create plot for coral cover for one marine park
+  ####### ►  Create plot for coral cover for one marine park
   output$benthic.park.coralcover.plot <- renderPlot({
     req(benthic_park_coral_cover())
 
@@ -1691,7 +1725,7 @@ app_server <- function(input, output, session) {
     p
   })
 
-  # Create marine park specific data for sector/site
+  ####### ►  Create marine park specific data for sector/site
   benthic_park_coral_cover_sector <- reactive({
     req(mpa_data(), input$benthic.park.coralcover.dropdown)
 
@@ -1712,7 +1746,7 @@ app_server <- function(input, output, session) {
 
   })
 
-  # Create plot for coral cover for one marine park by sector
+  ####### ►  Create plot for coral cover for one marine park by sector
   output$benthic.sector.coralcover.plot <- renderPlot({
     req(benthic_park_coral_cover_sector())
 
@@ -1729,7 +1763,7 @@ app_server <- function(input, output, session) {
     p
   })
 
-  # Create plot for coral cover for one marine park by site
+  ####### ►  Create plot for coral cover for one marine park by site
   output$benthic.site.coralcover.plot <- renderPlot({
     req(benthic_park_coral_cover_sector())
 
