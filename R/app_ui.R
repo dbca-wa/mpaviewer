@@ -82,6 +82,7 @@ app_ui <- function(request) {
         # div(class = "sticky_footer", p("test footer")),
 
         tags$style(".left-side, .main-sidebar {padding-top: 55px}"),
+        tags$head(tags$style(HTML('.box{-webkit-box-shadow: none; -moz-box-shadow: none;box-shadow: none;}'))),
 
         width = "125px",
         shinydashboard::sidebarMenu(id = "tabs",
@@ -168,8 +169,9 @@ app_ui <- function(request) {
                 width = 8,
                 # width = "55%", # was 95%
                 id = "tabset1", height = "78vh",
+                ## STATE ----
                 tabPanel("State-wide",
-                  style = "overflow: visible",
+                  style = "overflow: auto", #TODO check this was visible
                   # column(width = 5,
                   htmlOutput("fish.state.park.dropdown"),
                   htmlOutput("fish.state.method.dropdown", multiple = FALSE),
@@ -209,8 +211,12 @@ app_ui <- function(request) {
                     withSpinner(plotOutput("fish.state.trophic.plot", height = 500))
                   )
                 ),
+
+                ## MARINE PARK ----
                 tabPanel(
                   "Marine park",
+                  style = "overflow: auto", #TODO check this was visible
+                  # box(width = 12, title = "Filter data", solidHeader = TRUE, #status = "warning",
                   column(
                     width = 6,
                     htmlOutput("fish.park.dropdown"),
@@ -233,7 +239,8 @@ app_ui <- function(request) {
                         icon = icon("info")
                       )
                     )
-                  ),
+                  )#)
+                  ,
 
                   # ),
                   # column(width = 9,
@@ -241,6 +248,7 @@ app_ui <- function(request) {
                   # leafletOutput(width = "100%", "fish.park.sampling.leaflet", height = 400),
                   # ),
 
+                  # box(width = 12, title = "Plot data", #solidHeader = TRUE, #status = "warning",
                   selectInput(
                     width = "100%",
                     "fishparkmetric",
@@ -248,13 +256,22 @@ app_ui <- function(request) {
                     choices = c("Whole assemblage", "Individual species", "Target species", "Life history traits"),
                     multiple = FALSE,
                     selectize = TRUE
-                  ),
+                  )#)
+                  ,
                   conditionalPanel(
                     'input.fishparkmetric == "Whole assemblage"',
-                    h4("Total abundance:"),
+
+                    # box(width = 12, title = "Total abundance:",
+                    h4("Total abundance:", actionButton("park.ta", label = " ",
+                                                         icon = icon("info"),
+                                                         icon.library = "font awesome",
+                                                         style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
+
                     withSpinner(plotOutput("fish.park.total.plot", height = 250)),
 
-                    h4("Most abundant species:"),
+                    uiOutput("fish.park.total.trend"),
+
+                    h3("Most abundant species:"), # TODO check
                     withSpinner(plotOutput("fish.park.stack.plot", height = 500)),
 
                     h4("Total abundance by sanctuary:"),
@@ -262,9 +279,15 @@ app_ui <- function(request) {
 
                     h4("Total abundance by site:"),
                     withSpinner(uiOutput("ui.fish.park.total.site.plot")),
+                    # ),
 
-                    h4("Species richness:"),
+                    h4("Species richness:", actionButton("park.sr", label = " ",
+                                                          icon = icon("info"),
+                                                          icon.library = "font awesome",
+                                                          style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
                     withSpinner(plotOutput("fish.park.rich.plot", height = 250)),
+
+                    uiOutput("fish.park.rich.trend"),
 
                     h4("Species richness by sanctuary:"),
                     withSpinner(uiOutput("ui.fish.park.rich.sanctuary.plot")),
@@ -293,6 +316,9 @@ app_ui <- function(request) {
                   )
                 )
               ),
+
+              # box(solidHeader = TRUE, "test box"),
+
               fluidRow(
                 div(column(
                   width = 4,

@@ -162,6 +162,9 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::left_join(common.names) %>%
     dplyr::mutate(scientific = paste0(scientific, " (", australian.common.name, ")"))
 
+  interpretation.trends <- googlesheets4::read_sheet(dbca.googlesheet.url, sheet = "interpretation_trends") %>%
+    GlobalArchive::ga.clean.names()
+
   ## _______________________________________________________ ----
   ##                        READ IN DATA                     ----
   ## _______________________________________________________ ----
@@ -687,7 +690,8 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
       rec_3b = rec_3b,
       rec_3c2 = rec_3c2,
       common.names = common.names,
-      foa.codes = foa.codes
+      foa.codes = foa.codes,
+      interpretation.trends = interpretation.trends
       ),
     class = "mpa_data"
   )
