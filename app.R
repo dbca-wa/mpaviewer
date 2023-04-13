@@ -27,21 +27,3 @@ mpaviewer::run_app()
 
 # Step 5. Deploy to shiny server for testing
 # rsconnect::deployApp()
-
-
-
-
-
-
-## To Delete later
-
-
-test.dat <- readRDS(here::here("inst/data/mpa_data.rds"))
-metadata <- test.dat$metadata
-
-with.location <- metadata %>%
-  dplyr::filter(!is.na(location))
-
-unique(metadata$location)
-
-abundance <- test.dat$abundance
