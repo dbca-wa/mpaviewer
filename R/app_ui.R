@@ -194,12 +194,14 @@ app_ui <- function(request) {
                     'input.fishstatemetric == "Target species"',
                     htmlOutput("fish.state.fished.species.dropdown"),
                     withSpinner(plotOutput("fish.state.fished.species.abundance.plot", height = 500)),
+                    htmlOutput("fish.state.fished.species.iframe"),
                     withSpinner(plotOutput("fish.state.fished.species.kde.plot", height = 500))
                   ),
                   conditionalPanel(
                     'input.fishstatemetric == "Individual species"',
                     htmlOutput("fish.state.all.species.dropdown"),
-                    withSpinner(plotOutput("fish.state.all.species.abundance.plot", height = 500))
+                    withSpinner(plotOutput("fish.state.all.species.abundance.plot", height = 500)),
+                    htmlOutput("fish.state.all.species.iframe")
                   ),
                   conditionalPanel(
                     'input.fishstatemetric == "Life history traits"',
@@ -266,12 +268,14 @@ app_ui <- function(request) {
                     'input.fishparkmetric == "Target species"',
                     htmlOutput("fish.park.fished.species.dropdown"),
                     withSpinner(plotOutput("fish.park.fished.species.abundance.plot", height = 500)),
+                    htmlOutput("fish.park.fished.species.iframe"),
                     withSpinner(plotOutput("fish.park.fished.species.kde.plot", height = 500))
                   ),
                   conditionalPanel(
                     'input.fishparkmetric == "Individual species"',
                     htmlOutput("fish.park.all.species.dropdown"),
-                    withSpinner(plotOutput("fish.park.all.species.abundance.plot", height = 500))
+                    withSpinner(plotOutput("fish.park.all.species.abundance.plot", height = 500)),
+                    htmlOutput("fish.park.all.species.iframe")
                   ),
                   conditionalPanel(
                     'input.fishparkmetric == "Life history traits"',
