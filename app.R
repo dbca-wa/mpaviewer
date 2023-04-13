@@ -2,15 +2,46 @@
 # To deploy, run: rsconnect::deployApp()
 # Or use the blue button on top of this file
 
+# Google Sheets Auth
+# options(gargle_oauth_cache = ".secrets")
+# # check the value of the option, if you like
+# gargle::gargle_oauth_cache()
+# googlesheets4::gs4_auth()
+# 1
+
+# Step 1. Load all functions from package
+
 pkgload::load_all(export_all = FALSE, helpers = FALSE, attach_testthat = FALSE)
 
+# Step 2. Download all data from GoogleDrive (only if it has been updated)
+
+# mpaviewer::googledrive_download_data()
+
+# Step 3. Generate new data
 # mpaviewer::generate_data()
 
+# Step 4. Run demo app
 options("golem.app.prod" = TRUE)
-mpaviewer::run_app() # add parameters here (if any)
+mpaviewer::run_app()
 
 
-# Testing
-# test <- mpa_data$metadata
-# unique(test$year)
-# test2 <- mpa_data$all.data
+# Step 5. Deploy to shiny server for testing
+# rsconnect::deployApp()
+
+
+
+
+
+
+## To Delete later
+
+
+test.dat <- readRDS(here::here("inst/data/mpa_data.rds"))
+metadata <- test.dat$metadata
+
+with.location <- metadata %>%
+  dplyr::filter(!is.na(location))
+
+unique(metadata$location)
+
+abundance <- test.dat$abundance
