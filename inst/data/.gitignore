@@ -11,3 +11,4 @@
 *.cpg
 *.txt
 *.R
+.secrets
