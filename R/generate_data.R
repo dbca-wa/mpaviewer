@@ -45,6 +45,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   # New coral data in dashboard format
   coral_cover <- list.files(path = data.dir, recursive = T, pattern = "_coralcover.csv", full.names = T) %>%
     purrr::map_df(~ read_dbca_files_csv(.)) %>%
+    dplyr::filter(!marine.park %in% c("archive")) %>% # get rid of old files
     dplyr::filter(level2class %in% c("Hard coral", "Octocorals - Hard")) %>%
     dplyr::mutate(year = as.numeric(year),
                   percent_cover = as.numeric(percent_cover),
@@ -75,11 +76,13 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   rec_3b <- list.files(path = data.dir, recursive = T, pattern = "REC3b.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
     purrr::map_df(~ read_dbca_files_csv(.)) %>%
+    dplyr::filter(!marine.park %in% c("archive")) %>% # get rid of old files
     dplyr::mutate(year = as.numeric(year),
                   mean = as.numeric(mean))
 
   rec_3c2 <- list.files(path = data.dir, recursive = T, pattern = "REC3c2.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
     purrr::map_df(~ read_dbca_files_csv(.)) %>%
+    dplyr::filter(!marine.park %in% c("archive")) %>% # get rid of old files
     dplyr::mutate(year = as.numeric(year),
                   mean = as.numeric(mean),
                   sd = as.numeric(sd),
@@ -97,12 +100,14 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   #   GlobalArchive::ga.clean.names()
 
 
-  dbca.googlesheet.url <- "https://docs.google.com/spreadsheets/d/1qhqh1GSPWPaO6xRKAyI0FQEHVvlEOMnz_0hGqRKs5SA/edit#gid=0"
+  dbca.googlesheet.url <- "https://docs.google.com/spreadsheets/d/1OuOt80TvJBCMPLR6oy7YhfoSD4VjC73cuKovGobxiyI/edit?usp=sharing"
+
+  Sys.time()
+  print("this takes a long time")
 
   life.history <- googlesheets4::read_sheet(dbca.googlesheet.url, sheet = "life_history") %>%
     GlobalArchive::ga.clean.names()
-
-  1
+  Sys.time()
 
   complete.sites <- googlesheets4::read_sheet(dbca.googlesheet.url, sheet = "temporal_years_sites") %>%
     dplyr::mutate(year = strsplit(as.character(include_years), split = ", "))%>%
@@ -113,6 +118,10 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(year = as.numeric(year)) %>%
     dplyr::select(marine.park, method, year, site) %>%
     dplyr::mutate(complete = "Yes")
+
+  complete.needed.campaigns <- complete.sites %>%
+    dplyr::distinct(marine.park, method) %>%
+    dplyr::mutate(complete.needed = "Yes")
 
   # unique(life.history$fishing.type)
   # unique(life.history$rls.trophic.group)
@@ -139,12 +148,19 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   unique(trophic.groups$trophic.group) %>%sort()
 
-  park.popups <- here::here("inst/data/parks.popups.csv") |>
+  park.popups <- here::here("inst/data/parks.popups.csv") |> # BG TO DO -  CHANGE THIS
     read.csv(na.strings = c("NA", "NaN", " ", "", NA)) |>
     GlobalArchive::ga.clean.names()
 
   zoning <- googlesheets4::read_sheet(dbca.googlesheet.url, sheet = "park_gazettal") %>%
     GlobalArchive::ga.clean.names()
+
+  foa.codes <- googlesheets4::read_sheet(dbca.googlesheet.url, sheet = "fishes_of_australia") %>%
+    GlobalArchive::ga.clean.names() %>%
+    dplyr::select(-c(number)) %>%
+    dplyr::mutate(scientific = paste(genus, species, sep = " ")) %>%
+    dplyr::left_join(common.names) %>%
+    dplyr::mutate(scientific = paste0(scientific, " (", australian.common.name, ")"))
 
   ## _______________________________________________________ ----
   ##                        READ IN DATA                     ----
@@ -164,11 +180,35 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(status = stringr::str_replace_all(.$status, c("Sanctuary" = "No-take",
                                                                 "No-Take" = "No-take",
                                                                 "Protected" = "No-take"))) %>%
-    dplyr::left_join(complete.sites) %>%
-    dplyr::mutate(sample = dplyr::if_else(is.na(sample), paste(opcode, period, sep = "_"), sample)) %>%
-    dplyr::select(marine.park, method, campaignid, sample, latitude, longitude, date, time, location, status, site, successful.count, successful.length, depth, observer, year, month, day, gazetted, re.zoned, complete) # Trying to remove columns to save space/time to load the app
+    dplyr::filter(!marine.park %in% c("archive", "C:")) %>% # get rid of old files
+    dplyr::mutate(method = forcats::fct_recode(method,
+                                               "stereo-BRUVs" = "BRUVs",
+                                               "stereo-BRUVs" = "BRUVS",
+                                               "stereo-DOVs" = "DOVs")) %>%
+    dplyr::left_join(.,complete.sites) %>%
+    dplyr::left_join(.,complete.needed.campaigns) %>%
+    dplyr::mutate(complete = dplyr::if_else(is.na(complete.needed), "Yes", complete)) %>%
+    dplyr::mutate(sample = dplyr::if_else(is.na(sample) & method%in% "stereo-DOVs", paste(opcode, period, sep = "_"), sample)) %>%
+    dplyr::mutate(sample = dplyr::if_else(is.na(sample), opcode, sample)) %>%
+    dplyr::select(marine.park, method, campaignid, sample, latitude, longitude, date, time, location, status, site, successful.count, successful.length, depth, observer, year, month, day, gazetted, re.zoned, complete, dbca_zone, dbca_sanctuary) # Trying to remove columns to save space/time to load the app
 
-    names(metadata)
+
+  names(metadata)
+
+  test.complete <- metadata %>%
+    dplyr::filter(complete %in% "Yes")
+
+  unique(metadata$marine.park) %>% sort()
+  unique(metadata$method) %>% sort()
+  unique(metadata$campaignid) %>% sort()
+
+  unique(metadata$dbca_zone)
+  unique(metadata$dbca_sanctuary)
+
+  names(metadata)
+
+  campaign.list <- metadata %>% dplyr::distinct(marine.park, method, campaignid, sample) # Want to create a list of every sample
+  # DOes it have maxn and length associated with it??
 
   #Check sites that were not sampled consistently across all years
 
@@ -183,8 +223,6 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::summarise(no.times.site.sampled = length(unique(year))) %>%
     dplyr::left_join(years) %>%
     dplyr::mutate(complete.site = dplyr::if_else(no.times.site.sampled == no.years.sampled, "Yes", "No"))
-
-
 
   # test <- metadata %>% dplyr::filter(marine.park %in% "Ngari Capes Marine Park", method %in% "stereo-BRUVs") %>%
   #   dplyr::distinct(marine.park, site, year)
@@ -203,8 +241,6 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   # sites.limited = long.ab %>% filter(Site %in% rownames(finalsites))%>%
   #   filter(!Site %in% "L2")
 
-
-
   names(metadata)
 
   lats <- metadata %>%
@@ -219,9 +255,6 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::filter(method %in% "stereo-BRUVs") %>%
     dplyr::filter(marine.park %in% "Ningaloo Marine Park")
 
-
-
-
   ### ► Summarise to find sampling effort, this is used for the leaflet maps ----
   sampling.effort <- metadata %>%
     dplyr::group_by(marine.park, method, sample, status, site, location, latitude, longitude, depth) %>%
@@ -233,12 +266,22 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   count.csv <- list.files(path = data.dir, recursive = T, pattern = "_Count.csv", full.names = T) %>% # list all files ending in "_Count.csv"
     purrr::map_df(~ read_dbca_files_csv(.)) %>% # combine into dataframe
     dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Count.csv" = ""))) %>%
-    dplyr::mutate(count = as.numeric(count))
+    dplyr::mutate(count = as.numeric(count)) %>%
+    dplyr::filter(!marine.park %in% c("archive", "C:")) %>% # get rid of old files
+    dplyr::mutate(method = forcats::fct_recode(method,
+                                               "stereo-BRUVs" = "BRUVs",
+                                               "stereo-BRUVs" = "BRUVS",
+                                               "stereo-DOVs" = "DOVs"))
 
   count.txt <- list.files(path = data.dir, recursive = T, pattern = "_Count.txt", full.names = T)  %>%
     purrr::map_df(~read_dbca_files_txt(.)) %>% # combine into dataframe
     dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Count.txt" = ""))) %>%
-    dplyr::mutate(count = as.numeric(count))
+    dplyr::mutate(count = as.numeric(count))%>%
+    dplyr::filter(!marine.park %in% c("archive", "C:")) %>% # get rid of old files
+    dplyr::mutate(method = forcats::fct_recode(method,
+                                               "stereo-BRUVs" = "BRUVs",
+                                               "stereo-BRUVs" = "BRUVS",
+                                               "stereo-DOVs" = "DOVs"))
 
   count <- dplyr::bind_rows(count.csv, count.txt)
 
@@ -251,13 +294,23 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     purrr::map_df(~ read_dbca_files_csv(.)) %>% # combine into dataframe
     dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Length.csv" = ""))) %>%
     dplyr::mutate(count = as.numeric(count)) %>%
-    dplyr::mutate(length = as.numeric(length))
+    dplyr::mutate(length = as.numeric(length))%>%
+    dplyr::filter(!marine.park %in% c("archive", "C:")) %>% # get rid of old files
+    dplyr::mutate(method = forcats::fct_recode(method,
+                                               "stereo-BRUVs" = "BRUVs",
+                                               "stereo-BRUVs" = "BRUVS",
+                                               "stereo-DOVs" = "DOVs"))
 
   length.txt <- list.files(path = data.dir, recursive = T, pattern = "_Length.txt", full.names = T) %>% # list all files ending in "_Length.csv"
     purrr::map_df(~read_dbca_files_txt(.)) %>% # combine into dataframe
     dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Length.txt" = ""))) %>%
     dplyr::mutate(count = as.numeric(count)) %>%
-    dplyr::mutate(length = as.numeric(length))
+    dplyr::mutate(length = as.numeric(length))%>%
+    dplyr::filter(!marine.park %in% c("archive", "C:")) %>% # get rid of old files
+    dplyr::mutate(method = forcats::fct_recode(method,
+                                               "stereo-BRUVs" = "BRUVs",
+                                               "stereo-BRUVs" = "BRUVS",
+                                               "stereo-DOVs" = "DOVs"))
 
   length <- dplyr::bind_rows(length.csv, length.txt) %>%
     dplyr::filter(!is.na(length))
@@ -275,12 +328,24 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     purrr::map_df(~ read_dbca_files_txt(.)) %>%
     dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Points.txt" = ""))) %>%
     dplyr::mutate(number = as.numeric(number)) %>%
+    dplyr::filter(!marine.park %in% c("archive", "C:")) %>% # get rid of old files
+    dplyr::mutate(method = forcats::fct_recode(method,
+                                               "stereo-BRUVs" = "BRUVs",
+                                               "stereo-BRUVs" = "BRUVS",
+                                               "stereo-DOVs" = "DOVs")) %>%
     dplyr::mutate(sample = dplyr::if_else(method %in% "stereo-DOVs", paste(opcode, period, sep = "_"), opcode))
+
+  unique(points$campaignid)
 
   threed.points <- list.files(path = data.dir, recursive = T, pattern = "_3DPoints.txt", full.names = T) %>%
     purrr::map_df(~ read_dbca_files_txt(.)) %>%
     dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_3DPoints.txt" = ""))) %>%
     dplyr::mutate(number = as.numeric(number)) %>%
+    dplyr::filter(!marine.park %in% c("archive", "C:")) %>% # get rid of old files
+    dplyr::mutate(method = forcats::fct_recode(method,
+                                               "stereo-BRUVs" = "BRUVs",
+                                               "stereo-BRUVs" = "BRUVS",
+                                               "stereo-DOVs" = "DOVs")) %>%
     dplyr::mutate(sample = dplyr::if_else(method %in% "stereo-DOVs", paste(opcode, period, sep = "_"), opcode))
 
   lengths <- list.files(path = data.dir, recursive = T, pattern = "_Lengths.txt", full.names = T) %>%
@@ -288,6 +353,11 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Lengths.txt" = ""))) %>%
     dplyr::mutate(number = as.numeric(number)) %>%
     dplyr::mutate(length = as.numeric(length)) %>%
+    dplyr::filter(!marine.park %in% c("archive", "C:")) %>% # get rid of old files
+    dplyr::mutate(method = forcats::fct_recode(method,
+                                               "stereo-BRUVs" = "BRUVs",
+                                               "stereo-BRUVs" = "BRUVS",
+                                               "stereo-DOVs" = "DOVs")) %>%
     dplyr::mutate(sample = dplyr::if_else(method %in% "stereo-DOVs", paste(opcode, period, sep = "_"), opcode))
 
   ## _______________________________________________________ ----
@@ -303,7 +373,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::distinct(campaignid, sample) # 108 samples - same again I manually renamed but flag with Jordan
 
   # samples not in count
-  test <- dplyr::anti_join(metadata, count) # 138 samples without fish? does that make sense
+  test <- dplyr::anti_join(metadata, count) # 1408 samples without fish? does that make sense
 
 
   ## _______________________________________________________ ----
@@ -400,11 +470,35 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   abundance <- dplyr::bind_rows(maxn, count.summary, dov.abundance) %>%
     dplyr::left_join(common.names) %>%
+    dplyr::left_join(foa.codes) %>%
     dplyr::mutate(scientific = paste0(scientific, " (", australian.common.name, ")"))
 
   unique(abundance$marine.park)
 
+
   abundance$marine.park <- forcats::fct_relevel(abundance$marine.park, c(unique(lats$marine.park)))
+
+
+  complete.length.summary <- complete.length %>%
+    dplyr::group_by(marine.park, method, campaignid, sample) %>%
+    dplyr::summarise(lengths = sum(number))
+
+  missing.metadata <- dplyr::anti_join(complete.length.summary, metadata) # One with a random dot on the end
+
+  missing.fish <- dplyr::anti_join(metadata, complete.length.summary) # None
+
+
+
+
+  abundance.summary <- abundance %>%
+    dplyr::group_by(marine.park, method, campaignid, sample) %>%
+    dplyr::summarise(abundance = sum(maxn))
+
+  missing.metadata <- dplyr::anti_join(abundance.summary, metadata) # One with a random dot on the end
+
+  missing.fish <- dplyr::anti_join(metadata, abundance.summary) # None
+
+
 
 
   abundance.test <- abundance %>%
@@ -416,11 +510,11 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   ## _______________________________________________________ ----
 
   fished.abundance <- dplyr::semi_join(abundance, fished.species) %>%
-    dplyr::group_by(marine.park, campaignid, method, sample, scientific, family, genus, species) %>%
+    dplyr::group_by(marine.park, campaignid, method, sample, scientific, family, genus, species, url) %>%
     dplyr::summarise(total.abundance = sum(maxn)) %>%
     dplyr::ungroup() %>%
     # dplyr::mutate(scientific = paste(genus, species, sep = " ")) %>%
-    dplyr::select(marine.park, campaignid, sample, total.abundance, method, scientific) %>%
+    dplyr::select(marine.park, campaignid, sample, total.abundance, method, scientific, url) %>%
     dplyr::left_join(metadata)
 
   trophic.abundance <- dplyr::left_join(abundance, trophic.groups) %>%
@@ -592,7 +686,8 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
       coral_cover_metadata = coral_cover_metadata,
       rec_3b = rec_3b,
       rec_3c2 = rec_3c2,
-      common.names = common.names
+      common.names = common.names,
+      foa.codes = foa.codes
       ),
     class = "mpa_data"
   )
@@ -631,3 +726,4 @@ print.mpa_data <- function(x, ...) {
   )
   invisible(x)
 }
+
