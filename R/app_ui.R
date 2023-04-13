@@ -257,11 +257,17 @@ app_ui <- function(request) {
                     h4("Most abundant species:"),
                     withSpinner(plotOutput("fish.park.stack.plot", height = 500)),
 
+                    h4("Total abundance by sanctuary:"),
+                    withSpinner(uiOutput("ui.fish.park.total.sanctuary.plot")),
+
                     h4("Total abundance by site:"),
                     withSpinner(uiOutput("ui.fish.park.total.site.plot")),
 
                     h4("Species richness:"),
                     withSpinner(plotOutput("fish.park.rich.plot", height = 250)),
+
+                    h4("Species richness by sanctuary:"),
+                    withSpinner(uiOutput("ui.fish.park.rich.sanctuary.plot")),
 
                     h4("Species richness by site:"),
                     withSpinner(uiOutput("ui.fish.park.rich.site.plot"))
