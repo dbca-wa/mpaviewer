@@ -253,15 +253,18 @@ app_ui <- function(request) {
                     'input.fishparkmetric == "Whole assemblage"',
                     h4("Total abundance:"),
                     withSpinner(plotOutput("fish.park.total.plot", height = 250)),
+
+                    h4("Most abundant species:"),
+                    withSpinner(plotOutput("fish.park.stack.plot", height = 500)),
+
                     h4("Total abundance by site:"),
-                    # withSpinner(plotOutput("fish.park.total.site.plot", height = 1200)),
                     withSpinner(uiOutput("ui.fish.park.total.site.plot")),
+
                     h4("Species richness:"),
                     withSpinner(plotOutput("fish.park.rich.plot", height = 250)),
+
                     h4("Species richness by site:"),
-                    withSpinner(uiOutput("ui.fish.park.rich.site.plot")),
-                    h4("Most abundant species:"),
-                    withSpinner(plotOutput("fish.park.stack.plot", height = 500))
+                    withSpinner(uiOutput("ui.fish.park.rich.site.plot"))
                     # leafletOutput("fish.park.total.leaflet", height = 400)
                   ),
                   conditionalPanel(
