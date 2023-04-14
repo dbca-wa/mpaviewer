@@ -50,26 +50,7 @@ app_server <- function(input, output, session) {
     updateTabItems(session, "tabs", "info")
   })
 
-  # State image
-  # NOTE this depends on the image filename being identical to the data folders
-  # in the source data (data/Ningaloo or data/Ningaloo Marine Park)
-  output$ui.fish.park.image <- renderUI({
-    park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
 
-    print(park)
-
-    img(src = paste0("www/", park, ".jpg"), align = "right", width = "100%")
-    # img(src = paste0("www/", "ningaloo", ".jpg"), align = "right", width = "100%")
-  })
-
-  output$ui.benthic.park.image <- renderUI({
-    park <- stringr::str_replace_all(tolower(input$benthic.park.coralcover.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
-
-    print(park)
-
-    img(src = paste0("www/coral_", park, ".jpg"), align = "right", width = "100%")
-    # img(src = paste0("www/", "ningaloo", ".jpg"), align = "right", width = "100%")
-  })
 # FISH ----
   #### STATE DROPDOWNS ----
   ####### ►  Create a marine park dropdown ----
@@ -354,37 +335,6 @@ app_server <- function(input, output, session) {
   output$fish.state.sampling.leaflet <- renderLeaflet({
     req(input$fish.state.park.dropdown, input$fish.state.method.dropdown)
 
-    # This section was refactored as an example for issue #13
-    # See https://github.com/dbca-wa/mpaviewer/issues/13
-    #
-    # fish.dat = fish_alldata()
-    # fish.dat <- mpa_data()$all.data %>%
-    #   dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
-    #   dplyr::filter(method %in% c(input$fish.state.method.dropdown))
-
-    # ta = fish_ta()
-    # ta <- fish.dat %>%
-    #   dplyr::filter(metric %in% c("Total abundance"))
-
-    # sr = fish_sr()
-    # sr <- fish.dat %>%
-    #   dplyr::filter(metric %in% c("Species richness"))
-
-    # dat = fish_samplingeffort()
-    # dat <- mpa_data()$sampling.effort %>%
-    #   dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
-    #   dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
-    #   dplyr::mutate(content = paste(
-    #     sep = " ",
-    #     "<b>Sample:", sample, "</b>", "<br/>",
-    #     "<b>Status:</b>", status, "<br/>",
-    #     "<b>Depth:</b>", depth, "m", "<br/>",
-    #     "<b>Site:</b>", site, "<br/>",
-    #     "<b>Location:</b>", location, "<br/>",
-    #     "<b>Number of times sampled:</b>", number.of.times.sampled, "<br/>"
-    #   ))
-    # End refactor
-
     overzero.ta <- dplyr::filter(fish_ta(), value > 0)
     equalzero.ta <- dplyr::filter(fish_ta(), value == 0)
     max.ta <- max(overzero.ta$value)
@@ -555,7 +505,7 @@ app_server <- function(input, output, session) {
       ) +
       xlab("Year") +
       ylab("Average total abundance per sample \n(+/- SE)") +
-      annotation_custom(label) +
+      # annotation_custom(label) +
       stat_smooth(
         method = "gam",
         formula = y ~ s(x, k = 3), # Removed all the mgcv:: as it was breaking the plots
@@ -570,27 +520,7 @@ app_server <- function(input, output, session) {
 
       # ggbreak::scale_x_break(c(1989, 2006)) + Maybe investigate this later
 
-      facet_wrap(marine.park ~ ., scales = "free", ncol = 1) #+
-      # geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-      # geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
-      # geom_label(
-      #   x = fish_ta()$gazetted,
-      #   y = +Inf,
-      #   label = "\n\n gazetted",
-      #   size = 5,
-      #   fill = "white",
-      #   check_overlap = TRUE,
-      #   label.size = NA
-      # ) +
-      # geom_label(
-      #   x = fish_ta()$re.zoned,
-      #   y = +Inf,
-      #   label = "\n\n re-zoned",
-      #   size = 5,
-      #   fill = "white",
-      #   check_overlap = TRUE,
-      #   label.size = NA
-      # )
+      facet_wrap(marine.park ~ ., scales = "free", ncol = 1)
     p
     # ggplotly(p)
   })
@@ -624,7 +554,7 @@ app_server <- function(input, output, session) {
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
       xlab("Year") +
       ylab("Average number of species per sample \n(+/- SE)") +
-      annotation_custom(label) +
+      # annotation_custom(label) +
       ggplot_mpatheme() +
       scale_y_continuous(expand = c(0, 0.1)) +
       # scale_x_continuous(breaks = c(unique(dat$year))) +
@@ -632,27 +562,7 @@ app_server <- function(input, output, session) {
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
-      facet_wrap(marine.park ~ ., scales = "free", ncol = 1) #+
-      # geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-      # geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
-      # geom_label(
-      #   x = fish_ta()$gazetted,
-      #   y = +Inf,
-      #   label = "\n\n gazetted",
-      #   size = 5,
-      #   fill = "white",
-      #   check_overlap = TRUE,
-      #   label.size = NA
-      # ) +
-      # geom_label(
-      #   x = fish_ta()$re.zoned,
-      #   y = +Inf,
-      #   label = "\n\n re-zoned",
-      #   size = 5,
-      #   fill = "white",
-      #   check_overlap = TRUE,
-      #   label.size = NA
-      # )
+      facet_wrap(marine.park ~ ., scales = "free", ncol = 1)
   })
 
   ####### ►  Make species richness plot interactive so the height changes with the number of inputs ----
@@ -705,26 +615,6 @@ app_server <- function(input, output, session) {
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
-      # geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-      # geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
-      # geom_label(
-      #   x = fish_ta()$gazetted,
-      #   y = +Inf,
-      #   label = "\n\n gazetted",
-      #   size = 5,
-      #   fill = "white",
-      #   check_overlap = TRUE,
-      #   label.size = NA
-      # ) +
-      # geom_label(
-      #   x = fish_ta()$re.zoned,
-      #   y = +Inf,
-      #   label = "\n\n re-zoned",
-      #   size = 5,
-      #   fill = "white",
-      #   check_overlap = TRUE,
-      #   label.size = NA
-      # ) +
       facet_wrap(marine.park ~ trophic.group, scales = "free", ncol = length(unique(dat$trophic.group))) +
       ggplot_mpatheme()
 
@@ -831,27 +721,7 @@ app_server <- function(input, output, session) {
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(marine.park ~ scientific, scales = "free", ncol = length(unique(dat$scientific))) +
-      ggplot_mpatheme() #+
-      # geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-      # geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
-      # geom_label(
-      #   x = fish_ta()$gazetted,
-      #   y = +Inf,
-      #   label = "\n\n gazetted",
-      #   size = 5,
-      #   fill = "white",
-      #   check_overlap = TRUE,
-      #   label.size = NA
-      # ) +
-      # geom_label(
-      #   x = fish_ta()$re.zoned,
-      #   y = +Inf,
-      #   label = "\n\n re-zoned",
-      #   size = 5,
-      #   fill = "white",
-      #   check_overlap = TRUE,
-      #   label.size = NA
-      # )
+      ggplot_mpatheme()
   })
 
 
@@ -887,27 +757,7 @@ app_server <- function(input, output, session) {
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(marine.park ~ scientific, scales = "free", ncol = length(unique(dat$scientific))) +
-      ggplot_mpatheme() #+
-      # geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-      # geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
-      # geom_label(
-      #   x = fish_ta()$gazetted,
-      #   y = +Inf,
-      #   label = "\n\n gazetted",
-      #   size = 5,
-      #   fill = "white",
-      #   check_overlap = TRUE,
-      #   label.size = NA
-      # ) +
-      # geom_label(
-      #   x = fish_ta()$re.zoned,
-      #   y = +Inf,
-      #   label = "\n\n re-zoned",
-      #   size = 5,
-      #   fill = "white",
-      #   check_overlap = TRUE,
-      #   label.size = NA
-      # )
+      ggplot_mpatheme()
   })
 
   #----------------------------------------------------------------------------#
@@ -1052,7 +902,7 @@ app_server <- function(input, output, session) {
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
       xlab("Year") +
       ylab("Average total abundance per sample \n(+/- SE)") +
-      annotation_custom(label) +
+      # annotation_custom(label) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       # scale_x_continuous(breaks = c(unique(dat$year))) +
       scale_x_continuous(breaks = seq(min(dat$year)-1, max(dat$year)+1, 2)) +
@@ -1061,29 +911,29 @@ app_server <- function(input, output, session) {
       ggplot_mpatheme() #+
 
     # THESE ARE HOW TO ADD RE_ZONED AND GAZETTED, THEY CAN BE TURNED OFF
-    if(!gazetted %in% c("NA", NA, NULL)){
-      p <- p + geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-        geom_label(
-          x = gazetted,
-          y = +Inf,
-          label = "\n\n gazetted",
-          size = 5,
-          fill = "white",
-          check_overlap = TRUE,
-          label.size = NA
-        )}
-
-    if(!re.zoned %in% c("NA", NA, NULL)){
-      p <- p + geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
-        geom_label(
-          x = re.zoned,
-          y = +Inf,
-          label = "\n\n rezoned",
-          size = 5,
-          fill = "white",
-          check_overlap = TRUE,
-          label.size = NA
-        )}
+    # if(!gazetted %in% c("NA", NA, NULL)){
+    #   p <- p + geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+    #     geom_label(
+    #       x = gazetted,
+    #       y = +Inf,
+    #       label = "\n\n gazetted",
+    #       size = 5,
+    #       fill = "white",
+    #       check_overlap = TRUE,
+    #       label.size = NA
+    #     )}
+    #
+    # if(!re.zoned %in% c("NA", NA, NULL)){
+    #   p <- p + geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+    #     geom_label(
+    #       x = re.zoned,
+    #       y = +Inf,
+    #       label = "\n\n rezoned",
+    #       size = 5,
+    #       fill = "white",
+    #       check_overlap = TRUE,
+    #       label.size = NA
+    #     )}
     p
   })
 
@@ -1102,39 +952,22 @@ app_server <- function(input, output, session) {
                                gp = gpar(col = "black", fontsize = 13, fontface = "italic")
     ))
 
+    if(input$fish.park.method.dropdown %in% "stereo-DOVs"){
+
     ggplot(dat, aes(x = year, y = value, fill = status)) +
       stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
       xlab("Year") +
       ylab("Average total abundance per sample \n(+/- SE)") +
-      annotation_custom(label) +
+      # annotation_custom(label) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       # scale_x_continuous(breaks = c(unique(dat$year))) +
       scale_x_continuous(breaks = seq(min(dat$year)-1, max(dat$year)+1, 2)) +
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       ggplot_mpatheme() +
-      facet_wrap(site ~ ., scales = "free", ncol = 3) # +
-    # geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-    # geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
-    # geom_label(
-    #   x = fish_ta()$gazetted,
-    #   y = +Inf,
-    #   label = "\n\n gazetted",
-    #   size = 5,
-    #   fill = "white",
-    #   check_overlap = TRUE,
-    #   label.size = NA
-    # ) +
-    # geom_label(
-    #   x = fish_ta()$re.zoned,
-    #   y = +Inf,
-    #   label = "\n\n re-zoned",
-    #   size = 5,
-    #   fill = "white",
-    #   check_overlap = TRUE,
-    #   label.size = NA
-    # )
+      facet_wrap(site ~ ., scales = "free", ncol = 3)
+    }
   })
 
   output$ui.fish.park.total.site.plot <- renderUI({
@@ -1143,13 +976,61 @@ app_server <- function(input, output, session) {
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) #%>%
       # dplyr::filter(site %in% c(input$fish.park.site.dropdown))
 
+    if(input$fish.park.method.dropdown %in% "stereo-DOVs"){
+
     if (length(unique(dat$site)) %in% c(1,2,3) ){
       p.height <- 250
     } else {
       p.height <- 250 * ceiling(length(unique(dat$site))/3)
     }
 
-    plotOutput("fish.park.total.site.plot", height = p.height)
+    tagList(h4("Total abundance by site:"),
+    plotOutput("fish.park.total.site.plot", height = p.height))
+    }
+  })
+
+  ####### ►  Total abundance by Sanctuary ----
+  output$fish.park.total.sanctuary.plot <- renderPlot({
+    req(input$fish.park.method.dropdown, input$fish.park.dropdown) #, input$fish.park.site.dropdown
+
+    dat <- mpa_data()$all.data %>%
+      dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
+      dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
+      # dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
+      dplyr::filter(metric %in% c("Total abundance"))
+
+    label <- grobTree(textGrob(as.character("Total abundance"),
+                               x = 0.01, y = 0.97, hjust = 0,
+                               gp = gpar(col = "black", fontsize = 13, fontface = "italic")
+    ))
+
+    ggplot(dat, aes(x = year, y = value, fill = status)) +
+      stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
+      stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
+      xlab("Year") +
+      ylab("Average total abundance per sample \n(+/- SE)") +
+      # annotation_custom(label) +
+      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+      # scale_x_continuous(breaks = c(unique(dat$year))) +
+      scale_x_continuous(breaks = seq(min(dat$year)-1, max(dat$year)+1, 2)) +
+      scale_fill_manual(values = c("#b9e6fb",
+                                   "#7bbc63")) +
+      ggplot_mpatheme() +
+      facet_wrap(dbca_sanctuary ~ ., scales = "free", ncol = 3)
+  })
+
+  output$ui.fish.park.total.sanctuary.plot <- renderUI({
+    dat <- mpa_data()$all.data %>%
+      dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
+      dplyr::filter(method %in% c(input$fish.park.method.dropdown))
+
+    if (length(unique(dat$dbca_sanctuary)) %in% c(1,2,3) ){
+      p.height <- 250
+    } else {
+      p.height <- 250 * ceiling(length(unique(dat$dbca_sanctuary))/3)
+    }
+
+    plotOutput("fish.park.total.sanctuary.plot", height = p.height)
   })
 
   ####### ►  Species richness ----
@@ -1172,33 +1053,13 @@ app_server <- function(input, output, session) {
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
       xlab("Year") +
       ylab("Average number of species per sample \n(+/- SE)") +
-      annotation_custom(label) +
+      #annotation_custom(label) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       # scale_x_continuous(breaks = c(unique(dat$year))) +
       scale_x_continuous(breaks = seq(min(dat$year)-1, max(dat$year)+1, 2)) +
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
-      ggplot_mpatheme()# +
-      # geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-      # geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
-      # geom_label(
-      #   x = fish_ta()$gazetted,
-      #   y = +Inf,
-      #   label = "\n\n gazetted",
-      #   size = 5,
-      #   fill = "white",
-      #   check_overlap = TRUE,
-      #   label.size = NA
-      # ) +
-      # geom_label(
-      #   x = fish_ta()$re.zoned,
-      #   y = +Inf,
-      #   label = "\n\n re-zoned",
-      #   size = 5,
-      #   fill = "white",
-      #   check_overlap = TRUE,
-      #   label.size = NA
-      # )
+      ggplot_mpatheme()
   })
 
   ####### ►  Species richness by site ----
@@ -1216,39 +1077,22 @@ app_server <- function(input, output, session) {
                                gp = gpar(col = "black", fontsize = 13, fontface = "italic")
     ))
 
+    if(input$fish.park.method.dropdown %in% "stereo-DOVs"){
+
     ggplot(dat, aes(x = year, y = value, fill = status)) +
       stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
       xlab("Year") +
       ylab("Average number of species per sample \n(+/- SE)") +
-      annotation_custom(label) +
+      #annotation_custom(label) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       # scale_x_continuous(breaks = c(unique(dat$year))) +
       scale_x_continuous(breaks = seq(min(dat$year)-1, max(dat$year)+1, 2)) +
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       ggplot_mpatheme() +
-      facet_wrap(site ~ ., scales = "free", ncol = 3)# +
-    # geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-    # geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
-    # geom_label(
-    #   x = fish_ta()$gazetted,
-    #   y = +Inf,
-    #   label = "\n\n gazetted",
-    #   size = 5,
-    #   fill = "white",
-    #   check_overlap = TRUE,
-    #   label.size = NA
-    # ) +
-    # geom_label(
-    #   x = fish_ta()$re.zoned,
-    #   y = +Inf,
-    #   label = "\n\n re-zoned",
-    #   size = 5,
-    #   fill = "white",
-    #   check_overlap = TRUE,
-    #   label.size = NA
-    # )
+      facet_wrap(site ~ ., scales = "free", ncol = 3)
+    }
   })
 
   output$ui.fish.park.rich.site.plot <- renderUI({
@@ -1257,13 +1101,60 @@ app_server <- function(input, output, session) {
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) #%>%
       # dplyr::filter(site %in% c(input$fish.park.site.dropdown))
 
+    if(input$fish.park.method.dropdown %in% "stereo-DOVs"){
+
     if (length(unique(dat$site)) %in% c(1,2,3) ){
       p.height <- 250
     } else {
       p.height <- 250 * ceiling(length(unique(dat$site))/3)
     }
+      tagList(h4("Total abundance by site:"),
+    plotOutput("fish.park.rich.site.plot", height = p.height))
+    }
+  })
 
-    plotOutput("fish.park.rich.site.plot", height = p.height)
+
+  ####### ►  Species richness by Sanctuary ----
+  output$fish.park.rich.sanctuary.plot <- renderPlot({
+    req(input$fish.park.method.dropdown, input$fish.park.dropdown)
+
+    dat <- mpa_data()$all.data %>%
+      dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
+      dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
+      dplyr::filter(metric %in% c("Species richness"))
+
+    label <- grobTree(textGrob(as.character("Species richness"),
+                               x = 0.01, y = 0.97, hjust = 0,
+                               gp = gpar(col = "black", fontsize = 13, fontface = "italic")
+    ))
+
+    ggplot(dat, aes(x = year, y = value, fill = status)) +
+      stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
+      stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
+      xlab("Year") +
+      ylab("Average number of species per sample \n(+/- SE)") +
+      #annotation_custom(label) +
+      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+      # scale_x_continuous(breaks = c(unique(dat$year))) +
+      scale_x_continuous(breaks = seq(min(dat$year)-1, max(dat$year)+1, 2)) +
+      scale_fill_manual(values = c("#b9e6fb",
+                                   "#7bbc63")) +
+      ggplot_mpatheme() +
+      facet_wrap(dbca_sanctuary ~ ., scales = "free", ncol = 3)
+  })
+
+  output$ui.fish.park.rich.sanctuary.plot <- renderUI({
+    dat <- mpa_data()$all.data %>%
+      dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
+      dplyr::filter(method %in% c(input$fish.park.method.dropdown))
+
+    if (length(unique(dat$dbca_sanctuary)) %in% c(1,2,3) ){
+      p.height <- 250
+    } else {
+      p.height <- 250 * ceiling(length(unique(dat$dbca_sanctuary))/3)
+    }
+
+    plotOutput("fish.park.rich.sanctuary.plot", height = p.height)
   })
 
   ####### ►  Stacked Abundance Plot ----
@@ -1312,27 +1203,7 @@ app_server <- function(input, output, session) {
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(trophic.group ~ ., scales = "free", ncol = 1) +
-      ggplot_mpatheme() #+
-      # geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-      # geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
-      # geom_label(
-      #   x = fish_ta()$gazetted,
-      #   y = +Inf,
-      #   label = "\n\n gazetted",
-      #   size = 5,
-      #   fill = "white",
-      #   check_overlap = TRUE,
-      #   label.size = NA
-      # ) +
-      # geom_label(
-      #   x = fish_ta()$re.zoned,
-      #   y = +Inf,
-      #   label = "\n\n re-zoned",
-      #   size = 5,
-      #   fill = "white",
-      #   check_overlap = TRUE,
-      #   label.size = NA
-      # )
+      ggplot_mpatheme()
   })
 
 
@@ -1456,27 +1327,7 @@ app_server <- function(input, output, session) {
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(scientific ~ ., scales = "free", ncol = 1) +
-      ggplot_mpatheme() #+
-      # geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-      # geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
-      # geom_label(
-      #   x = fish_ta()$gazetted,
-      #   y = +Inf,
-      #   label = "\n\n gazetted",
-      #   size = 5,
-      #   fill = "white",
-      #   check_overlap = TRUE,
-      #   label.size = NA
-      # ) +
-      # geom_label(
-      #   x = fish_ta()$re.zoned,
-      #   y = +Inf,
-      #   label = "\n\n re-zoned",
-      #   size = 5,
-      #   fill = "white",
-      #   check_overlap = TRUE,
-      #   label.size = NA
-      # )
+      ggplot_mpatheme()
   })
 
   ####### ►  Make all species abundance plot interactive so the height changes with the number of inputs ----
@@ -1506,31 +1357,30 @@ app_server <- function(input, output, session) {
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(scientific ~ ., scales = "free", ncol = 1) +
-      ggplot_mpatheme() #+
-      # geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-      # geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
-      # geom_label(
-      #   x = fish_ta()$gazetted,
-      #   y = +Inf,
-      #   label = "\n\n gazetted",
-      #   size = 5,
-      #   fill = "white",
-      #   check_overlap = TRUE,
-      #   label.size = NA
-      # ) +
-      # geom_label(
-      #   x = fish_ta()$re.zoned,
-      #   y = +Inf,
-      #   label = "\n\n re-zoned",
-      #   size = 5,
-      #   fill = "white",
-      #   check_overlap = TRUE,
-      #   label.size = NA
-      # )
+      ggplot_mpatheme()
   })
 
 
 # EXTRA CONTENT ----
+
+  # Marine Park image ----
+  # NOTE this depends on the image filename being identical to the data folders
+  # in the source data (data/Ningaloo or data/Ningaloo Marine Park)
+  output$ui.fish.park.image <- renderUI({
+    park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
+    print(park)
+
+    img(src = paste0("www/images/fish_", park, ".jpg"), align = "right", width = "100%")
+  })
+
+  output$ui.benthic.park.image <- renderUI({
+    park <- stringr::str_replace_all(tolower(input$benthic.park.coralcover.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
+    print(park)
+
+    img(src = paste0("www/images/coral_", park, ".jpg"), align = "right", width = "100%")
+  })
+
+
   # Species iFrames -----
   ####### ►  State All species ----
  output$fish.state.all.species.iframe <- renderUI({
@@ -1583,37 +1433,37 @@ app_server <- function(input, output, session) {
   observeEvent(input$state.ta,
     showModal(modalDialog(
       title = "How do we measure total abundance?",
-      htmltools::includeMarkdown(paste0("inst/app/www/popups/state_total.abundance.md"))))
+      htmltools::includeMarkdown(paste0("inst/app/www/popups/total.abundance.md"))))
   )
 
   observeEvent(input$state.sr,
                showModal(modalDialog(
                  title = "How do we measure species richness?",
-                 htmltools::includeMarkdown(paste0("inst/app/www/popups/state_species.richness.md"))))
+                 htmltools::includeMarkdown(paste0("inst/app/www/popups/species.richness.md"))))
   )
 
 
   observeEvent(input$park.ta,
                showModal(modalDialog(
                  title = "How do we measure total abundance?",
-                 htmltools::includeMarkdown(paste0("inst/app/www/popups/state_total.abundance.md"))))
+                 htmltools::includeMarkdown(paste0("inst/app/www/popups/total.abundance.md"))))
   )
 
   observeEvent(input$park.sr,
                showModal(modalDialog(
                  title = "How do we measure species richness?",
-                 htmltools::includeMarkdown(paste0("inst/app/www/popups/state_species.richness.md"))))
+                 htmltools::includeMarkdown(paste0("inst/app/www/popups/species.richness.md"))))
   )
 
-  # MARINE PARK
+  # MARINE PARK ----
+  # FOR FISH
   observeEvent(
     input$alert.marinepark,
 
     showModal(modalDialog(
       title = input$fish.park.dropdown,
-      htmltools::includeMarkdown(#"inst/app/www/popups/ningaloo.md"
-                                 paste0("inst/app/www/popups/", stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", " " = "")), ".md"))
-      # filter(mpa_data()$park.popups, marine.park %in% c(input$fish.park.dropdown))$info
+      htmltools::includeMarkdown(paste0("inst/app/www/popups/fish_",
+                                        stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", " " = "")), ".md"))
     ))
 
   )

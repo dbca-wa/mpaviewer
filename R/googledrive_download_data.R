@@ -22,6 +22,7 @@ googledrive_download_data <- function() {
   # 1
 
   main.dir <- "/inst/data/raw"
+  popup.dir <- "/inst/app/www/popups"
 
   # Main folder with all marine parks
   drive.folder <- "https://drive.google.com/drive/folders/1GDcemLHxOvAjyecWfv83hhH-ZZh1hqfT"
@@ -103,4 +104,41 @@ googledrive_download_data <- function() {
 
     file.rename(code, new.name)
   }
+
+
+
+  # Folder with images
+  drive.folder <- "https://drive.google.com/drive/folders/1PeEcdENN0BhXpkzryqsBbq-0kFn_1N7z"
+  folder.id <- googledrive::drive_get(googledrive::as_id(drive.folder))
+
+  # find all folders in marine park folder
+  files <- googledrive::drive_ls(folder.id)
+
+  #download files
+  for (i in seq_along(files$name)) {
+    try({
+      googledrive::drive_download(googledrive::as_id(files$id[i]),
+                                  path = stringr::str_c("inst/app/www/images", files$name[i], sep = "/"),
+                                  overwrite = TRUE)
+    })
+  }
+
+  # Folder with pop-ups
+  drive.folder <- "https://drive.google.com/drive/folders/1laVfBAmFlnrxGInyOEx-2Sp8-s5Dw4rT"
+  folder.id <- googledrive::drive_get(googledrive::as_id(drive.folder))
+
+  # find all folders in marine park folder
+  files <- googledrive::drive_ls(folder.id)
+
+  #download files
+  for (i in seq_along(files$name)) {
+    try({
+      googledrive::drive_download(googledrive::as_id(files$id[i]),
+                                  path = stringr::str_c("inst/app/www/popups", files$name[i], sep = "/"),
+                                  overwrite = TRUE)
+    })
+  }
+
+
+
 }

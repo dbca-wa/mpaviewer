@@ -1,8 +1,3 @@
----
-title: "Test"
-output: html_document
----
-
 *Ningaloo Marine Park*
 
 Ningaloo Marine Park is World Heritage-listed and one of the largest fringing reefs home to hundreds of fish and coral species, making snorkelling as easy as a short paddle from shore. 

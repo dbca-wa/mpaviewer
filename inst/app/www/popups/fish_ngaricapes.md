@@ -1,8 +1,3 @@
----
-title: "Test"
-output: html_document
----
-
 *Ngari Capes Marine Park*
 
 Ngari Capes Marine Park extends from Busselton to Augusta. It features fabulous underwater landscapes and is a great spot for all types of water-based fun. In winter and spring, humpback and southern right whales migrate through Ngari Capes. Blue whales, the largest living animals on Earth, have been seen in Geographe Bay, particularly during November.

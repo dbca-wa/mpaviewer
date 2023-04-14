@@ -28,3 +28,4 @@ mpaviewer::run_app()
 # Step 5. Deploy to shiny server for testing
 # rsconnect::deployApp()
 # test <- readRDS(here::here("inst/data/mpa_data.rds"))$all.data
+# test <-

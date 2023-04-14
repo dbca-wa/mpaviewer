@@ -1,8 +1,3 @@
----
-title: "Test"
-output: html_document
----
-
 *Shark Bay Marine Park*
 
 Shark Bay Marine Park is valued for its rich and abundant marine life. It’s part of the Shark Bay World Heritage Area. The stars of the park are the famous Monkey Mia bottlenose dolphins. They attract visitors from all over the world. The reserve also has turtles, dugongs, humpback whales and sharks.

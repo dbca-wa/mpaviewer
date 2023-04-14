@@ -262,7 +262,7 @@ app_ui <- function(request) {
                     'input.fishparkmetric == "Whole assemblage"',
 
                     # box(width = 12, title = "Total abundance:",
-                    h4("Total abundance:", actionButton("park.ta", label = " ",
+                    h3("Total abundance:", actionButton("park.ta", label = " ",
                                                          icon = icon("info"),
                                                          icon.library = "font awesome",
                                                          style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
@@ -271,17 +271,22 @@ app_ui <- function(request) {
 
                     uiOutput("fish.park.total.trend"),
 
-                    h3("Most abundant species:"), # TODO check
+                    h4("Most abundant species:"), # TODO check
                     withSpinner(plotOutput("fish.park.stack.plot", height = 500)),
 
                     h4("Total abundance by sanctuary:"),
                     withSpinner(uiOutput("ui.fish.park.total.sanctuary.plot")),
 
-                    h4("Total abundance by site:"),
+                    ## Only show site plots if stereo-DOVs
+                    # conditionalPanel(
+                      # 'input.fish.park.method.dropdown == "stereo-DOVs"',
+
+                    # h4("Total abundance by site:"),
                     withSpinner(uiOutput("ui.fish.park.total.site.plot")),
                     # ),
+                    # ),
 
-                    h4("Species richness:", actionButton("park.sr", label = " ",
+                    h3("Species richness:", actionButton("park.sr", label = " ",
                                                           icon = icon("info"),
                                                           icon.library = "font awesome",
                                                           style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
@@ -292,7 +297,7 @@ app_ui <- function(request) {
                     h4("Species richness by sanctuary:"),
                     withSpinner(uiOutput("ui.fish.park.rich.sanctuary.plot")),
 
-                    h4("Species richness by site:"),
+                    # h4("Species richness by site:"),
                     withSpinner(uiOutput("ui.fish.park.rich.site.plot"))
                     # leafletOutput("fish.park.total.leaflet", height = 400)
                   ),
