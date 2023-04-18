@@ -26,7 +26,7 @@ leaflet_basemap <- function(data = NULL, l_width = NULL, l_height = NULL) {
         maxWidth = 200
       )
     ) %>%
-    leaflet::addMiniMap(toggleDisplay = TRUE, minimized = FALSE) %>%
+    leaflet::addMiniMap(toggleDisplay = TRUE, minimized = TRUE) %>%
     leaflet::setView(130, -20, 5)
 }
 

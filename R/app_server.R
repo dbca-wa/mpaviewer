@@ -226,7 +226,6 @@ app_server <- function(input, output, session) {
       dplyr::filter(number > 0) %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
-      # dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
       dplyr::group_by(scientific) %>%
       dplyr::summarise(total = sum(number)) %>%
       dplyr::arrange(desc(total)) %>%
@@ -249,7 +248,6 @@ app_server <- function(input, output, session) {
       dplyr::filter(maxn > 0) %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
-      # dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
       dplyr::group_by(scientific) %>%
       dplyr::summarise(total = sum(maxn)) %>%
       dplyr::arrange(desc(total)) %>%
@@ -271,7 +269,6 @@ app_server <- function(input, output, session) {
     choices <- mpa_data()$trophic.abundance %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
-      # dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
       dplyr::group_by(trophic.group) %>%
       dplyr::arrange() %>%
       dplyr::distinct(trophic.group) %>%
@@ -333,15 +330,6 @@ app_server <- function(input, output, session) {
   #### STATE PLOTS ----
   ####### ►  Sampling effort leaflet ----
   output$fish.state.sampling.leaflet <- renderLeaflet({
-    req(input$fish.state.park.dropdown, input$fish.state.method.dropdown)
-
-    overzero.ta <- dplyr::filter(fish_ta(), value > 0)
-    equalzero.ta <- dplyr::filter(fish_ta(), value == 0)
-    max.ta <- max(overzero.ta$value)
-
-    overzero.sr <- dplyr::filter(fish_sr(), value > 0)
-    equalzero.sr <- dplyr::filter(fish_sr(), value == 0)
-    max.sr <- max(overzero.sr$value)
 
     map <- leaflet_basemap(fish_samplingeffort()) %>%
       fitBounds(
@@ -350,15 +338,6 @@ app_server <- function(input, output, session) {
         ~ max(longitude),
         ~ max(latitude)
       ) %>%
-      # addCircleMarkers(
-      #   lng = ~longitude,
-      #   lat = ~latitude,
-      #   label = ~as.character(sample),
-      #   popup = ~content,
-      #   radius = 1,
-      #   fillOpacity = 1,
-      #   color = "black"\
-      # ) %>%
       addMarkers(
         lng = ~longitude,
         lat = ~latitude,
@@ -377,12 +356,53 @@ app_server <- function(input, output, session) {
         values = mpa_data()$state.mp$zone,
         opacity = 1,
         title = "Zones",
-        position = "bottomright",
+        position = "bottomleft",
         group = "Marine Parks"
       ) %>%
       addLayersControl(
         overlayGroups = c(
           "Sampling locations",
+          "Marine Parks"),
+        options = layersControlOptions(collapsed = FALSE)
+      )
+
+    map
+  })
+
+  ####### ►  Leaflet Total Abundance and Species Richness ----
+  output$fish.state.metric.leaflet <- renderLeaflet({
+
+    overzero.ta <- dplyr::filter(fish_ta(), value > 0)
+    equalzero.ta <- dplyr::filter(fish_ta(), value == 0)
+    max.ta <- max(overzero.ta$value)
+
+    overzero.sr <- dplyr::filter(fish_sr(), value > 0)
+    equalzero.sr <- dplyr::filter(fish_sr(), value == 0)
+    max.sr <- max(overzero.sr$value)
+
+    map <- leaflet_basemap(fish_samplingeffort()) %>%
+      fitBounds(
+        ~ min(longitude),
+        ~ min(latitude),
+        ~ max(longitude),
+        ~ max(latitude)
+      ) %>%
+      addGlPolygons(
+        data =  mpa_data()$state.mp,
+        color = ~ mpa_data()$state.pal(zone),
+        popup =  mpa_data()$state.mp$COMMENTS,
+        group = "Marine Parks"
+      ) %>%
+      addLegend(
+        pal = mpa_data()$state.pal,
+        values = mpa_data()$state.mp$zone,
+        opacity = 1,
+        title = "Zones",
+        position = "bottomleft",
+        group = "Marine Parks"
+      ) %>%
+      addLayersControl(
+        overlayGroups = c(
           "Marine Parks",
           "Total abundance",
           "Species richness"
@@ -461,22 +481,13 @@ app_server <- function(input, output, session) {
     }
 
     map %>%
-      hideGroup("Total abundance") %>%
+      # hideGroup("Total abundance") %>%
       hideGroup("Species richness")
   })
-
 
   ####### ►  Total abundance ----
   output$fish.state.total.plot <- renderPlot({
     req(fish_ta())
-
-    # See https://github.com/dbca-wa/mpaviewer/issues/13
-    # dat has already been calculated as fish_ta()
-    # dat - fish_ta()
-    # dat <- mpa_data()$all.data %>%
-    #   dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
-    #   dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
-    #   dplyr::filter(metric %in% c("Total abundance"))
 
     label <- grobTree(textGrob(as.character("Total abundance"),
       x = 0.01, y = 0.97, hjust = 0,
@@ -760,6 +771,87 @@ app_server <- function(input, output, session) {
       ggplot_mpatheme()
   })
 
+  ####### ►  Leaflet All Species ----
+  output$fish.state.all.species.leaflet <- renderLeaflet({
+    req(input$fish.state.method.dropdown, input$fish.state.park.dropdown, input$fish.state.all.species.dropdown)
+
+    dat <- mpa_data()$abundance %>%
+      dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
+      dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
+      dplyr::filter(scientific %in% c(input$fish.state.all.species.dropdown))
+
+    overzero.ta <- dplyr::filter(dat, maxn > 0)
+    equalzero.ta <- dplyr::filter(dat, maxn == 0)
+    max.ta <- max(overzero.ta$maxn)
+
+    map <- leaflet_basemap(fish_samplingeffort()) %>%
+      fitBounds(
+        ~ min(longitude),
+        ~ min(latitude),
+        ~ max(longitude),
+        ~ max(latitude)
+      ) %>%
+      addGlPolygons(
+        data =  mpa_data()$state.mp,
+        color = ~ mpa_data()$state.pal(zone),
+        popup =  mpa_data()$state.mp$COMMENTS,
+        group = "Marine Parks"
+      ) %>%
+      addLegend(
+        pal = mpa_data()$state.pal,
+        values = mpa_data()$state.mp$zone,
+        opacity = 1,
+        title = "Zones",
+        position = "bottomleft",
+        group = "Marine Parks"
+      ) %>%
+      addLayersControl(
+        overlayGroups = c(
+          "Marine Parks",
+          "Abundance"
+        ),
+        options = layersControlOptions(collapsed = FALSE)
+      ) %>%
+      add_legend_ta(
+        colors = c("black", "blue", "blue"),
+        labels = c(0, round(max.ta / 2), max.ta),
+        sizes = c(5, 20, 40), group = "Abundance"
+      )
+
+    if (nrow(overzero.ta)) {
+      map <- map %>%
+        addCircleMarkers(
+          data = overzero.ta,
+          lat = ~latitude,
+          lng = ~longitude,
+          radius = ~ (((maxn / max(maxn)) * 20)),
+          fillOpacity = 0.5,
+          stroke = FALSE,
+          label = ~ as.character(maxn),
+          group = "Abundance",
+          color = "blue"
+        )
+    }
+
+    if (nrow(equalzero.ta)) {
+      map <- map %>%
+        addCircleMarkers(
+          data = equalzero.ta,
+          lat = ~latitude,
+          lng = ~longitude,
+          radius = 2,
+          fillOpacity = 0.5,
+          color = "black",
+          stroke = FALSE,
+          label = ~ as.character(maxn),
+          group = "Abundance"
+        )
+    }
+
+
+    map
+  })
+
   #----------------------------------------------------------------------------#
   #### MARINE PARK PLOTS ----
   # Start of marine park plots ----
@@ -769,21 +861,9 @@ app_server <- function(input, output, session) {
   output$fish.park.sampling.leaflet <- renderLeaflet({
     req(input$fish.park.method.dropdown, input$fish.park.dropdown) #, input$fish.park.site.dropdown
 
-    fish.dat <- mpa_data()$all.data %>%
-      dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
-      # dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
-      dplyr::filter(method %in% c(input$fish.park.method.dropdown))
-
-    ta <- fish.dat %>%
-      dplyr::filter(metric %in% c("Total abundance"))
-
-    sr <- fish.dat %>%
-      dplyr::filter(metric %in% c("Species richness"))
-
     dat <- mpa_data()$sampling.effort %>%
       dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
       dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
-      # dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
       dplyr::mutate(content = paste(
         sep = " ",
         "<b>Sample:", sample, "</b>", "<br/>",
@@ -793,14 +873,6 @@ app_server <- function(input, output, session) {
         "<b>Location:</b>", location, "<br/>",
         "<b>Number of times sampled:</b>", number.of.times.sampled, "<br/>"
       ))
-
-    overzero.ta <- filter(ta, value > 0)
-    equalzero.ta <- filter(ta, value == 0)
-    max.ta <- max(overzero.ta$value)
-
-    overzero.sr <- filter(sr, value > 0)
-    equalzero.sr <- filter(sr, value == 0)
-    max.sr <- max(overzero.sr$value)
 
     map <- leaflet_basemap(dat) %>%
       fitBounds(~ min(longitude), ~ min(latitude), ~ max(longitude), ~ max(latitude)) %>%
@@ -814,10 +886,59 @@ app_server <- function(input, output, session) {
       addLegend(
         pal = mpa_data()$state.pal, values = mpa_data()$state.mp$zone, opacity = 1,
         title = "Zones",
-        position = "bottomright", group = "Marine Parks"
+        position = "bottomleft", group = "Marine Parks"
       ) %>%
       addLayersControl(
-        overlayGroups = c("Sampling locations", "Marine Parks", "Total abundance", "Species richness"),
+        overlayGroups = c("Sampling locations", "Marine Parks"),
+        options = layersControlOptions(collapsed = FALSE)
+      )
+
+    map
+  })
+
+  ####### ►  Leaflet - Total abundance and species richness ----
+  output$fish.park.metric.leaflet <- renderLeaflet({
+    req(input$fish.park.method.dropdown, input$fish.park.dropdown) #, input$fish.park.site.dropdown
+
+    fish.dat <- mpa_data()$all.data %>%
+      dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
+      dplyr::filter(method %in% c(input$fish.park.method.dropdown))
+
+    ta <- fish.dat %>%
+      dplyr::filter(metric %in% c("Total abundance"))
+
+    sr <- fish.dat %>%
+      dplyr::filter(metric %in% c("Species richness"))
+
+    dat <- mpa_data()$sampling.effort %>%
+      dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
+      dplyr::filter(marine.park %in% c(input$fish.park.dropdown))
+
+    overzero.ta <- filter(ta, value > 0)
+    equalzero.ta <- filter(ta, value == 0)
+    max.ta <- max(overzero.ta$value)
+
+    overzero.sr <- filter(sr, value > 0)
+    equalzero.sr <- filter(sr, value == 0)
+    max.sr <- max(overzero.sr$value)
+
+    map <- leaflet_basemap(dat) %>%
+      fitBounds(~ min(longitude), ~ min(latitude), ~ max(longitude), ~ max(latitude)) %>%
+      addGlPolygons(
+        data =  mpa_data()$state.mp,
+        color = ~ mpa_data()$state.pal(zone),
+        popup =  mpa_data()$state.mp$COMMENTS,
+        group = "Marine Parks"
+      ) %>%
+      addLegend(
+        pal = mpa_data()$state.pal, values = mpa_data()$state.mp$zone, opacity = 1,
+        title = "Zones",
+        position = "bottomleft", group = "Marine Parks"
+      ) %>%
+      addLayersControl(
+        overlayGroups = c("Marine Parks",
+                          "Total abundance",
+                          "Species richness"),
         options = layersControlOptions(collapsed = FALSE)
       ) %>%
       add_legend_ta(
@@ -849,7 +970,6 @@ app_server <- function(input, output, session) {
         )
     }
 
-
     if (nrow(overzero.sr)) {
       map <- map %>%
         addCircleMarkers(
@@ -858,7 +978,6 @@ app_server <- function(input, output, session) {
           label = ~ as.character(value), group = "Species richness", color = "green"
         )
     }
-
 
     if (nrow(equalzero.sr)) {
       map <- map %>%
@@ -870,7 +989,6 @@ app_server <- function(input, output, session) {
     }
 
     map %>%
-      hideGroup("Total abundance") %>%
       hideGroup("Species richness")
   })
 
@@ -1033,6 +1151,50 @@ app_server <- function(input, output, session) {
     plotOutput("fish.park.total.sanctuary.plot", height = p.height)
   })
 
+  ####### ►  Total abundance by Zone ----
+  output$fish.park.total.zone.plot <- renderPlot({
+    req(input$fish.park.method.dropdown, input$fish.park.dropdown) #, input$fish.park.site.dropdown
+
+    dat <- mpa_data()$all.data %>%
+      dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
+      dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
+      # dplyr::filter(site %in% c(input$fish.park.site.dropdown)) %>%
+      dplyr::filter(metric %in% c("Total abundance"))
+
+    label <- grobTree(textGrob(as.character("Total abundance"),
+                               x = 0.01, y = 0.97, hjust = 0,
+                               gp = gpar(col = "black", fontsize = 13, fontface = "italic")
+    ))
+
+    ggplot(dat, aes(x = year, y = value, fill = status)) +
+      stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
+      stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
+      xlab("Year") +
+      ylab("Average total abundance per sample \n(+/- SE)") +
+      # annotation_custom(label) +
+      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+      # scale_x_continuous(breaks = c(unique(dat$year))) +
+      scale_x_continuous(breaks = seq(min(dat$year)-1, max(dat$year)+1, 2)) +
+      scale_fill_manual(values = c("#b9e6fb",
+                                   "#7bbc63")) +
+      ggplot_mpatheme() +
+      facet_wrap(dbca_zone ~ ., scales = "free", ncol = 3)
+  })
+
+  output$ui.fish.park.total.zone.plot <- renderUI({
+    dat <- mpa_data()$all.data %>%
+      dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
+      dplyr::filter(method %in% c(input$fish.park.method.dropdown))
+
+    if (length(unique(dat$dbca_zone)) %in% c(1,2,3) ){
+      p.height <- 250
+    } else {
+      p.height <- 250 * ceiling(length(unique(dat$dbca_zone))/3)
+    }
+
+    plotOutput("fish.park.total.zone.plot", height = p.height)
+  })
+
   ####### ►  Species richness ----
   output$fish.park.rich.plot <- renderPlot({
     req(input$fish.park.method.dropdown, input$fish.park.dropdown) #, input$fish.park.site.dropdown
@@ -1155,6 +1317,49 @@ app_server <- function(input, output, session) {
     }
 
     plotOutput("fish.park.rich.sanctuary.plot", height = p.height)
+  })
+
+  ####### ►  Species richness by Zone ----
+  output$fish.park.rich.zone.plot <- renderPlot({
+    req(input$fish.park.method.dropdown, input$fish.park.dropdown)
+
+    dat <- mpa_data()$all.data %>%
+      dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
+      dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
+      dplyr::filter(metric %in% c("Species richness"))
+
+    label <- grobTree(textGrob(as.character("Species richness"),
+                               x = 0.01, y = 0.97, hjust = 0,
+                               gp = gpar(col = "black", fontsize = 13, fontface = "italic")
+    ))
+
+    ggplot(dat, aes(x = year, y = value, fill = status)) +
+      stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
+      stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
+      xlab("Year") +
+      ylab("Average number of species per sample \n(+/- SE)") +
+      #annotation_custom(label) +
+      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+      # scale_x_continuous(breaks = c(unique(dat$year))) +
+      scale_x_continuous(breaks = seq(min(dat$year)-1, max(dat$year)+1, 2)) +
+      scale_fill_manual(values = c("#b9e6fb",
+                                   "#7bbc63")) +
+      ggplot_mpatheme() +
+      facet_wrap(dbca_zone ~ ., scales = "free", ncol = 3)
+  })
+
+  output$ui.fish.park.rich.zone.plot <- renderUI({
+    dat <- mpa_data()$all.data %>%
+      dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
+      dplyr::filter(method %in% c(input$fish.park.method.dropdown))
+
+    if (length(unique(dat$dbca_zone)) %in% c(1,2,3) ){
+      p.height <- 250
+    } else {
+      p.height <- 250 * ceiling(length(unique(dat$dbca_zone))/3)
+    }
+
+    plotOutput("fish.park.rich.zone.plot", height = p.height)
   })
 
   ####### ►  Stacked Abundance Plot ----
@@ -1358,6 +1563,64 @@ app_server <- function(input, output, session) {
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       facet_wrap(scientific ~ ., scales = "free", ncol = 1) +
       ggplot_mpatheme()
+  })
+
+  ####### ►  Leaflet - All species abundance ----
+  output$fish.park.all.species.leaflet <- renderLeaflet({
+    req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.all.species.dropdown) #, input$fish.park.site.dropdown
+
+    dat <- mpa_data()$abundance %>%
+      dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
+      dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
+      dplyr::filter(scientific %in% c(input$fish.park.all.species.dropdown))
+
+    overzero.ta <- filter(dat, maxn > 0)
+    equalzero.ta <- filter(dat, maxn == 0)
+    max.ta <- max(overzero.ta$maxn)
+
+    map <- leaflet_basemap(dat) %>%
+      fitBounds(~ min(longitude), ~ min(latitude), ~ max(longitude), ~ max(latitude)) %>%
+      addGlPolygons(
+        data =  mpa_data()$state.mp,
+        color = ~ mpa_data()$state.pal(zone),
+        popup =  mpa_data()$state.mp$COMMENTS,
+        group = "Marine Parks"
+      ) %>%
+      addLegend(
+        pal = mpa_data()$state.pal, values = mpa_data()$state.mp$zone, opacity = 1,
+        title = "Zones",
+        position = "bottomleft", group = "Marine Parks"
+      ) %>%
+      addLayersControl(
+        overlayGroups = c("Marine Parks",
+                          "Abundance"),
+        options = layersControlOptions(collapsed = FALSE)
+      ) %>%
+      add_legend_ta(
+        colors = c("black", "blue", "blue"),
+        labels = c(0, round(max.ta / 2), max.ta),
+        sizes = c(5, 20, 40), group = "Abundance"
+      )
+
+    if (nrow(overzero.ta)) {
+      map <- map %>%
+        addCircleMarkers(
+          data = overzero.ta, lat = ~latitude, lng = ~longitude,
+          radius = ~ (((maxn / max(maxn)) * 20)), fillOpacity = 0.5, stroke = FALSE,
+          label = ~ as.character(maxn), group = "Abundance", color = "blue"
+        )
+    }
+
+    if (nrow(equalzero.ta)) {
+      map <- map %>%
+        addCircleMarkers(
+          data = equalzero.ta, lat = ~latitude, lng = ~longitude,
+          radius = 2, fillOpacity = 0.5, color = "black", stroke = FALSE,
+          label = ~ as.character(maxn), group = "Abundance"
+        )
+    }
+
+    map
   })
 
 

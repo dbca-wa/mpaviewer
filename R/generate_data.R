@@ -196,7 +196,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::select(marine.park, method, campaignid, sample, latitude, longitude, date, time, location, status, site, successful.count, successful.length, depth, observer, year, month, day, gazetted, re.zoned, complete, dbca_zone, dbca_sanctuary) # Trying to remove columns to save space/time to load the app
 
 
-  names(metadata)
+  names(metadata) %>% sort()
 
   test.complete <- metadata %>%
     dplyr::filter(complete %in% "Yes")
