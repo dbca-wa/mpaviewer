@@ -668,9 +668,47 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   #
   # TODO replicate for other objects required by server.R
 
+  # Using data table to set keys for faster filtering ----
+  lats <- data.table::data.table(lats)
+  abundance <- data.table::data.table(abundance)
+  trophic.abundance <- data.table::data.table(trophic.abundance)
+  all.data <- data.table::data.table(all.data)
+  fished.complete.length <- data.table::data.table(fished.complete.length)
+  fished.abundance <- data.table::data.table(fished.abundance)
+  metadata <- data.table::data.table(metadata)
+  sampling.effort <- data.table::data.table(sampling.effort)
+  state.mp <- data.table::data.table(state.mp)
+  state.pal <- data.table::data.table(state.pal)
+  park.popups <- data.table::data.table(park.popups)
+  coral_cover_transect <- data.table::data.table(coral_cover_transect)
+  coral_cover_metadata <- data.table::data.table(coral_cover_metadata)
+  rec_3b <- data.table::data.table(rec_3b)
+  rec_3c2 <- data.table::data.table(rec_3c2)
+  common.names <- data.table::data.table(common.names)
+  foa.codes <- data.table::data.table(foa.codes)
+  interpretation.trends <- data.table::data.table(interpretation.trends)
+
+  data.table::setkey(lats)
+  data.table::setkey(abundance)
+  data.table::setkey(trophic.abundance)
+  data.table::setkey(all.data)
+  data.table::setkey(fished.complete.length)
+  data.table::setkey(fished.abundance)
+  data.table::setkey(metadata)
+  data.table::setkey(sampling.effort)
+  # data.table::setkey(state.mp)
+  # data.table::setkey(state.pal)
+  data.table::setkey(park.popups)
+  data.table::setkey(coral_cover_transect)
+  data.table::setkey(coral_cover_metadata)
+  data.table::setkey(rec_3b)
+  data.table::setkey(rec_3c2)
+  data.table::setkey(common.names)
+  data.table::setkey(foa.codes)
+  data.table::setkey(interpretation.trends)
 
   # Version 3: one object
-  x <- structure(
+  mpa_data <- structure(
     list(
       downloaded_on = Sys.time(),
       lats = lats,
@@ -697,11 +735,12 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   )
 
   if (save == TRUE) {
-    saveRDS(x, dest, compress = FALSE) #"xz"
+    saveRDS(mpa_data, dest, compress = FALSE) #"xz"
+    save(mpa_data, file = here::here("inst/data/mpa_data.Rdata"))
     # saveRDS(x, "inst/data/mpa_data.rds", compress = FALSE) #"xz"
   }
 
-  x
+  mpa_data
 }
 
 #' @title S3 print method for 'mpa_data'.
@@ -711,23 +750,23 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 #' @param ... Extra parameters for `print`
 #' @export
 #' @family included
-print.mpa_data <- function(x, ...) {
+print.mpa_data <- function(mpa_data, ...) {
   print(
     glue::glue(
-      "<MPA Data> accessed on {x$downloaded_on}\n",
-      "  Abundance:   {nrow(x$abundance)}\n",
-      # "  total.abundance:   {nrow(x$total.abundance)}\n",
-      "  trophic.abundance:   {nrow(x$trophic.abundance)}\n",
-      "  all.data:    {nrow(x$all.data)}\n",
-      "  fished.complete.length:    {nrow(x$fished.complete.length)}\n",
-      "  fished.abundance:    {nrow(x$fished.abundance)}\n",
-      "  metadata:    {nrow(x$metadata)}\n",
-      "  sampling.effort:    {nrow(x$sampling.effort)}\n",
-      "  state.mp:    {nrow(x$state.mp)}\n",
-      "  state.pal:    {nrow(x$state.pal)}\n",
-      "  park.popups:    {nrow(x$park.popups)}\n"
+      "<MPA Data> accessed on {mpa_data$downloaded_on}\n",
+      "  Abundance:   {nrow(mpa_data$abundance)}\n",
+      # "  total.abundance:   {nrow(mpa_data$total.abundance)}\n",
+      "  trophic.abundance:   {nrow(mpa_data$trophic.abundance)}\n",
+      "  all.data:    {nrow(mpa_data$all.data)}\n",
+      "  fished.complete.length:    {nrow(mpa_data$fished.complete.length)}\n",
+      "  fished.abundance:    {nrow(mpa_data$fished.abundance)}\n",
+      "  metadata:    {nrow(mpa_data$metadata)}\n",
+      "  sampling.effort:    {nrow(mpa_data$sampling.effort)}\n",
+      "  state.mp:    {nrow(mpa_data$state.mp)}\n",
+      "  state.pal:    {nrow(mpa_data$state.pal)}\n",
+      "  park.popups:    {nrow(mpa_data$park.popups)}\n"
     )
   )
-  invisible(x)
+  invisible(mpa_data)
 }
 

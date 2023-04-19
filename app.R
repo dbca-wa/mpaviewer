@@ -12,13 +12,18 @@
 # Step 1. Load all functions from package
 
 pkgload::load_all(export_all = FALSE, helpers = FALSE, attach_testthat = FALSE)
-
+library(data.table)
 # Step 2. Download all data from GoogleDrive (only if it has been updated)
-
 # mpaviewer::googledrive_download_data()
 
 # Step 3. Generate new data
+# Sys.time()
 # mpaviewer::generate_data()
+# Sys.time()
+
+
+load("inst/data/mpa_data.Rdata")
+load("example.Rdata")
 
 # Step 4. Run demo app
 options("golem.app.prod" = TRUE)
@@ -29,3 +34,19 @@ mpaviewer::run_app()
 # rsconnect::deployApp()
 # test <- readRDS(here::here("inst/data/mpa_data.rds"))$all.data
 # test <-
+
+
+# TESTING - TODO DELETE
+# data.table::key(test)
+# t <- load(here::here("inst/data/data.Rdata"))
+#
+# data.table::key(x$abundance)
+#
+#
+# dat <- mpa_data$metadata
+# data.table::key(dat)
+#
+# choices <- dat[marine.park %in% c("Marmion Marine Park", "Montebello Islands")] %>% dplyr::glimpse()
+# choices <- choices %>%
+#   dplyr::distinct(method) %>%
+#   dplyr::pull("method")
