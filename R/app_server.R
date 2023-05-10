@@ -73,21 +73,11 @@ app_server <- function(input, output, session) {
   ####### ►  Create method dropdown ----
   output$fish.state.method.dropdown <- renderUI({
 
-    # TODO come back to this and GET IT TO WORK!!!!!
-    temp <- mpa_data$metadata
-
-    dat <- temp[marine.park %in% c(input$fish.state.park.dropdown)]
-
-    glimpse(dat)
+    dat <- mpa_data$metadata[marine.park %in% c(input$fish.state.park.dropdown)]
 
     choices <- dat %>%
       dplyr::distinct(method) %>%
       dplyr::pull("method")
-
-    # choices <- mpa_data$metadata %>%
-    #   dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
-    #   dplyr::distinct(method) %>%
-    #   dplyr::pull("method")
 
     create_dropdown("fish.state.method.dropdown", choices, "Choose a method:", FALSE)
   })
