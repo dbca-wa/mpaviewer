@@ -60,12 +60,16 @@ app_server <- function(input, output, session) {
   #### STATE DROPDOWNS ----
   ####### ►  Create a marine park dropdown ----
   output$fish.state.park.dropdown <- renderUI({
+
+    lats <- mpa_data$lats %>%
+      dplyr::arrange(desc(mean.lat))
+
     pickerInput(
       inputId = "fish.state.park.dropdown",
       label = "Choose Marine Parks to include:",
-      choices = c(unique(mpa_data$lats$marine.park)), #choices,
+      choices = c(unique(lats$marine.park)), #choices,
       multiple = TRUE,
-      selected = c(unique(mpa_data$lats$marine.park)), # choices,
+      selected = c(unique(lats$marine.park)), # choices,
       options = list(`actions-box` = TRUE, `live-search` = TRUE)
     )
   })
@@ -86,13 +90,14 @@ app_server <- function(input, output, session) {
   ####### ►  Create a fished species dropdown ----
   output$fish.state.fished.species.dropdown <- renderUI({
 
-    choices <- mpa_data$fished.complete.length %>%
-      dplyr::filter(number > 0) %>%
-      dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
-      dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
+    dat <- mpa_data$fished.complete.length[marine.park %in% c(input$fish.state.park.dropdown) &
+                                             method %in% c(input$fish.state.method.dropdown) &
+                                             number > 0]
+    choices <- dat %>%
       dplyr::group_by(scientific) %>%
       dplyr::summarise(total = sum(number)) %>%
       dplyr::arrange(desc(total)) %>%
+      dplyr::ungroup() %>%
       dplyr::distinct(scientific) %>%
       dplyr::pull("scientific")
 
@@ -108,12 +113,15 @@ app_server <- function(input, output, session) {
 
   ####### ►  Create all species dropdown ----
   output$fish.state.all.species.dropdown <- renderUI({
-    choices <- mpa_data$abundance %>%
-      dplyr::filter(maxn > 0) %>%
-      dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
-      dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
+
+    dat <- mpa_data$abundance[marine.park %in% c(input$fish.state.park.dropdown) &
+                                method %in% c(input$fish.state.method.dropdown) &
+                                maxn > 0]
+
+    choices <- dat %>%
       dplyr::group_by(scientific) %>%
       dplyr::summarise(total = sum(maxn)) %>%
+      dplyr::ungroup() %>%
       dplyr::arrange(desc(total)) %>%
       dplyr::distinct(scientific) %>%
       dplyr::pull("scientific")
@@ -130,11 +138,11 @@ app_server <- function(input, output, session) {
 
   ####### ►  Create a trophic group dropdown ----
   output$fish.state.trophic.dropdown <- renderUI({
-    choices <- mpa_data$trophic.abundance %>%
-      dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
-      dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
-      dplyr::group_by(trophic.group) %>%
-      dplyr::arrange() %>%
+
+    dat <- mpa_data$trophic.abundance[marine.park %in% c(input$fish.state.park.dropdown) &
+                                method %in% c(input$fish.state.method.dropdown)]
+
+    choices <- dat %>%
       dplyr::distinct(trophic.group) %>%
       dplyr::pull("trophic.group")
 
@@ -151,17 +159,25 @@ app_server <- function(input, output, session) {
   #### MARINE PARK DROPDOWNS ----
   ####### ►  Create a marine park dropdown ----
   output$fish.park.dropdown <- renderUI({
-    options <- mpa_data$metadata %>%
-      dplyr::distinct(marine.park) %>%
-      dplyr::pull("marine.park")
 
-    create_dropdown("fish.park.dropdown", options, "Choose a marine park:", FALSE)
+    lats <- mpa_data$lats %>%
+      dplyr::arrange(desc(mean.lat))
+
+    pickerInput(
+      inputId = "fish.park.dropdown",
+      label = "Choose a marine park:",
+      choices = c(unique(lats$marine.park)),
+      multiple = FALSE,
+      selected = unique(lats$marine.park)[1],
+      options = list(`actions-box` = TRUE, `live-search` = TRUE)
+    )
   })
 
   ####### ►  Create method dropdown ----
   output$fish.park.method.dropdown <- renderUI({
-    options <- mpa_data$metadata %>%
-      dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
+    dat <- mpa_data$metadata[marine.park %in% c(input$fish.park.dropdown)]
+
+    choices <- dat %>%
       dplyr::distinct(method) %>%
       dplyr::pull("method")
 
