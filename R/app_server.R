@@ -60,11 +60,6 @@ app_server <- function(input, output, session) {
   #### STATE DROPDOWNS ----
   ####### ►  Create a marine park dropdown ----
   output$fish.state.park.dropdown <- renderUI({
-    # choices <- mpa_data$metadata %>%
-    #   dplyr::distinct(marine.park) %>%
-    #   dplyr::arrange(marine.park) %>%
-    #   dplyr::pull("marine.park")
-
     pickerInput(
       inputId = "fish.state.park.dropdown",
       label = "Choose Marine Parks to include:",
