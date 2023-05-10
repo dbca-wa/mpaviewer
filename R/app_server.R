@@ -210,12 +210,15 @@ app_server <- function(input, output, session) {
 
   ####### ►  Create an all species dropdown ----
   output$fish.park.all.species.dropdown <- renderUI({
-    choices <- mpa_data$abundance %>%
-      dplyr::filter(maxn > 0) %>%
-      dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
-      dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
+
+    dat <- mpa_data$abundance[marine.park %in% c(input$fish.park.dropdown) &
+                                method %in% c(input$fish.park.method.dropdown) &
+                                maxn > 0]
+
+    choices <- dat %>%
       dplyr::group_by(scientific) %>%
       dplyr::summarise(total = sum(maxn)) %>%
+      dplyr::ungroup() %>%
       dplyr::arrange(desc(total)) %>%
       dplyr::distinct(scientific) %>%
       dplyr::pull("scientific")
@@ -232,11 +235,11 @@ app_server <- function(input, output, session) {
 
   ####### ►  Create a trophic group dropdown ----
   output$fish.park.trophic.dropdown <- renderUI({
-    choices <- mpa_data$trophic.abundance %>%
-      dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
-      dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
-      dplyr::group_by(trophic.group) %>%
-      dplyr::arrange() %>%
+
+    dat <- mpa_data$trophic.abundance[marine.park %in% c(input$fish.park.dropdown) &
+                                        method %in% c(input$fish.park.method.dropdown)]
+
+    choices <- dat %>%
       dplyr::distinct(trophic.group) %>%
       dplyr::pull("trophic.group")
 
