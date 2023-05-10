@@ -80,6 +80,7 @@ app_server <- function(input, output, session) {
       dplyr::pull("method")
 
     create_dropdown("fish.state.method.dropdown", choices, "Choose a method:", FALSE)
+
   })
 
   ####### ►  Create a fished species dropdown ----
