@@ -184,60 +184,6 @@ app_server <- function(input, output, session) {
     create_dropdown("fish.park.method.dropdown", options, "Choose a method:", FALSE)
   })
 
-  # ####### ►  Create a site dropdown ----
-  # output$fish.park.site.dropdown <- renderUI({
-  #
-  #   if(input$fish.park.method.dropdown %in% "stereo-DOVs"){
-  #
-  #   options.complete <- mpa_data$metadata %>%
-  #     dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
-  #     dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
-  #     dplyr::filter(complete %in% "Yes") %>%
-  #     dplyr::distinct(site) %>%
-  #     dplyr::arrange() %>%
-  #     dplyr::pull("site") %>%
-  #     sort()
-  #
-  #   options.incomplete <- mpa_data$metadata %>%
-  #     dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
-  #     dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
-  #     dplyr::filter(!complete %in% "Yes") %>%
-  #     dplyr::distinct(site) %>%
-  #     dplyr::arrange() %>%
-  #     dplyr::pull("site") %>%
-  #     sort()
-  #
-  #   pickerInput(
-  #     inputId = "fish.park.site.dropdown",
-  #     label = "Choose sites to include:",
-  #     choices = list("Sites consistently sampled" = options.complete, "Other sites" = options.incomplete),
-  #     multiple = TRUE,
-  #     selected = options.complete,
-  #     options = list(`actions-box` = TRUE, `live-search` = TRUE),
-  #     width = "100%"
-  #   )
-  #
-  #   } else {
-  #
-  #   options <- mpa_data$metadata %>%
-  #     dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
-  #     dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
-  #     dplyr::distinct(site) %>%
-  #     dplyr::arrange() %>%
-  #     dplyr::pull("site")
-  #
-  #   pickerInput(
-  #     inputId = "fish.park.site.dropdown",
-  #     label = "Choose sites to include:",
-  #     choices = sort(options),
-  #     multiple = TRUE,
-  #     selected = options,
-  #     options = list(`actions-box` = TRUE, `live-search` = TRUE),
-  #     width = "100%"
-  #   )
-  #   }
-  # })
-
   ####### ►  Create a fished species dropdown ----
   output$fish.park.fished.species.dropdown <- renderUI({
     choices <- mpa_data$fished.complete.length %>%
