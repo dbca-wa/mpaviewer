@@ -96,8 +96,8 @@ app_server <- function(input, output, session) {
     choices <- dat %>%
       dplyr::group_by(scientific) %>%
       dplyr::summarise(total = sum(number)) %>%
-      dplyr::arrange(desc(total)) %>%
       dplyr::ungroup() %>%
+      dplyr::arrange(desc(total)) %>%
       dplyr::distinct(scientific) %>%
       dplyr::pull("scientific")
 
@@ -186,12 +186,14 @@ app_server <- function(input, output, session) {
 
   ####### ►  Create a fished species dropdown ----
   output$fish.park.fished.species.dropdown <- renderUI({
-    choices <- mpa_data$fished.complete.length %>%
-      dplyr::filter(number > 0) %>%
-      dplyr::filter(marine.park %in% c(input$fish.park.dropdown)) %>%
-      dplyr::filter(method %in% c(input$fish.park.method.dropdown)) %>%
+
+    dat <- mpa_data$fished.complete.length[marine.park %in% c(input$fish.park.dropdown) &
+                                             method %in% c(input$fish.park.method.dropdown) &
+                                             number > 0]
+    choices <- dat %>%
       dplyr::group_by(scientific) %>%
       dplyr::summarise(total = sum(number)) %>%
+      dplyr::ungroup() %>%
       dplyr::arrange(desc(total)) %>%
       dplyr::distinct(scientific) %>%
       dplyr::pull("scientific")
