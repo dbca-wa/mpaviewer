@@ -1,65 +1,65 @@
 Package: mpaviewer
 Title: MPA Viewer
 Version: 0.0.0.9000
-Authors@R: person('Brooke', 'Gibbons', email = 'brooke.gibbons@uwa.edu.au', role = c('cre', 'aut'))
-Description: An interactive overview of selected biodiversity assets in Marine Protected Areas of Western Australia.
+Authors@R: 
+    person("Brooke", "Gibbons", , "brooke.gibbons@uwa.edu.au", role = c("cre", "aut"))
+Description: An interactive overview of selected biodiversity assets in
+    Marine Protected Areas of Western Australia.
 License: MIT + file LICENSE
-Imports: 
-    config (>= 0.3.1),
-    devtools,
-    dplyr,
-    ckanr,
-    cowplot,
-    fs,
-    forcats,
-    glue,
-    ggplot2,
-    GlobalArchive,
-    golem (>= 0.3.1),
-    here,
-    httr,
-    leaflet,
-    leaflet.extras,
-    leafgl,
-    magrittr,
-    mgcv,
-    rgdal,
-    rlang,
-    purrr,
-    shiny (>= 1.7.1),
-    readr,
-    stringr,
-    shinyWidgets,
-    shinydashboard,
-    shinyalert,
-    shinycssloaders,
-    shinydashboardPlus,
-    tidyr,
-    attempt,
-    DT,
-    htmltools,
-    thinkr,
-    plyr,
-    ggbreak
-Remotes:
-    github::UWAMEGFisheries/GlobalArchive
-Encoding: UTF-8
-LazyData: true
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.0
 URL: https://github.com/dbca-wa/mpaviewer
 BugReports: https://github.com/dbca-wa/mpaviewer/issues
-Suggests: 
-    data.table,
-    grid,
-    scales,
-    rmarkdown,
-    knitr,
-    pkgload,
-    spelling,
-    testthat (>= 3.0.0)
-Config/testthat/edition: 3
-Language: en-US
 Depends: 
     R (>= 4.1)
-VignetteBuilder: knitr
+Imports: 
+    ckanr (>= 0.7.0),
+    config (>= 0.3.1),
+    cowplot (>= 1.1.1),
+    data.table,
+    devtools (>= 2.4.5),
+    dplyr (>= 1.1.2),
+    forcats (>= 1.0.0),
+    fs (>= 1.6.2),
+    ggbreak,
+    ggplot2 (>= 3.4.2),
+    GlobalArchive (>= 0.1),
+    glue (>= 1.6.2),
+    golem (>= 0.3.1),
+    googledrive,
+    googlesheets4,
+    grid,
+    here (>= 1.0.1),
+    htmltools (>= 0.5.5),
+    httr (>= 1.4.5),
+    leafgl (>= 0.1.1),
+    leaflet (>= 2.1.2),
+    magrittr (>= 2.0.3),
+    plyr (>= 1.8.8),
+    purrr (>= 1.0.1),
+    readr (>= 2.1.4),
+    rgdal (>= 1.6.6),
+    rlang,
+    sf,
+    shiny (>= 1.7.1),
+    shinycssloaders (>= 1.0.0),
+    shinydashboard (>= 0.7.2),
+    shinydashboardPlus (>= 2.0.3),
+    shinyWidgets (>= 0.7.6),
+    stringr (>= 1.5.0),
+    thinkr,
+    tidyr (>= 1.3.0),
+    utils
+Suggests: 
+    knitr (>= 1.42),
+    rmarkdown (>= 2.21),
+    spelling (>= 2.2.1),
+    testthat (>= 3.0.0)
+VignetteBuilder: 
+    knitr
+Remotes:
+    github::UWAMEGFisheries/GlobalArchive
+Config/testthat/edition: 3
+Encoding: UTF-8
+Language: en-US
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3

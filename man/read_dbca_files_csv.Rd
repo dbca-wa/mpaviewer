@@ -4,7 +4,7 @@
 \alias{read_dbca_files_csv}
 \title{Read DBCA CSV files}
 \usage{
-read_dbca_files_csv(flnm, data_dir = here::here("inst/data"))
+read_dbca_files_csv(flnm, data_dir = here::here("inst/data/raw"))
 }
 \arguments{
 \item{flnm}{A filename}

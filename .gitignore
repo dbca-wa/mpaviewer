@@ -36,3 +36,4 @@ docs
 # rsconnect Shinyapps.io credentials
 rsconnect
 .secrets
+/doc/

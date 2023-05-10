@@ -15,6 +15,7 @@
 
 ## Dependencies ----
 ## Add one line by package you want to add as dependency
+attachment::att_amend_desc()
 usethis::use_package( "thinkr" )
 usethis::use_package( "dplyr" )
 usethis::use_package( "magrittr" )
@@ -25,6 +26,8 @@ usethis::use_package( "here" )
 usethis::use_package( "rlang" )
 usethis::use_package( "ggbreak" )
 usethis::use_pipe()
+usethis::use_data_table()
+# attachment
 
 ## Add modules ----
 ## Create a module infrastructure in R/

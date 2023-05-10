@@ -4,7 +4,7 @@
 \alias{read_dbca_files_txt}
 \title{Read DBCA TXT files}
 \usage{
-read_dbca_files_txt(flnm, data_dir = here::here("inst/data"))
+read_dbca_files_txt(flnm, data_dir = here::here("inst/data/raw"))
 }
 \arguments{
 \item{flnm}{A filename}

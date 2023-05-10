@@ -4,12 +4,12 @@
 \alias{print.mpa_data}
 \title{S3 print method for 'mpa_data'.}
 \usage{
-\method{print}{mpa_data}(x, ...)
+\method{print}{mpa_data}(mpa_data, ...)
 }
 \arguments{
-\item{x}{An object of class \code{mpa_data} as returned by \code{generate_data}.}
-
 \item{...}{Extra parameters for \code{print}}
+
+\item{x}{An object of class \code{mpa_data} as returned by \code{generate_data}.}
 }
 \description{
 Prints a short representation of mpa_data returned by

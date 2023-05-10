@@ -18,6 +18,10 @@
 generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds")) {
   data.dir <- here::here("inst/data")
 
+  #TODO fix empty shark bay year data
+
+
+
   # Benthic data
   # Currently not very pretty. Just saving csv files of the dataframes that Claire uses to create her plots.
 
@@ -41,6 +45,8 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   #                 mean = as.numeric(mean),
   #                 sd = as.numeric(sd),
   #                 se = as.numeric(se))
+
+  # TODO upload _coralcover.csv to GoogleDrive
 
   # New coral data in dashboard format
   coral_cover <- list.files(path = data.dir, recursive = T, pattern = "_coralcover.csv", full.names = T) %>%
@@ -668,44 +674,44 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   #
   # TODO replicate for other objects required by server.R
 
-  # Using data table to set keys for faster filtering ----
-  lats <- data.table::data.table(lats)
-  abundance <- data.table::data.table(abundance)
-  trophic.abundance <- data.table::data.table(trophic.abundance)
-  all.data <- data.table::data.table(all.data)
-  fished.complete.length <- data.table::data.table(fished.complete.length)
-  fished.abundance <- data.table::data.table(fished.abundance)
-  metadata <- data.table::data.table(metadata)
-  sampling.effort <- data.table::data.table(sampling.effort)
-  state.mp <- data.table::data.table(state.mp)
-  state.pal <- data.table::data.table(state.pal)
-  park.popups <- data.table::data.table(park.popups)
-  coral_cover_transect <- data.table::data.table(coral_cover_transect)
-  coral_cover_metadata <- data.table::data.table(coral_cover_metadata)
-  rec_3b <- data.table::data.table(rec_3b)
-  rec_3c2 <- data.table::data.table(rec_3c2)
-  common.names <- data.table::data.table(common.names)
-  foa.codes <- data.table::data.table(foa.codes)
-  interpretation.trends <- data.table::data.table(interpretation.trends)
+  # # Using data table to set keys for faster filtering ----
+  # lats <- data.table::data.table(lats)
+  # abundance <- data.table::data.table(abundance)
+  # trophic.abundance <- data.table::data.table(trophic.abundance)
+  # all.data <- data.table::data.table(all.data)
+  # fished.complete.length <- data.table::data.table(fished.complete.length)
+  # fished.abundance <- data.table::data.table(fished.abundance)
+  # metadata <- data.table::data.table(metadata)
+  # sampling.effort <- data.table::data.table(sampling.effort)
+  # # state.mp <- data.table::data.table(state.mp)
+  # # state.pal <- data.table::data.table(state.pal)
+  # park.popups <- data.table::data.table(park.popups)
+  # coral_cover_transect <- data.table::data.table(coral_cover_transect)
+  # coral_cover_metadata <- data.table::data.table(coral_cover_metadata)
+  # rec_3b <- data.table::data.table(rec_3b)
+  # rec_3c2 <- data.table::data.table(rec_3c2)
+  # common.names <- data.table::data.table(common.names)
+  # foa.codes <- data.table::data.table(foa.codes)
+  # interpretation.trends <- data.table::data.table(interpretation.trends)
 
-  data.table::setkey(lats)
-  data.table::setkey(abundance)
-  data.table::setkey(trophic.abundance)
-  data.table::setkey(all.data)
-  data.table::setkey(fished.complete.length)
-  data.table::setkey(fished.abundance)
-  data.table::setkey(metadata)
-  data.table::setkey(sampling.effort)
-  # data.table::setkey(state.mp)
-  # data.table::setkey(state.pal)
-  data.table::setkey(park.popups)
-  data.table::setkey(coral_cover_transect)
-  data.table::setkey(coral_cover_metadata)
-  data.table::setkey(rec_3b)
-  data.table::setkey(rec_3c2)
-  data.table::setkey(common.names)
-  data.table::setkey(foa.codes)
-  data.table::setkey(interpretation.trends)
+  # data.table::setkey(lats)
+  # data.table::setkey(abundance)
+  # data.table::setkey(trophic.abundance)
+  # data.table::setkey(all.data)
+  # data.table::setkey(fished.complete.length)
+  # data.table::setkey(fished.abundance)
+  # data.table::setkey(metadata)
+  # data.table::setkey(sampling.effort)
+  # # data.table::setkey(state.mp)
+  # # data.table::setkey(state.pal)
+  # data.table::setkey(park.popups)
+  # data.table::setkey(coral_cover_transect)
+  # data.table::setkey(coral_cover_metadata)
+  # data.table::setkey(rec_3b)
+  # data.table::setkey(rec_3c2)
+  # data.table::setkey(common.names)
+  # data.table::setkey(foa.codes)
+  # data.table::setkey(interpretation.trends)
 
   # Version 3: one object
   mpa_data <- structure(
@@ -736,7 +742,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   if (save == TRUE) {
     saveRDS(mpa_data, dest, compress = FALSE) #"xz"
-    save(mpa_data, file = here::here("inst/data/mpa_data.Rdata"))
+    # save(mpa_data, file = here::here("inst/data/mpa_data.Rdata"))
     # saveRDS(x, "inst/data/mpa_data.rds", compress = FALSE) #"xz"
   }
 
