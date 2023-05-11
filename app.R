@@ -2,7 +2,7 @@
 # To deploy, run: rsconnect::deployApp()
 # Or use the blue button on top of this file
 
-# Google Sheets Auth
+# Google Sheets Auth ----
 # options(gargle_oauth_cache = ".secrets")
 # # check the value of the option, if you like
 # gargle::gargle_oauth_cache()
@@ -28,4 +28,6 @@ mpaviewer::run_app()
 # Step 5. Deploy to shiny server for testing
 # rsconnect::deployApp()
 
-# lats <- mpa_data$lats
+# # lats <- mpa_data$lats
+# sampling.effot <- mpa_data$sampling.effort
+# metadata <- mpa_data$metadata

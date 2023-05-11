@@ -184,6 +184,12 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(year = as.numeric(year)) %>%
     dplyr::mutate(month = substr(date, 5, 6)) %>%
     dplyr::mutate(day = substr(date, 7, 8)) %>%
+
+    # Because Jordan was good and started uploading metadata with new date.time format
+    dplyr::mutate(year = dplyr::if_else(is.na(year), as.numeric(substr(date.time, 1, 4)), as.numeric(year))) %>%
+    dplyr::mutate(month = dplyr::if_else(is.na(month), substr(date.time, 6, 7), month)) %>%
+    dplyr::mutate(day = dplyr::if_else(is.na(day), substr(date.time, 9, 10), day)) %>%
+
     dplyr::mutate(latitude = as.numeric(latitude), longitude = as.numeric(longitude)) %>%
     dplyr::left_join(zoning) %>%
     dplyr::mutate(status = stringr::str_replace_all(.$status, c("Sanctuary" = "No-take",
@@ -206,6 +212,9 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   test.complete <- metadata %>%
     dplyr::filter(complete %in% "Yes")
+
+  testing <- metadata %>%
+    dplyr::filter(marine.park %in% "Shark Bay Marine Park")
 
   unique(metadata$marine.park) %>% sort()
   unique(metadata$method) %>% sort()
@@ -266,9 +275,9 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   ### ► Summarise to find sampling effort, this is used for the leaflet maps ----
   sampling.effort <- metadata %>%
-    dplyr::group_by(marine.park, method, sample, status, site, location, latitude, longitude, depth) %>%
+    dplyr::group_by(marine.park, method, sample, status, site, location, latitude, longitude, depth, complete) %>%
     dplyr::summarise(number.of.times.sampled = dplyr::n()) %>%
-    dplyr::ungroup() # Could also make this on the server side
+    dplyr::ungroup()
 
   ### ► Generic data (still using "sample") ----
   ### ► Count ----
@@ -674,44 +683,44 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   #
   # TODO replicate for other objects required by server.R
 
-  # # Using data table to set keys for faster filtering ----
-  # lats <- data.table::data.table(lats)
-  # abundance <- data.table::data.table(abundance)
-  # trophic.abundance <- data.table::data.table(trophic.abundance)
-  # all.data <- data.table::data.table(all.data)
-  # fished.complete.length <- data.table::data.table(fished.complete.length)
-  # fished.abundance <- data.table::data.table(fished.abundance)
-  # metadata <- data.table::data.table(metadata)
-  # sampling.effort <- data.table::data.table(sampling.effort)
-  # # state.mp <- data.table::data.table(state.mp)
-  # # state.pal <- data.table::data.table(state.pal)
-  # park.popups <- data.table::data.table(park.popups)
-  # coral_cover_transect <- data.table::data.table(coral_cover_transect)
-  # coral_cover_metadata <- data.table::data.table(coral_cover_metadata)
-  # rec_3b <- data.table::data.table(rec_3b)
-  # rec_3c2 <- data.table::data.table(rec_3c2)
-  # common.names <- data.table::data.table(common.names)
-  # foa.codes <- data.table::data.table(foa.codes)
-  # interpretation.trends <- data.table::data.table(interpretation.trends)
+  # Using data table to set keys for faster filtering ----
+  lats <- data.table::data.table(lats)
+  abundance <- data.table::data.table(abundance)
+  trophic.abundance <- data.table::data.table(trophic.abundance)
+  all.data <- data.table::data.table(all.data)
+  fished.complete.length <- data.table::data.table(fished.complete.length)
+  fished.abundance <- data.table::data.table(fished.abundance)
+  metadata <- data.table::data.table(metadata)
+  sampling.effort <- data.table::data.table(sampling.effort)
+  # state.mp <- data.table::data.table(state.mp)
+  # state.pal <- data.table::data.table(state.pal)
+  park.popups <- data.table::data.table(park.popups)
+  coral_cover_transect <- data.table::data.table(coral_cover_transect)
+  coral_cover_metadata <- data.table::data.table(coral_cover_metadata)
+  rec_3b <- data.table::data.table(rec_3b)
+  rec_3c2 <- data.table::data.table(rec_3c2)
+  common.names <- data.table::data.table(common.names)
+  foa.codes <- data.table::data.table(foa.codes)
+  interpretation.trends <- data.table::data.table(interpretation.trends)
 
-  # data.table::setkey(lats)
-  # data.table::setkey(abundance)
-  # data.table::setkey(trophic.abundance)
-  # data.table::setkey(all.data)
-  # data.table::setkey(fished.complete.length)
-  # data.table::setkey(fished.abundance)
-  # data.table::setkey(metadata)
-  # data.table::setkey(sampling.effort)
-  # # data.table::setkey(state.mp)
-  # # data.table::setkey(state.pal)
-  # data.table::setkey(park.popups)
-  # data.table::setkey(coral_cover_transect)
-  # data.table::setkey(coral_cover_metadata)
-  # data.table::setkey(rec_3b)
-  # data.table::setkey(rec_3c2)
-  # data.table::setkey(common.names)
-  # data.table::setkey(foa.codes)
-  # data.table::setkey(interpretation.trends)
+  data.table::setkey(lats)
+  data.table::setkey(abundance)
+  data.table::setkey(trophic.abundance)
+  data.table::setkey(all.data)
+  data.table::setkey(fished.complete.length)
+  data.table::setkey(fished.abundance)
+  data.table::setkey(metadata)
+  data.table::setkey(sampling.effort)
+  # data.table::setkey(state.mp)
+  # data.table::setkey(state.pal)
+  data.table::setkey(park.popups)
+  data.table::setkey(coral_cover_transect)
+  data.table::setkey(coral_cover_metadata)
+  data.table::setkey(rec_3b)
+  data.table::setkey(rec_3c2)
+  data.table::setkey(common.names)
+  data.table::setkey(foa.codes)
+  data.table::setkey(interpretation.trends)
 
   # Version 3: one object
   mpa_data <- structure(
@@ -742,7 +751,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   if (save == TRUE) {
     saveRDS(mpa_data, dest, compress = FALSE) #"xz"
-    # save(mpa_data, file = here::here("inst/data/mpa_data.Rdata"))
+    save(mpa_data, file = here::here("inst/data/mpa_data1.Rdata"))
     # saveRDS(x, "inst/data/mpa_data.rds", compress = FALSE) #"xz"
   }
 

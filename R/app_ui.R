@@ -246,8 +246,8 @@ app_ui <- function(request) {
                   column(
                     width = 6,
                     htmlOutput("fish.park.dropdown"),
-                    htmlOutput("fish.park.method.dropdown"),
-                    htmlOutput("fish.park.site.dropdown")
+                    htmlOutput("fish.park.method.dropdown")#,
+                    # htmlOutput("fish.park.site.dropdown")
                   ),
                   column(
                     width = 6,
@@ -257,14 +257,6 @@ app_ui <- function(request) {
                     ),
                     column(
                       width = 1,
-                      # actionBttn(
-                      #   inputId = "alert.marinepark",
-                      #   label = NULL,
-                      #   style = "material-circle",
-                      #   color = "primary",
-                      #   icon = icon("info")
-                      # )
-
                       actionButton("alert.marinepark",
                                    label = " ",
                                    icon = icon("info"),
@@ -341,7 +333,7 @@ app_ui <- function(request) {
                   ),
                   conditionalPanel(
                     'input.fishparkmetric == "Individual species"',
-                    htmlOutput("fish.park.all.species.dropdown"),
+                    htmlOutput("UIfish.park.all.species.dropdown"),
                     withSpinner(plotOutput("fish.park.all.species.abundance.plot", height = 500)),
 
                     h4("Spatial"),
