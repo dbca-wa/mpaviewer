@@ -7,7 +7,7 @@
 # # check the value of the option, if you like
 # gargle::gargle_oauth_cache()
 # googlesheets4::gs4_auth()
-# 1
+# 2
 
 # Step 1. Load all functions from package
 
@@ -23,6 +23,9 @@ pkgload::load_all(export_all = FALSE, helpers = FALSE, attach_testthat = FALSE)
 
 # Step 4. Run demo app
 options("golem.app.prod" = TRUE)
+
+# shinyOptions(cache = cachem::cache_disk("./bind-cache"))
+
 mpaviewer::run_app()
 
 # Step 5. Deploy to shiny server for testing
@@ -31,3 +34,9 @@ mpaviewer::run_app()
 # # lats <- mpa_data$lats
 # sampling.effot <- mpa_data$sampling.effort
 # metadata <- mpa_data$metadata
+#
+# profvis::profvis({
+#   print(
+#     mpaviewer::run_app()
+#   )
+# })

@@ -11,6 +11,7 @@ BugReports: https://github.com/dbca-wa/mpaviewer/issues
 Depends: 
     R (>= 4.1)
 Imports: 
+    cachem,
     ckanr (>= 0.7.0),
     config (>= 0.3.1),
     cowplot (>= 1.1.1),
@@ -31,6 +32,7 @@ Imports:
     htmltools (>= 0.5.5),
     httr (>= 1.4.5),
     leafgl (>= 0.1.1),
+    leaflegend,
     leaflet (>= 2.1.2),
     magrittr (>= 2.0.3),
     plyr (>= 1.8.8),

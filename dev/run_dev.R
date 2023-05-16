@@ -9,6 +9,8 @@ rm(list=ls(all.names = TRUE))
 golem::document_and_reload()
 
 # Run the application
+# shiny::shinyOptions(cache = cachem::cache_disk("./bind-cache"))
 run_app()
+
 
 

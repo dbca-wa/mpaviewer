@@ -107,7 +107,7 @@ app_ui <- function(request) {
           menuItem(tags$div(tags$i(icon("fish")), tags$span("Fish")),
                    tabName = "fishtab"), #, icon = icon("fish")
 
-          menuItem(tags$div(tags$img(src = "www/coral.png", width="30px"),
+          menuItem(tags$div(tags$img(src = "www/coral.png", width="20px"),
             # tags$i(icon("pagelines")),
             tags$span("Benthic")),
                    tabName = "benthictab"),
@@ -582,8 +582,6 @@ golem_add_external_resources <- function() {
   add_resource_path(
     "www", app_sys("app/www")
   )
-
-  library(data.table)
 
   tags$head(
     favicon(),

@@ -51,13 +51,15 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   # New coral data in dashboard format
   coral_cover <- list.files(path = data.dir, recursive = T, pattern = "_coralcover.csv", full.names = T) %>%
     purrr::map_df(~ read_dbca_files_csv(.)) %>%
-    dplyr::filter(!marine.park %in% c("archive")) %>% # get rid of old files
     dplyr::filter(level2class %in% c("Hard coral", "Octocorals - Hard")) %>%
     dplyr::mutate(year = as.numeric(year),
                   percent_cover = as.numeric(percent_cover),
                   plot_year = as.numeric(year),
                   latitude = as.numeric(latitude),
-                  longitude = as.numeric(longitude))
+                  longitude = as.numeric(longitude)) %>%
+    dplyr::filter(!marine.park %in% c("archive", "C:")) # get rid of old files
+
+  unique(coral_cover$marine.park)
 
 
   coral_cover_metadata <- coral_cover %>%
@@ -82,13 +84,13 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   rec_3b <- list.files(path = data.dir, recursive = T, pattern = "REC3b.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
     purrr::map_df(~ read_dbca_files_csv(.)) %>%
-    dplyr::filter(!marine.park %in% c("archive")) %>% # get rid of old files
+    dplyr::filter(!marine.park %in% c("archive", "C:")) %>% # get rid of old files
     dplyr::mutate(year = as.numeric(year),
                   mean = as.numeric(mean))
 
   rec_3c2 <- list.files(path = data.dir, recursive = T, pattern = "REC3c2.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
     purrr::map_df(~ read_dbca_files_csv(.)) %>%
-    dplyr::filter(!marine.park %in% c("archive")) %>% # get rid of old files
+    dplyr::filter(!marine.park %in% c("archive", "C:")) %>% # get rid of old files
     dplyr::mutate(year = as.numeric(year),
                   mean = as.numeric(mean),
                   sd = as.numeric(sd),
@@ -171,11 +173,11 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   interpretation.trends <- googlesheets4::read_sheet(dbca.googlesheet.url, sheet = "interpretation_trends") %>%
     GlobalArchive::ga.clean.names()
 
-  ## _______________________________________________________ ----
-  ##                        READ IN DATA                     ----
-  ## _______________________________________________________ ----
+  # _______________________________________________________ ----
+  #                        READ IN DATA                     ----
+  # _______________________________________________________ ----
 
-  ### ► Metadata (same for every method and data type) ----
+  ## ► Metadata (same for every method and data type) ----
 
   metadata <- list.files(path = data.dir, recursive = T, pattern = "_Metadata.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
     purrr::map_df(~ read_dbca_files_csv(.)) %>% # combine into dataframe
@@ -273,14 +275,14 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::filter(method %in% "stereo-BRUVs") %>%
     dplyr::filter(marine.park %in% "Ningaloo Marine Park")
 
-  ### ► Summarise to find sampling effort, this is used for the leaflet maps ----
+  ## ► Summarise to find sampling effort, this is used for the leaflet maps ----
   sampling.effort <- metadata %>%
     dplyr::group_by(marine.park, method, sample, status, site, location, latitude, longitude, depth, complete) %>%
     dplyr::summarise(number.of.times.sampled = dplyr::n()) %>%
     dplyr::ungroup()
 
-  ### ► Generic data (still using "sample") ----
-  ### ► Count ----
+  ## ► Generic data (still using "sample") ----
+  ## ► Count ----
   count.csv <- list.files(path = data.dir, recursive = T, pattern = "_Count.csv", full.names = T) %>% # list all files ending in "_Count.csv"
     purrr::map_df(~ read_dbca_files_csv(.)) %>% # combine into dataframe
     dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Count.csv" = ""))) %>%
