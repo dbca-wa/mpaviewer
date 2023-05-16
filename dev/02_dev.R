@@ -27,6 +27,7 @@ usethis::use_package( "rlang" )
 usethis::use_package( "ggbreak" )
 usethis::use_package( "cachem")
 usethis::use_package( "leaflegend")
+usethis::use_package( "ggh4x")
 usethis::use_pipe()
 usethis::use_data_table()
 # attachment

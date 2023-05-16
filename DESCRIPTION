@@ -21,6 +21,7 @@ Imports:
     forcats (>= 1.0.0),
     fs (>= 1.6.2),
     ggbreak,
+    ggh4x,
     ggplot2 (>= 3.4.2),
     GlobalArchive (>= 0.1),
     glue (>= 1.6.2),

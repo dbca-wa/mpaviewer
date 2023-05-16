@@ -203,9 +203,9 @@ app_ui <- function(request) {
                     'input.fishstatemetric == "Whole assemblage"',
                     h4("Total abundance  ", actionButton("state.ta", label = " ", icon = icon("info"), icon.library = "font awesome", style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
                     # h4("Total abundance:"),
-                    withSpinner(plotOutput("fish.state.total.plot", height = 500)), # ui.
+                    withSpinner(uiOutput("ui.fish.state.total.plot")), # ui.
                     h4("Species richness  ", actionButton("state.sr", label = " ", icon = icon("info"), icon.library = "font awesome", style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
-                    withSpinner(plotOutput("fish.state.rich.plot", height = 500)), # ui.
+                    withSpinner(uiOutput("ui.fish.state.rich.plot")), # ui.
 
                     h4("Spatial"),
                     withSpinner(leafletOutput(width = "100%", "fish.state.metric.leaflet", height = 500))
@@ -215,14 +215,14 @@ app_ui <- function(request) {
                   conditionalPanel(
                     'input.fishstatemetric == "Target species"',
                     htmlOutput("fish.state.fished.species.dropdown"),
-                    withSpinner(plotOutput("fish.state.fished.species.abundance.plot", height = 500)),
+                    withSpinner(uiOutput("ui.fish.state.fished.species.abundance.plot")),
                     htmlOutput("fish.state.fished.species.iframe"),
-                    withSpinner(plotOutput("fish.state.fished.species.kde.plot", height = 500))
+                    withSpinner(plotOutput("fish.state.fished.species.kde.plot", height = 500)) #TODO make this a better height
                   ),
                   conditionalPanel(
                     'input.fishstatemetric == "Individual species"',
                     htmlOutput("fish.state.all.species.dropdown"),
-                    withSpinner(plotOutput("fish.state.all.species.abundance.plot", height = 500)),
+                    withSpinner(plotOutput("fish.state.all.species.abundance.plot", height = 600)),
 
                     h4("Spatial"),
                     withSpinner(leafletOutput(width = "100%", "fish.state.all.species.leaflet", height = 500)),
@@ -234,7 +234,7 @@ app_ui <- function(request) {
                   conditionalPanel(
                     'input.fishstatemetric == "Life history traits"',
                     htmlOutput("fish.state.trophic.dropdown"),
-                    withSpinner(plotOutput("fish.state.trophic.plot", height = 500))
+                    withSpinner(uiOutput("ui.fish.state.trophic.plot"))
                   )
                 ),
 
@@ -322,19 +322,19 @@ app_ui <- function(request) {
                     withSpinner(uiOutput("ui.fish.park.rich.site.plot")),
 
                     h4("Spatial"),
-                    withSpinner(leafletOutput(width = "100%", "fish.park.metric.leaflet", height = 500))
+                    withSpinner(leafletOutput(width = "100%", "fish.park.metric.leaflet", height = 300))
                   ),
                   conditionalPanel(
                     'input.fishparkmetric == "Target species"',
                     htmlOutput("fish.park.fished.species.dropdown"),
-                    withSpinner(plotOutput("fish.park.fished.species.abundance.plot", height = 500)),
+                    withSpinner(plotOutput("fish.park.fished.species.abundance.plot", height = 250)),
                     htmlOutput("fish.park.fished.species.iframe"),
                     withSpinner(plotOutput("fish.park.fished.species.kde.plot", height = 500))
                   ),
                   conditionalPanel(
                     'input.fishparkmetric == "Individual species"',
                     htmlOutput("UIfish.park.all.species.dropdown"),
-                    withSpinner(plotOutput("fish.park.all.species.abundance.plot", height = 500)),
+                    withSpinner(plotOutput("fish.park.all.species.abundance.plot", height = 250)),
 
                     h4("Spatial"),
                     withSpinner(leafletOutput(width = "100%", "fish.park.all.species.leaflet", height = 500)),
