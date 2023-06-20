@@ -10,9 +10,8 @@
 # 2
 
 # Step 1. Load all functions from package
-
 pkgload::load_all(export_all = FALSE, helpers = FALSE, attach_testthat = FALSE)
-# library(data.table)
+
 # Step 2. Download all data from GoogleDrive (only if it has been updated)
 # mpaviewer::googledrive_download_data()
 

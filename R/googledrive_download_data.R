@@ -15,30 +15,36 @@
 #' @export
 googledrive_download_data <- function() {
 
-  # options(gargle_oauth_cache = ".secrets")
-  # # check the value of the option, if you like
-  # gargle::gargle_oauth_cache()
-  # googlesheets4::gs4_auth()
-  # 1
+  library(dplyr)
 
-  main.dir <- "/inst/data/raw"
-  popup.dir <- "/inst/app/www/popups"
+  options(gargle_oauth_cache = ".secrets")
+  # check the value of the option, if you like
+  gargle::gargle_oauth_cache()
+  googlesheets4::gs4_auth()
+  2
+
+  main.dir <- "inst/data/raw"
+  popup.dir <- "inst/app/www/popups"
 
   # Main folder with all marine parks
   drive.folder <- "https://drive.google.com/drive/folders/1GDcemLHxOvAjyecWfv83hhH-ZZh1hqfT"
   folder.id <- googledrive::drive_get(googledrive::as_id(drive.folder))
-
+2
   # find all folders in marine park folder
   files <- googledrive::drive_ls(folder.id, type = "folder")
 
+  # files <- files %>% filter(name %in% "NMP")
+
   # loop through folders and create a directory
   for (parent in seq_along(files$name)) {
+
+    # parent <- "NMP"
 
     # Print the current directory
     print(files$name[parent])
 
     # Make directory
-    dir.create(files$name[parent])
+    dir.create(file.path(main.dir, files$name[parent]), recursive = TRUE)
 
     # Find all children folders in the current folder
     current.folder <- files$id[parent]
@@ -80,7 +86,7 @@ googledrive_download_data <- function() {
 
               print(i_dir$name[file_i])
 
-              print(getwd())
+              # print(getwd())
 
               googledrive::drive_download(googledrive::as_id(i_dir$id[file_i]),
                                           path = stringr::str_c(main.dir, files$name[parent], children.folders$name[child], baby.folders$name[baby], i_dir$name[file_i], sep = "/"))
@@ -105,7 +111,7 @@ googledrive_download_data <- function() {
     file.rename(code, new.name)
   }
 
-
+  setwd("C:/GitHub/mpaviewer") # NEED to find a way to fix htis
 
   # Folder with images
   drive.folder <- "https://drive.google.com/drive/folders/1PeEcdENN0BhXpkzryqsBbq-0kFn_1N7z"

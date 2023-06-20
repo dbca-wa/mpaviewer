@@ -649,7 +649,7 @@ app_server <- function(input, output, session) {
       scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
       ggh4x::facet_wrap2(vars(marine.park), axes = "all", ncol = 1, scales = "free_y") +
       scale_x_continuous(
-         breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 2),
+         breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
          expand = expand_scale(mult = c(0, 0.05)))+
       ggplot_mpatheme()
 
@@ -684,7 +684,7 @@ app_server <- function(input, output, session) {
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       ggh4x::facet_wrap2(vars(marine.park), axes = "all", ncol = 1, scales = "free_y") +
       scale_x_continuous(
-        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 2),
+        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
         expand = expand_scale(mult = c(0, 0.05))
       )+
       ggplot_mpatheme()
@@ -723,7 +723,7 @@ app_server <- function(input, output, session) {
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       ggh4x::facet_wrap2(vars(marine.park, trophic.group), axes = "all", ncol = length(unique(dat$trophic.group)), scales = "free_y") +
       scale_x_continuous(
-        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 2),
+        breaks = function(x) seq(ceiling(x[1]), floor(x[1]), by = 1),
         expand = expand_scale(mult = c(0, 0.05))
       ) +
       ggplot_mpatheme()
@@ -813,7 +813,7 @@ app_server <- function(input, output, session) {
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       ggh4x::facet_wrap2(vars(marine.park, scientific), axes = "all", ncol = 1, scales = "free_y") +
       scale_x_continuous(
-        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 2),
+        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
         expand = expand_scale(mult = c(0, 0.05))
       ) +
       ggplot_mpatheme()
@@ -847,7 +847,7 @@ app_server <- function(input, output, session) {
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       ggh4x::facet_wrap2(vars(marine.park, scientific), axes = "all", ncol = 1, scales = "free_y") +
       scale_x_continuous(
-        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 2),
+        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
         expand = expand_scale(mult = c(0, 0.05))
       ) +
       ggplot_mpatheme()
@@ -1150,6 +1150,9 @@ app_server <- function(input, output, session) {
     ta <- fish_park_ta()
     dat <- ta[complete %in% c("Yes")]
 
+
+    print(unique(dat$status))
+
     # label <- grobTree(textGrob(as.character("Total abundance"),
     #   x = 0.01, y = 0.97, hjust = 0,
     #   gp = gpar(col = "black", fontsize = 13, fontface = "italic")
@@ -1166,7 +1169,7 @@ app_server <- function(input, output, session) {
       # annotation_custom(label) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       scale_x_continuous(
-        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 2),
+        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
         expand = expand_scale(mult = c(0, 0.05))
       ) +
       scale_fill_manual(values = c("#b9e6fb",
@@ -1221,7 +1224,7 @@ app_server <- function(input, output, session) {
         # annotation_custom(label) +
         stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
         scale_x_continuous(
-          breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 2),
+          breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
           expand = expand_scale(mult = c(0, 0.05))
         ) +
         scale_fill_manual(values = c("#b9e6fb",
@@ -1267,7 +1270,7 @@ app_server <- function(input, output, session) {
       # annotation_custom(label) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       scale_x_continuous(
-        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 2),
+        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
         expand = expand_scale(mult = c(0, 0.05))
       ) +
       scale_fill_manual(values = c("#b9e6fb",
@@ -1307,7 +1310,7 @@ app_server <- function(input, output, session) {
       # annotation_custom(label) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       scale_x_continuous(
-        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 2),
+        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
         expand = expand_scale(mult = c(0, 0.05))
       ) +
       scale_fill_manual(values = c("#b9e6fb",
@@ -1348,7 +1351,7 @@ app_server <- function(input, output, session) {
       #annotation_custom(label) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       scale_x_continuous(
-        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 2),
+        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
         expand = expand_scale(mult = c(0, 0.05))
       ) +
       scale_fill_manual(values = c("#b9e6fb",
@@ -1376,7 +1379,7 @@ app_server <- function(input, output, session) {
         #annotation_custom(label) +
         stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
         scale_x_continuous(
-          breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 2),
+          breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
           expand = expand_scale(mult = c(0, 0.05))
         ) +
         scale_fill_manual(values = c("#b9e6fb",
@@ -1421,7 +1424,7 @@ app_server <- function(input, output, session) {
       #annotation_custom(label) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       scale_x_continuous(
-        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 2),
+        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
         expand = expand_scale(mult = c(0, 0.05))
       ) +
       scale_fill_manual(values = c("#b9e6fb",
@@ -1462,7 +1465,7 @@ app_server <- function(input, output, session) {
       #annotation_custom(label) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       scale_x_continuous(
-        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 2),
+        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
         expand = expand_scale(mult = c(0, 0.05))
       ) +
       scale_fill_manual(values = c("#b9e6fb",
@@ -1519,7 +1522,7 @@ app_server <- function(input, output, session) {
       ylab("Average abundance per sample \n(+/- SE)") +
       scale_y_continuous(expand = c(0, 0.1)) +
       scale_x_continuous(
-        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 2),
+        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
         expand = expand_scale(mult = c(0, 0.05))
       ) +
       scale_fill_manual(values = c("#b9e6fb",
@@ -1583,7 +1586,7 @@ app_server <- function(input, output, session) {
       ylab("Average abundance of target species per sample \n(+/- SE)") +
       scale_y_continuous(expand = c(0, 0.1)) +
       scale_x_continuous(
-        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 2),
+        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
         expand = expand_scale(mult = c(0, 0.05))
       ) +
       scale_fill_manual(values = c("#b9e6fb",
@@ -1606,7 +1609,7 @@ app_server <- function(input, output, session) {
       ylab("Average abundance of species per sample \n(+/- SE)") +
       scale_y_continuous(expand = c(0, 0.1)) +
       scale_x_continuous(
-        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 2),
+        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
         expand = expand_scale(mult = c(0, 0.05))
       ) +
       scale_fill_manual(values = c("#b9e6fb",
@@ -1888,7 +1891,7 @@ app_server <- function(input, output, session) {
         xlab("") +
         ylab("% Coral Cover (mean ± SE)") +
         scale_x_continuous(
-          breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 2),
+          breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
           expand = expand_scale(mult = c(0, 0.05))
         ) +
         ggplot_mpatheme() +
@@ -2041,7 +2044,7 @@ app_server <- function(input, output, session) {
         xlab("") +
         ylab("Number of coral recruits per tile") +
         scale_x_continuous(
-          breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 2),
+          breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
           expand = expand_scale(mult = c(0, 0.05))
         ) +ggplot_mpatheme() +
         scale_y_continuous(expand = c(0, 0.1)) +

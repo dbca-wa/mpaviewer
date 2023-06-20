@@ -20,8 +20,6 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   #TODO fix empty shark bay year data
 
-
-
   # Benthic data
   # Currently not very pretty. Just saving csv files of the dataframes that Claire uses to create her plots.
 
@@ -147,7 +145,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     # dplyr::mutate(trophic.group = GlobalArchive::ga.capitalise(rls.trophic.group)) %>%
     # dplyr::select(scientific, family, genus, species, trophic.group) %>%
     # dplyr::mutate(trophic.group = stringr::str_replace_all(.$trophic.group, c("NANA" = "Unknown"))) %>%
-    dplyr::mutate(trophic.group = stringr::str_replace_all(.$trophic.guild, c("NANA" = "Unknown",
+    dplyr::mutate(trophic.group = stringr::str_replace_all(.$community, c("NANA" = "Unknown",
                                                                               "NA" = "Unknown",
                                                                               "planktivore" = "Planktivore",
                                                                               "Algal Feeder" = "Algal feeder"))) %>%
@@ -195,6 +193,8 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(latitude = as.numeric(latitude), longitude = as.numeric(longitude)) %>%
     dplyr::left_join(zoning) %>%
     dplyr::mutate(status = stringr::str_replace_all(.$status, c("Sanctuary" = "No-take",
+                                                                "MPA" = "No-take",
+                                                                "Reserve" = "No-take",
                                                                 "No-Take" = "No-take",
                                                                 "Protected" = "No-take"))) %>%
     dplyr::filter(!marine.park %in% c("archive", "C:")) %>% # get rid of old files
@@ -216,7 +216,11 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::filter(complete %in% "Yes")
 
   testing <- metadata %>%
-    dplyr::filter(marine.park %in% "Shark Bay Marine Park")
+    dplyr::filter(marine.park %in% "Rottnest Island Marine Reserve")
+
+  unique(testing$status)
+
+
 
   unique(metadata$marine.park) %>% sort()
   unique(metadata$method) %>% sort()
@@ -224,6 +228,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   unique(metadata$dbca_zone)
   unique(metadata$dbca_sanctuary)
+  unique(metadata$status)
 
   names(metadata)
 
