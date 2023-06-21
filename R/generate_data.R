@@ -134,8 +134,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   unique(life.history$target.code)
 
   fished.species <- life.history %>%
-    # dplyr::filter(fishing.type %in% c("B/R", "B/C/R", "R", "C/R", "B/C", "C")) %>% # could minimise these
-    dplyr::filter(target.code %in% c("HT", "T")) %>%
+    dplyr::filter(target.code %in% c("Highly Retained")) %>% # Changed 21/06/2023
     dplyr::select(genus, species) %>%
     dplyr::distinct() #TODO keep the marine park column in this
 

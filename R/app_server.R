@@ -1229,8 +1229,8 @@ app_server <- function(input, output, session) {
         ) +
         scale_fill_manual(values = c("#b9e6fb",
                                      "#7bbc63")) +
-        ggplot_mpatheme() +
-        facet_wrap(site ~ ., scales = "free", ncol = 3)
+        ggh4x::facet_wrap2(vars(site), axes = "all", ncol = 3) +
+        ggplot_mpatheme()
     }
   }) %>%
     bindCache(fish_park_ta())
@@ -1275,8 +1275,10 @@ app_server <- function(input, output, session) {
       ) +
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
-      ggplot_mpatheme() +
-      facet_wrap(dbca_sanctuary ~ ., scales = "free", ncol = 3)
+
+      # facet_wrap(dbca_sanctuary ~ ., scales = "free", ncol = 3) +
+      ggh4x::facet_wrap2(vars(dbca_sanctuary), axes = "all", ncol = 3) +
+      ggplot_mpatheme()
   }) %>%
     bindCache(fish_park_ta())
 
@@ -1293,6 +1295,21 @@ app_server <- function(input, output, session) {
   }) %>%
     bindCache(fish_park_ta())
 
+
+  pal <- c("Sanctuary" = "#C0D435",
+           "Recreation" = "#F8EE75",
+           "General Use" = "#BBE3EF",
+           "SP Benthic Protection" = "#CAC3D5",
+           "Outside Park" = "#bebebe",
+           "Conservation Area" = "#C0B134",
+           "Marine Management Area" = "#b7cfe1",
+           "SP Seagrass Protection" = "#AB9ECC",
+           "Marine Nature Reserve" = "#bfd054",
+           "SP Habitat Protection" = "#CAC3D5",
+           "Shore Based Activities" = "#231D1D",
+           "SP Wildlife Conservation" = "#7C7CB8")
+
+
   ####### ►  Total abundance by Zone ----
   output$fish.park.total.zone.plot <- renderPlot({
     dat <- fish_park_ta()
@@ -1302,21 +1319,19 @@ app_server <- function(input, output, session) {
     #                            gp = gpar(col = "black", fontsize = 13, fontface = "italic")
     # ))
 
-    ggplot(dat, aes(x = year, y = value, fill = status)) +
+    ggplot(dat, aes(x = year, y = value, fill = dbca_zone)) +
       stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
       xlab("Year") +
       ylab("Average total abundance per sample \n(+/- SE)") +
-      # annotation_custom(label) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       scale_x_continuous(
         breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
         expand = expand_scale(mult = c(0, 0.05))
       ) +
-      scale_fill_manual(values = c("#b9e6fb",
-                                   "#7bbc63")) +
-      ggplot_mpatheme() +
-      facet_wrap(dbca_zone ~ ., scales = "free", ncol = 3)
+      scale_fill_manual(values = c(pal)) +
+      ggplot_mpatheme()
+
   }) %>%
     bindCache(fish_park_ta())
 
@@ -1384,8 +1399,10 @@ app_server <- function(input, output, session) {
         ) +
         scale_fill_manual(values = c("#b9e6fb",
                                      "#7bbc63")) +
-        ggplot_mpatheme() +
-        facet_wrap(site ~ ., scales = "free", ncol = 3)
+
+        # facet_wrap(site ~ ., scales = "free", ncol = 3) +
+        ggh4x::facet_wrap2(vars(site), axes = "all", ncol = 3) +
+        ggplot_mpatheme()
     }
   }) %>%
     bindCache(fish_park_sr())
@@ -1429,8 +1446,10 @@ app_server <- function(input, output, session) {
       ) +
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
-      ggplot_mpatheme() +
-      facet_wrap(dbca_sanctuary ~ ., scales = "free", ncol = 3)
+      # ggplot_mpatheme() +
+      # facet_wrap(dbca_sanctuary ~ ., scales = "free", ncol = 3) +
+      ggh4x::facet_wrap2(vars(dbca_sanctuary), axes = "all", ncol = 3) +
+      ggplot_mpatheme()
   }) %>%
     bindCache(fish_park_sr())
 
@@ -1452,29 +1471,22 @@ app_server <- function(input, output, session) {
 
     dat <- fish_park_sr()
 
-    # label <- grobTree(textGrob(as.character("Species richness"),
-    #                            x = 0.01, y = 0.97, hjust = 0,
-    #                            gp = gpar(col = "black", fontsize = 13, fontface = "italic")
-    # ))
-
-    ggplot(dat, aes(x = year, y = value, fill = status)) +
+    ggplot(dat, aes(x = year, y = value, fill = dbca_zone)) +
       stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
+      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       xlab("Year") +
       ylab("Average number of species per sample \n(+/- SE)") +
-      #annotation_custom(label) +
-      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       scale_x_continuous(
         breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
         expand = expand_scale(mult = c(0, 0.05))
       ) +
-      scale_fill_manual(values = c("#b9e6fb",
-                                   "#7bbc63")) +
-      ggplot_mpatheme() +
-      facet_wrap(dbca_zone ~ ., scales = "free", ncol = 3)
-  }) %>%
-    bindCache(fish_park_sr())
+      scale_fill_manual(values = c(pal)) +
+      ggplot_mpatheme()
+  })
 
+
+   # TODO change this to be the same height
   output$ui.fish.park.rich.zone.plot <- renderUI({
     dat <- fish_park_sr()
 
@@ -1528,7 +1540,8 @@ app_server <- function(input, output, session) {
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
-      facet_wrap(trophic.group ~ ., scales = "free", ncol = 1) +
+      # facet_wrap(trophic.group ~ ., scales = "free", ncol = 1) +
+      ggh4x::facet_wrap2(vars(trophic.group), axes = "all", ncol = 1) +
       ggplot_mpatheme()
   }) #%>% bindCache(fish_park_trophicabundance())
 
@@ -1592,7 +1605,8 @@ app_server <- function(input, output, session) {
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
-      facet_wrap(scientific ~ ., scales = "free", ncol = 1) +
+      # facet_wrap(scientific ~ ., scales = "free", ncol = 1) +
+      ggh4x::facet_wrap2(vars(scientific), axes = "all", ncol = 1) +
       ggplot_mpatheme()
   }) #%>% bindCache(fish_park_fishedabundance())
 
@@ -1615,7 +1629,8 @@ app_server <- function(input, output, session) {
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
-      facet_wrap(scientific ~ ., scales = "free", ncol = 1) +
+      # facet_wrap(scientific ~ ., scales = "free", ncol = 1) +
+      ggh4x::facet_wrap2(vars(scientific), axes = "all", ncol = 1) +
       ggplot_mpatheme()
   }) #%>% bindCache(fish_park_abundance_species())
 
@@ -1894,9 +1909,11 @@ app_server <- function(input, output, session) {
           breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
           expand = expand_scale(mult = c(0, 0.05))
         ) +
-        ggplot_mpatheme() +
+
         scale_y_continuous(expand = c(0, 0.1)) +
-        facet_wrap(marine.park ~ ., scales = "free", ncol = 1)
+        # facet_wrap(marine.park ~ ., scales = "free", ncol = 1) +
+        ggh4x::facet_wrap2(vars(marine.park), axes = "all", ncol = 1) +
+        ggplot_mpatheme()
 
       p
     })
@@ -2000,9 +2017,11 @@ app_server <- function(input, output, session) {
         geom_point(size = 2) +
         xlab("") +
         ylab("% Coral Cover (mean ± SE)") +
-        ggplot_mpatheme() +
+
         scale_y_continuous(expand = c(0, 0.1)) +
-        facet_wrap(sector ~ ., scales = "free", ncol = 1)
+        # facet_wrap(sector ~ ., scales = "free", ncol = 1) +
+        ggh4x::facet_wrap2(vars(sector), axes = "all", ncol = 1) +
+        ggplot_mpatheme()
 
       p
     })
@@ -2018,9 +2037,10 @@ app_server <- function(input, output, session) {
         geom_point(size=1) +
         xlab("") +
         ylab(" % Coral Cover (mean ? SE)") +
-        ggplot_mpatheme() +
         scale_y_continuous(expand = c(0, 0.1)) +
-        facet_wrap(site ~ ., scales = "free", ncol = 3)
+        # facet_wrap(site ~ ., scales = "free", ncol = 3) +
+        ggh4x::facet_wrap2(vars(site), axes = "all", ncol = 1) +
+        ggplot_mpatheme()
 
       p
     })
@@ -2046,9 +2066,11 @@ app_server <- function(input, output, session) {
         scale_x_continuous(
           breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
           expand = expand_scale(mult = c(0, 0.05))
-        ) +ggplot_mpatheme() +
+        ) + ggplot_mpatheme() +
         scale_y_continuous(expand = c(0, 0.1)) +
-        facet_wrap(marine.park ~ ., scales = "free", ncol = 1)
+        # facet_wrap(marine.park ~ ., scales = "free", ncol = 1) +
+        ggh4x::facet_wrap2(vars(marine.park), axes = "all", ncol = 1) +
+        ggplot_mpatheme()
 
       p
     })
