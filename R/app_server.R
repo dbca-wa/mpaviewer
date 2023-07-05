@@ -135,25 +135,25 @@ app_server <- function(input, output, session) {
     )
   }) #%>% bindCache(input$fish.state.park.dropdown, input$fish.state.method.dropdown)
 
-  ####### ►  Create a trophic group dropdown ----
-  output$fish.state.trophic.dropdown <- renderUI({
-
-    dat <- mpa_data$trophic.abundance[marine.park %in% c(input$fish.state.park.dropdown) &
-                                method %in% c(input$fish.state.method.dropdown)]
-
-    choices <- dat %>%
-      dplyr::distinct(trophic.group) %>%
-      dplyr::pull("trophic.group")
-
-    pickerInput(
-      inputId = "fish.state.trophic.dropdown",
-      label = "Choose trophic groups to plot:",
-      choices = sort(choices),
-      multiple = TRUE,
-      selected = sort(choices)[1:3],
-      options = list(`actions-box` = TRUE, `live-search` = TRUE, `dropup-auto` = FALSE)
-    )
-  }) #%>% bindCache(input$fish.state.park.dropdown, input$fish.state.method.dropdown)
+  # ####### ►  Create a trophic group dropdown ----
+  # output$fish.state.trophic.dropdown <- renderUI({
+  #
+  #   dat <- mpa_data$trophic.abundance[marine.park %in% c(input$fish.state.park.dropdown) &
+  #                               method %in% c(input$fish.state.method.dropdown)]
+  #
+  #   choices <- dat %>%
+  #     dplyr::distinct(trophic.group) %>%
+  #     dplyr::pull("trophic.group")
+  #
+  #   pickerInput(
+  #     inputId = "fish.state.trophic.dropdown",
+  #     label = "Choose trophic groups to plot:",
+  #     choices = sort(choices),
+  #     multiple = TRUE,
+  #     selected = sort(choices)[1:3],
+  #     options = list(`actions-box` = TRUE, `live-search` = TRUE, `dropup-auto` = FALSE)
+  #   )
+  # }) #%>% bindCache(input$fish.state.park.dropdown, input$fish.state.method.dropdown)
 
   #### MARINE PARK DROPDOWNS ----
   ####### ►  Create a marine park dropdown ----
@@ -255,8 +255,8 @@ app_server <- function(input, output, session) {
   ####### ►  Create a trophic group dropdown ----
   output$fish.park.trophic.dropdown <- renderUI({
 
-    dat <- mpa_data$trophic.abundance[marine.park %in% c(input$fish.park.dropdown) &
-                                        method %in% c(input$fish.park.method.dropdown)]
+    dat <- mpa_data$trophic.sum[marine.park %in% c(input$fish.park.dropdown) &
+                                  method %in% c(input$fish.park.method.dropdown)]
 
     choices <- dat %>%
       dplyr::distinct(trophic.group) %>%
@@ -315,11 +315,22 @@ app_server <- function(input, output, session) {
 
   })
 
+  # TODO finish splitting this
   fish_park_sr <- reactive({
     req(fish_park_alldata())
 
     fish_park_alldata()[metric %in% c("Species richness")]
 
+  })
+
+  fish_park_sr_overall <- reactive({
+    req(input$fish.park.dropdown, input$fish.park.method.dropdown)
+
+    dat <- mpa_data$ta.sr[marine.park %in% c(input$fish.park.dropdown)]
+    dat <- dat[method %in% c(input$fish.park.method.dropdown)]
+    dat <- dat[metric %in% c("Species richness")]
+
+    dat
   })
 
   fish_samplingeffort <- reactive({
@@ -410,10 +421,21 @@ app_server <- function(input, output, session) {
 
   }) #%>% bindCache(input$fish.park.dropdown, input$fish.park.method.dropdown)
 
+  fish_park_fishedsum <- reactive({
+    req(input$fish.park.dropdown, input$fish.park.method.dropdown)
+
+    dat <- mpa_data$fished.sum[marine.park %in% c(input$fish.park.dropdown)]
+    dat <- dat[method %in% c(input$fish.park.method.dropdown)]
+
+    # print("view fished sum data")
+    dat #%>% glimpse()
+
+  })
+
   fish_park_trophicabundance <- reactive({
     req(input$fish.park.dropdown, input$fish.park.method.dropdown)
 
-    dat <- mpa_data$trophic.abundance[marine.park %in% c(input$fish.park.dropdown)]
+    dat <- mpa_data$trophic.sum[marine.park %in% c(input$fish.park.dropdown)]
     dat <- dat[method %in% c(input$fish.park.method.dropdown)]
 
     dat
@@ -443,503 +465,503 @@ app_server <- function(input, output, session) {
   }) #%>% bindCache(input$fish.park.dropdown, input$fish.park.method.dropdown)
 
   #----------------------------------------------------------------------------#
-  #### STATE PLOTS ----
-  ####### ►  Sampling effort leaflet ----
-  output$fish.state.sampling.leaflet <- renderLeaflet({
-
-    map <- leaflet_basemap(fish_samplingeffort()) %>%
-      leaflet::fitBounds(
-        ~ min(longitude),
-        ~ min(latitude),
-        ~ max(longitude),
-        ~ max(latitude)
-      ) %>%
-      leaflet::addAwesomeMarkers(lng = ~longitude,
-                                 lat = ~latitude,
-                                 icon = leaflet::awesomeIcons(
-                                   icon = 'surf',
-                                   iconColor = 'white',
-                                   library = 'fa',
-                                   markerColor = 'green'
-                                 ),
-                                 popup = ~content,
-                                 label = ~as.character(sample),
-                                 group = "Sampling locations"
-      ) %>%
-      # leaflet::addMarkers(
-      #   lng = ~longitude,
-      #   lat = ~latitude,
-      #   label = ~ as.character(sample),
-      #   popup = ~content,
-      #   group = "Sampling locations"
-      # ) %>%
-      addGlPolygons(
-        data =  mpa_data$state.mp,
-        color = ~ mpa_data$state.pal(zone),
-        popup =  mpa_data$state.mp$COMMENTS,
-        group = "Marine Parks"
-      ) %>%
-      # TODO fix this
-      addLegend(
-        pal = mpa_data$state.pal,
-        values = mpa_data$state.mp$zone,
-        opacity = 1,
-        title = "Zones",
-        position = "bottomleft",
-        group = "Marine Parks"
-      ) %>%
-      addLayersControl(
-        overlayGroups = c(
-          "Sampling locations",
-          "Marine Parks"),
-        options = layersControlOptions(collapsed = FALSE)
-      )
-
-    map
-  }) #%>% bindCache(fish_samplingeffort())
-
-  ####### ►  Leaflet Total Abundance and Species Richness ----
-  output$fish.state.metric.leaflet <- renderLeaflet({
-
-    overzero.ta <- dplyr::filter(fish_ta(), value > 0)
-    equalzero.ta <- dplyr::filter(fish_ta(), value == 0)
-    max.ta <- max(overzero.ta$value)
-
-    overzero.sr <- dplyr::filter(fish_sr(), value > 0)
-    equalzero.sr <- dplyr::filter(fish_sr(), value == 0)
-    max.sr <- max(overzero.sr$value)
-
-    map <- leaflet_basemap(fish_samplingeffort()) %>%
-      fitBounds(
-        ~ min(longitude),
-        ~ min(latitude),
-        ~ max(longitude),
-        ~ max(latitude)
-      ) %>%
-      addGlPolygons(
-        data =  mpa_data$state.mp,
-        color = ~ mpa_data$state.pal(zone),
-        popup =  mpa_data$state.mp$COMMENTS,
-        group = "Marine Parks"
-      ) %>%
-      addLegend(
-        pal = mpa_data$state.pal,
-        values = mpa_data$state.mp$zone,
-        opacity = 1,
-        title = "Zones",
-        position = "bottomleft",
-        group = "Marine Parks"
-      ) %>%
-      addLayersControl(
-        overlayGroups = c(
-          "Marine Parks",
-          "Total abundance",
-          "Species richness"
-        ),
-        options = layersControlOptions(collapsed = FALSE)
-      ) %>%
-      add_legend_ta(
-        colors = c("black", "yellow", "yellow"),
-        labels = c(0, round(max.ta / 2), max.ta),
-        sizes = c(5, 20, 40), group = "Total abundance"
-      ) %>%
-      add_legend_sr(
-        colors = c("black", "green", "green"),
-        labels = c(0, round(max.sr / 2), max.sr),
-        sizes = c(5, 20, 40), group = "Species richness"
-      )
-
-    if (nrow(overzero.ta)) {
-      map <- map %>%
-        addCircleMarkers(
-          data = overzero.ta,
-          lat = ~latitude,
-          lng = ~longitude,
-          radius = ~ (((value / max(value)) * 20)),
-          fillOpacity = 0.5,
-          stroke = FALSE,
-          label = ~ as.character(value),
-          group = "Total abundance",
-          color = "yellow"
-        )
-    }
-
-    if (nrow(equalzero.ta)) {
-      map <- map %>%
-        addCircleMarkers(
-          data = equalzero.ta,
-          lat = ~latitude,
-          lng = ~longitude,
-          radius = 2,
-          fillOpacity = 0.5,
-          color = "black",
-          stroke = FALSE,
-          label = ~ as.character(value),
-          group = "Total abundance"
-        )
-    }
-
-    if (nrow(overzero.sr)) {
-      map <- map %>%
-        addCircleMarkers(
-          data = overzero.sr,
-          lat = ~latitude,
-          lng = ~longitude,
-          radius = ~ ((value / max(value)) * 20),
-          fillOpacity = 0.5,
-          stroke = FALSE,
-          label = ~ as.character(value),
-          group = "Species richness",
-          color = "green"
-        )
-    }
-
-    if (nrow(equalzero.sr)) {
-      map <- map %>%
-        addCircleMarkers(
-          data = equalzero.sr,
-          lat = ~latitude,
-          lng = ~longitude,
-          radius = 2,
-          fillOpacity = 0.5,
-          color = "black",
-          stroke = FALSE,
-          label = ~ as.character(value),
-          group = "Species richness"
-        )
-    }
-
-    map %>%
-      # hideGroup("Total abundance") %>%
-      hideGroup("Species richness")
-  }) #%>% bindCache(fish_ta())
-
-  ####### ►  Total abundance ----
-  output$fish.state.total.plot <- renderPlot({
-    req(fish_ta())
-
-    label <- grobTree(textGrob(as.character("Total abundance"),
-                               x = 0.01, y = 0.97, hjust = 0,
-                               gp = gpar(col = "black", fontsize = 13, fontface = "italic")
-    ))
-
-    p <- ggplot(
-      fish_ta(),
-      aes(x = year, y = value, fill = status)
-    ) +
-      stat_summary(
-        fun = mean,
-        geom = "point",
-        shape = 23,
-        size = 6,
-        col = "black",
-        position = position_dodge(width = 0.5)
-      ) +
-      stat_summary(
-        fun.min = se.min,
-        fun.max = se.max,
-        geom = "errorbar",
-        width = 0.1,
-        col = "black",
-        position = position_dodge(width = 0.5)
-      ) +
-      xlab("Year") +
-      ylab("Average total abundance per sample \n(+/- SE)") +
-      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
-      scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
-      ggh4x::facet_wrap2(vars(marine.park), axes = "all", ncol = 1, scales = "free_y") +
-      scale_x_continuous(
-         breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
-         expand = expand_scale(mult = c(0, 0.05)))+
-      ggplot_mpatheme()
-
-
-    p
-
-  }) %>% bindCache(fish_ta())
-
-  output$ui.fish.state.total.plot <- renderUI({
-
-    plotOutput("fish.state.total.plot", height = length(unique(fish_ta()$marine.park))*200)
-
-  }) %>% bindCache(fish_ta())
-
-  ####### ►  Species richness ----
-  output$fish.state.rich.plot <- renderPlot({
-    req(fish_sr())
-
-    label <- grobTree(textGrob(as.character("Species richness"),
-                               x = 0.01, y = 0.97, hjust = 0,
-                               gp = gpar(col = "black", fontsize = 13, fontface = "italic")
-    ))
-
-    ggplot(fish_sr(), aes(x = year, y = value, fill = status, group = status)) + # , col = status
-      stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
-      stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
-      xlab("Year") +
-      ylab("Average number of species per sample \n(+/- SE)") +
-      scale_y_continuous(expand = c(0, 0.1)) +
-      scale_fill_manual(values = c("#b9e6fb",
-                                   "#7bbc63")) +
-      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
-      ggh4x::facet_wrap2(vars(marine.park), axes = "all", ncol = 1, scales = "free_y") +
-      scale_x_continuous(
-        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
-        expand = expand_scale(mult = c(0, 0.05))
-      )+
-      ggplot_mpatheme()
-  }) %>% bindCache(fish_sr())
-
- ####### ►  Make species richness plot interactive so the height changes with the number of inputs ----
-  output$ui.fish.state.rich.plot <- renderUI({
-
-    plotOutput("fish.state.rich.plot", height = length(unique(fish_sr()$marine.park))*200)
-
-  }) %>% bindCache(fish_sr())
-
-  ####### ►  Trophic group ----
-  output$fish.state.trophic.plot <- renderPlot({
-    req(input$fish.state.park.dropdown, input$fish.state.method.dropdown, input$fish.state.trophic.dropdown)
-
-    dat <- mpa_data$trophic.abundance[marine.park %in% c(input$fish.state.park.dropdown)]
-    dat <- dat[method %in% c(input$fish.state.method.dropdown)]
-
-    metadata <- fish_samplingeffort()
-
-    dat <- dat[trophic.group %in% c(input$fish.state.trophic.dropdown)]
-    dat <- dplyr::full_join(dat, metadata) %>%
-      tidyr::complete(tidyr::nesting(marine.park, method), trophic.group) %>%
-      tidyr::replace_na(list(total.abundance = 0)) %>%
-      dplyr::filter(!is.na(trophic.group))
-
-    ggplot(dat, aes(x = year, y = total.abundance, fill = status)) +
-      stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
-      stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
-      xlab("Year") +
-      ylab("Average abundance per sample \n(+/- SE)") +
-      scale_y_continuous(expand = c(0, 0.1)) +
-      scale_fill_manual(values = c("#b9e6fb",
-                                   "#7bbc63")) +
-      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
-      ggh4x::facet_wrap2(vars(marine.park, trophic.group), axes = "all", ncol = length(unique(dat$trophic.group)), scales = "free_y") +
-      scale_x_continuous(
-        breaks = function(x) seq(ceiling(x[1]), floor(x[1]), by = 1),
-        expand = expand_scale(mult = c(0, 0.05))
-      ) +
-      ggplot_mpatheme()
-
-  }) #%>%
-    #TODO change this to be only one dataset
-    #bindCache(input$fish.state.park.dropdown, input$fish.state.method.dropdown, input$fish.state.trophic.dropdown)
-
-  ####### ►  Make trophic plot interactive so the height changes with the number of inputs ----
-  output$ui.fish.state.trophic.plot <- renderUI({
-    plotOutput("fish.state.trophic.plot", height = length(unique(input$fish.state.park.dropdown))*200)
-  })
-
-
-  ####### ►  Fished species KDE ----
-  output$fish.state.fished.species.kde.plot <- renderPlot({
-    req(input$fish.state.park.dropdown, input$fish.state.method.dropdown, input$fish.state.fished.species.dropdown)
-
-    dat <- mpa_data$fished.complete.length[marine.park %in% c(input$fish.state.park.dropdown)]
-    dat <- dat[method %in% c(input$fish.state.method.dropdown)]
-
-    more.than.20 <- dat %>%
-      dplyr::group_by(marine.park, method, campaignid, status, scientific) %>%
-      dplyr::summarise(number = sum(number)) %>%
-      dplyr::filter(number > 20) %>%
-      dplyr::ungroup() %>%
-      dplyr::distinct(marine.park, method, campaignid, status, scientific)
-
-    dat <- dat %>%
-      dplyr::semi_join(more.than.20) %>%
-      dplyr::filter(!is.na(length)) %>%
-      dplyr::filter(scientific %in% c(input$fish.state.fished.species.dropdown))
-
-    split.dat <- split(dat, f = dat$marine.park, drop = TRUE)
-
-    plot_list <- lapply(split.dat, function(dat) {
-      ggplot(dat, aes(x = length, fill = status)) +
-        geom_density(aes(y = ..density.. * 1000), alpha = 0.5, size = 0.7) +
-        theme(legend.position = ("bottom")) +
-        theme(
-          strip.text.y = element_text(size = 12, angle = 270),
-          strip.background = element_blank(),
-          axis.title = element_text(face = "bold"),
-          plot.title = element_text(face = "italic", hjust = 0.5),
-          strip.text.x = element_text(size = 14),
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank()
-        ) +
-        scale_y_continuous(expand = c(0, 0.1)) +
-        scale_fill_manual(values = c("#b9e6fb",
-                                     "#7bbc63")) +
-        ylab("Weighted KDE (*1000)") +
-        xlab("Total Length (mm)") +
-        ggtitle(dat$marine.park) +
-        facet_grid(year ~ scientific)
-    })
-
-    validate(
-      need(nrow(dat) > 0, "Sorry, there is not enough data to create a KDE for the species you requested. Please change your input selections")
-    )
-
-    cowplot::plot_grid(plotlist = plot_list, ncol = 1)
-  }) #%>%
-    #TODO change this to be only one dataset
-    #bindCache(input$fish.state.park.dropdown, input$fish.state.method.dropdown, input$fish.state.fished.species.dropdown)
-
-  # #   ####### ►  Make KDE plot interactive so the height changes with the number of inputs ----
-  # output$ui.fish.state.fished.species.kde.plot <- renderPlot({
-  #   plotOutput("fish.state.fished.species.kde.plot", height = 300 * length(unique(fish_alldata()$marine.park)))
-  # })
-  #
-  ####### ►  Fished species abundance plot -----
-  output$fish.state.fished.species.abundance.plot <- renderPlot({
-    req(input$fish.state.park.dropdown, input$fish.state.method.dropdown, input$fish.state.fished.species.dropdown)
-
-    dat <- fish_fishedabundance()[scientific %in% c(input$fish.state.fished.species.dropdown)]
-
-    ggplot(dat, aes(x = year, y = total.abundance, fill = status)) +
-      stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
-      stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
-      xlab("Year") +
-      ylab("Average abundance of target species per sample \n(+/- SE)") +
-      scale_y_continuous(expand = c(0, 0.1)) +
-
-      scale_fill_manual(values = c("#b9e6fb",
-                                   "#7bbc63")) +
-      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
-      ggh4x::facet_wrap2(vars(marine.park, scientific), axes = "all", ncol = 1, scales = "free_y") +
-      scale_x_continuous(
-        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
-        expand = expand_scale(mult = c(0, 0.05))
-      ) +
-      ggplot_mpatheme()
-  }) #%>%
-    #TODO change this to be only one dataset
-    #bindCache(input$fish.state.park.dropdown, input$fish.state.method.dropdown, input$fish.state.fished.species.dropdown)
-
-  # ####### ►  Make fished abundance plot interactive so the height changes with the number of inputs ----
-  output$ui.fish.state.fished.species.abundance.plot <- renderUI({
-
-    dat <- fish_fishedabundance()[scientific %in% c(input$fish.state.fished.species.dropdown)]
-
-    plotOutput("fish.state.fished.species.abundance.plot", height = length(unique(dat$marine.park))*200)
-  })
-
-  ####### ►  All species abundance ----
-  output$fish.state.all.species.abundance.plot <- renderPlot({
-
-    req(fish_abundance())
-
-    dat <- fish_abundance()[scientific %in% c(input$fish.state.all.species.dropdown)]
-
-    ggplot(dat, aes(x = year, y = maxn, fill = status)) +
-      stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
-      stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
-      xlab("Year") +
-      ylab("Average abundance of species per sample \n(+/- SE)") +
-      scale_y_continuous(expand = c(0, 0.1)) +
-      scale_fill_manual(values = c("#b9e6fb",
-                                   "#7bbc63")) +
-      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
-      ggh4x::facet_wrap2(vars(marine.park, scientific), axes = "all", ncol = 1, scales = "free_y") +
-      scale_x_continuous(
-        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
-        expand = expand_scale(mult = c(0, 0.05))
-      ) +
-      ggplot_mpatheme()
-
-
-  }) #%>%
-    #bindCache(fish_abundance())
-
-  # TODO COME BACK AND MAKE THIS ONE WORK - FOR SOME REASON STOPS DROPDOWN FROM SHOWING UP.
-  # NEED TO CHANGE IN UI TOO
-    ####### ►  Make all species abundance plot interactive so the height changes with the number of inputs ----
-    output$ui.fish.state.all.species.abundance.plot <- renderPlot({
-
-      dat <- fish_abundance()[scientific %in% c(input$fish.state.all.species.dropdown)]
-
-      plotOutput("fish.state.all.species.abundance.plot", height = 600)
-    })
-
-  ####### ►  Leaflet All Species ----
-  output$fish.state.all.species.leaflet <- renderLeaflet({
-
-    dat <- fish_abundance()[scientific %in% c(input$fish.state.all.species.dropdown)]
-
-    overzero.ta <- dplyr::filter(dat, maxn > 0)
-    equalzero.ta <- dplyr::filter(dat, maxn == 0)
-    max.ta <- max(overzero.ta$maxn)
-
-    map <- leaflet_basemap(fish_samplingeffort()) %>%
-      fitBounds(
-        ~ min(longitude),
-        ~ min(latitude),
-        ~ max(longitude),
-        ~ max(latitude)
-      ) %>%
-      addGlPolygons(
-        data =  mpa_data$state.mp,
-        color = ~ mpa_data$state.pal(zone),
-        popup =  mpa_data$state.mp$COMMENTS,
-        group = "Marine Parks"
-      ) %>%
-      addLegend(
-        pal = mpa_data$state.pal,
-        values = mpa_data$state.mp$zone,
-        opacity = 1,
-        title = "Zones",
-        position = "bottomleft",
-        group = "Marine Parks"
-      ) %>%
-      addLayersControl(
-        overlayGroups = c(
-          "Marine Parks",
-          "Abundance"
-        ),
-        options = layersControlOptions(collapsed = FALSE)
-      ) %>%
-      add_legend_ta(
-        colors = c("black", "blue", "blue"),
-        labels = c(0, round(max.ta / 2), max.ta),
-        sizes = c(5, 20, 40), group = "Abundance"
-      )
-
-    if (nrow(overzero.ta)) {
-      map <- map %>%
-        addCircleMarkers(
-          data = overzero.ta,
-          lat = ~latitude,
-          lng = ~longitude,
-          radius = ~ (((maxn / max(maxn)) * 20)),
-          fillOpacity = 0.5,
-          stroke = FALSE,
-          label = ~ as.character(maxn),
-          group = "Abundance",
-          color = "blue"
-        )
-    }
-
-    if (nrow(equalzero.ta)) {
-      map <- map %>%
-        addCircleMarkers(
-          data = equalzero.ta,
-          lat = ~latitude,
-          lng = ~longitude,
-          radius = 2,
-          fillOpacity = 0.5,
-          color = "black",
-          stroke = FALSE,
-          label = ~ as.character(maxn),
-          group = "Abundance"
-        )
-    }
-    map
-  })
+ #  #### STATE PLOTS ----
+ #  ####### ►  Sampling effort leaflet ----
+ #  output$fish.state.sampling.leaflet <- renderLeaflet({
+ #
+ #    map <- leaflet_basemap(fish_samplingeffort()) %>%
+ #      leaflet::fitBounds(
+ #        ~ min(longitude),
+ #        ~ min(latitude),
+ #        ~ max(longitude),
+ #        ~ max(latitude)
+ #      ) %>%
+ #      leaflet::addAwesomeMarkers(lng = ~longitude,
+ #                                 lat = ~latitude,
+ #                                 icon = leaflet::awesomeIcons(
+ #                                   icon = 'surf',
+ #                                   iconColor = 'white',
+ #                                   library = 'fa',
+ #                                   markerColor = 'green'
+ #                                 ),
+ #                                 popup = ~content,
+ #                                 label = ~as.character(sample),
+ #                                 group = "Sampling locations"
+ #      ) %>%
+ #      # leaflet::addMarkers(
+ #      #   lng = ~longitude,
+ #      #   lat = ~latitude,
+ #      #   label = ~ as.character(sample),
+ #      #   popup = ~content,
+ #      #   group = "Sampling locations"
+ #      # ) %>%
+ #      addGlPolygons(
+ #        data =  mpa_data$state.mp,
+ #        color = ~ mpa_data$state.pal(zone),
+ #        popup =  mpa_data$state.mp$COMMENTS,
+ #        group = "Marine Parks"
+ #      ) %>%
+ #      # TODO fix this
+ #      addLegend(
+ #        pal = mpa_data$state.pal,
+ #        values = mpa_data$state.mp$zone,
+ #        opacity = 1,
+ #        title = "Zones",
+ #        position = "bottomleft",
+ #        group = "Marine Parks"
+ #      ) %>%
+ #      addLayersControl(
+ #        overlayGroups = c(
+ #          "Sampling locations",
+ #          "Marine Parks"),
+ #        options = layersControlOptions(collapsed = FALSE)
+ #      )
+ #
+ #    map
+ #  }) #%>% bindCache(fish_samplingeffort())
+ #
+ #  ####### ►  Leaflet Total Abundance and Species Richness ----
+ #  output$fish.state.metric.leaflet <- renderLeaflet({
+ #
+ #    overzero.ta <- dplyr::filter(fish_ta(), value > 0)
+ #    equalzero.ta <- dplyr::filter(fish_ta(), value == 0)
+ #    max.ta <- max(overzero.ta$value)
+ #
+ #    overzero.sr <- dplyr::filter(fish_sr(), value > 0)
+ #    equalzero.sr <- dplyr::filter(fish_sr(), value == 0)
+ #    max.sr <- max(overzero.sr$value)
+ #
+ #    map <- leaflet_basemap(fish_samplingeffort()) %>%
+ #      fitBounds(
+ #        ~ min(longitude),
+ #        ~ min(latitude),
+ #        ~ max(longitude),
+ #        ~ max(latitude)
+ #      ) %>%
+ #      addGlPolygons(
+ #        data =  mpa_data$state.mp,
+ #        color = ~ mpa_data$state.pal(zone),
+ #        popup =  mpa_data$state.mp$COMMENTS,
+ #        group = "Marine Parks"
+ #      ) %>%
+ #      addLegend(
+ #        pal = mpa_data$state.pal,
+ #        values = mpa_data$state.mp$zone,
+ #        opacity = 1,
+ #        title = "Zones",
+ #        position = "bottomleft",
+ #        group = "Marine Parks"
+ #      ) %>%
+ #      addLayersControl(
+ #        overlayGroups = c(
+ #          "Marine Parks",
+ #          "Total abundance",
+ #          "Species richness"
+ #        ),
+ #        options = layersControlOptions(collapsed = FALSE)
+ #      ) %>%
+ #      add_legend_ta(
+ #        colors = c("black", "yellow", "yellow"),
+ #        labels = c(0, round(max.ta / 2), max.ta),
+ #        sizes = c(5, 20, 40), group = "Total abundance"
+ #      ) %>%
+ #      add_legend_sr(
+ #        colors = c("black", "green", "green"),
+ #        labels = c(0, round(max.sr / 2), max.sr),
+ #        sizes = c(5, 20, 40), group = "Species richness"
+ #      )
+ #
+ #    if (nrow(overzero.ta)) {
+ #      map <- map %>%
+ #        addCircleMarkers(
+ #          data = overzero.ta,
+ #          lat = ~latitude,
+ #          lng = ~longitude,
+ #          radius = ~ (((value / max(value)) * 20)),
+ #          fillOpacity = 0.5,
+ #          stroke = FALSE,
+ #          label = ~ as.character(value),
+ #          group = "Total abundance",
+ #          color = "yellow"
+ #        )
+ #    }
+ #
+ #    if (nrow(equalzero.ta)) {
+ #      map <- map %>%
+ #        addCircleMarkers(
+ #          data = equalzero.ta,
+ #          lat = ~latitude,
+ #          lng = ~longitude,
+ #          radius = 2,
+ #          fillOpacity = 0.5,
+ #          color = "black",
+ #          stroke = FALSE,
+ #          label = ~ as.character(value),
+ #          group = "Total abundance"
+ #        )
+ #    }
+ #
+ #    if (nrow(overzero.sr)) {
+ #      map <- map %>%
+ #        addCircleMarkers(
+ #          data = overzero.sr,
+ #          lat = ~latitude,
+ #          lng = ~longitude,
+ #          radius = ~ ((value / max(value)) * 20),
+ #          fillOpacity = 0.5,
+ #          stroke = FALSE,
+ #          label = ~ as.character(value),
+ #          group = "Species richness",
+ #          color = "green"
+ #        )
+ #    }
+ #
+ #    if (nrow(equalzero.sr)) {
+ #      map <- map %>%
+ #        addCircleMarkers(
+ #          data = equalzero.sr,
+ #          lat = ~latitude,
+ #          lng = ~longitude,
+ #          radius = 2,
+ #          fillOpacity = 0.5,
+ #          color = "black",
+ #          stroke = FALSE,
+ #          label = ~ as.character(value),
+ #          group = "Species richness"
+ #        )
+ #    }
+ #
+ #    map %>%
+ #      # hideGroup("Total abundance") %>%
+ #      hideGroup("Species richness")
+ #  }) #%>% bindCache(fish_ta())
+ #
+ #  ####### ►  Total abundance ----
+ #  output$fish.state.total.plot <- renderPlot({
+ #    req(fish_ta())
+ #
+ #    label <- grobTree(textGrob(as.character("Total abundance"),
+ #                               x = 0.01, y = 0.97, hjust = 0,
+ #                               gp = gpar(col = "black", fontsize = 13, fontface = "italic")
+ #    ))
+ #
+ #    p <- ggplot(
+ #      fish_ta(),
+ #      aes(x = year, y = value, fill = status)
+ #    ) +
+ #      stat_summary(
+ #        fun = mean,
+ #        geom = "point",
+ #        shape = 23,
+ #        size = 6,
+ #        col = "black",
+ #        position = position_dodge(width = 0.5)
+ #      ) +
+ #      stat_summary(
+ #        fun.min = se.min,
+ #        fun.max = se.max,
+ #        geom = "errorbar",
+ #        width = 0.1,
+ #        col = "black",
+ #        position = position_dodge(width = 0.5)
+ #      ) +
+ #      xlab("Year") +
+ #      ylab("Average total abundance per sample \n(+/- SE)") +
+ #      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+ #      scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
+ #      ggh4x::facet_wrap2(vars(marine.park), axes = "all", ncol = 1, scales = "free_y") +
+ #      scale_x_continuous(
+ #         breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+ #         expand = expand_scale(mult = c(0, 0.05)))+
+ #      ggplot_mpatheme()
+ #
+ #
+ #    p
+ #
+ #  }) %>% bindCache(fish_ta())
+ #
+ #  output$ui.fish.state.total.plot <- renderUI({
+ #
+ #    plotOutput("fish.state.total.plot", height = length(unique(fish_ta()$marine.park))*200)
+ #
+ #  }) %>% bindCache(fish_ta())
+ #
+ #  ####### ►  Species richness ----
+ #  output$fish.state.rich.plot <- renderPlot({
+ #    req(fish_sr())
+ #
+ #    label <- grobTree(textGrob(as.character("Species richness"),
+ #                               x = 0.01, y = 0.97, hjust = 0,
+ #                               gp = gpar(col = "black", fontsize = 13, fontface = "italic")
+ #    ))
+ #
+ #    ggplot(fish_sr(), aes(x = year, y = value, fill = status, group = status)) + # , col = status
+ #      stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
+ #      stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
+ #      xlab("Year") +
+ #      ylab("Average number of species per sample \n(+/- SE)") +
+ #      scale_y_continuous(expand = c(0, 0.1)) +
+ #      scale_fill_manual(values = c("#b9e6fb",
+ #                                   "#7bbc63")) +
+ #      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+ #      ggh4x::facet_wrap2(vars(marine.park), axes = "all", ncol = 1, scales = "free_y") +
+ #      scale_x_continuous(
+ #        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+ #        expand = expand_scale(mult = c(0, 0.05))
+ #      )+
+ #      ggplot_mpatheme()
+ #  }) %>% bindCache(fish_sr())
+ #
+ # ####### ►  Make species richness plot interactive so the height changes with the number of inputs ----
+ #  output$ui.fish.state.rich.plot <- renderUI({
+ #
+ #    plotOutput("fish.state.rich.plot", height = length(unique(fish_sr()$marine.park))*200)
+ #
+ #  }) %>% bindCache(fish_sr())
+ #
+ #  ####### ►  Trophic group ----
+ #  output$fish.state.trophic.plot <- renderPlot({
+ #    req(input$fish.state.park.dropdown, input$fish.state.method.dropdown, input$fish.state.trophic.dropdown)
+ #
+ #    dat <- mpa_data$trophic.abundance[marine.park %in% c(input$fish.state.park.dropdown)]
+ #    dat <- dat[method %in% c(input$fish.state.method.dropdown)]
+ #
+ #    metadata <- fish_samplingeffort()
+ #
+ #    dat <- dat[trophic.group %in% c(input$fish.state.trophic.dropdown)]
+ #    dat <- dplyr::full_join(dat, metadata) %>%
+ #      tidyr::complete(tidyr::nesting(marine.park, method), trophic.group) %>%
+ #      tidyr::replace_na(list(total.abundance = 0)) %>%
+ #      dplyr::filter(!is.na(trophic.group))
+ #
+ #    ggplot(dat, aes(x = year, y = total.abundance, fill = status)) +
+ #      stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
+ #      stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
+ #      xlab("Year") +
+ #      ylab("Average abundance per sample \n(+/- SE)") +
+ #      scale_y_continuous(expand = c(0, 0.1)) +
+ #      scale_fill_manual(values = c("#b9e6fb",
+ #                                   "#7bbc63")) +
+ #      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+ #      ggh4x::facet_wrap2(vars(marine.park, trophic.group), axes = "all", ncol = length(unique(dat$trophic.group)), scales = "free_y") +
+ #      scale_x_continuous(
+ #        breaks = function(x) seq(ceiling(x[1]), floor(x[1]), by = 1),
+ #        expand = expand_scale(mult = c(0, 0.05))
+ #      ) +
+ #      ggplot_mpatheme()
+ #
+ #  }) #%>%
+ #    #TODO change this to be only one dataset
+ #    #bindCache(input$fish.state.park.dropdown, input$fish.state.method.dropdown, input$fish.state.trophic.dropdown)
+ #
+ #  ####### ►  Make trophic plot interactive so the height changes with the number of inputs ----
+ #  output$ui.fish.state.trophic.plot <- renderUI({
+ #    plotOutput("fish.state.trophic.plot", height = length(unique(input$fish.state.park.dropdown))*200)
+ #  })
+ #
+ #
+ #  ####### ►  Fished species KDE ----
+ #  output$fish.state.fished.species.kde.plot <- renderPlot({
+ #    req(input$fish.state.park.dropdown, input$fish.state.method.dropdown, input$fish.state.fished.species.dropdown)
+ #
+ #    dat <- mpa_data$fished.complete.length[marine.park %in% c(input$fish.state.park.dropdown)]
+ #    dat <- dat[method %in% c(input$fish.state.method.dropdown)]
+ #
+ #    more.than.20 <- dat %>%
+ #      dplyr::group_by(marine.park, method, campaignid, status, scientific) %>%
+ #      dplyr::summarise(number = sum(number)) %>%
+ #      dplyr::filter(number > 20) %>%
+ #      dplyr::ungroup() %>%
+ #      dplyr::distinct(marine.park, method, campaignid, status, scientific)
+ #
+ #    dat <- dat %>%
+ #      dplyr::semi_join(more.than.20) %>%
+ #      dplyr::filter(!is.na(length)) %>%
+ #      dplyr::filter(scientific %in% c(input$fish.state.fished.species.dropdown))
+ #
+ #    split.dat <- split(dat, f = dat$marine.park, drop = TRUE)
+ #
+ #    plot_list <- lapply(split.dat, function(dat) {
+ #      ggplot(dat, aes(x = length, fill = status)) +
+ #        geom_density(aes(y = ..density.. * 1000), alpha = 0.5, size = 0.7) +
+ #        theme(legend.position = ("bottom")) +
+ #        theme(
+ #          strip.text.y = element_text(size = 12, angle = 270),
+ #          strip.background = element_blank(),
+ #          axis.title = element_text(face = "bold"),
+ #          plot.title = element_text(face = "italic", hjust = 0.5),
+ #          strip.text.x = element_text(size = 14),
+ #          panel.grid.major = element_blank(),
+ #          panel.grid.minor = element_blank()
+ #        ) +
+ #        scale_y_continuous(expand = c(0, 0.1)) +
+ #        scale_fill_manual(values = c("#b9e6fb",
+ #                                     "#7bbc63")) +
+ #        ylab("Weighted KDE (*1000)") +
+ #        xlab("Total Length (mm)") +
+ #        ggtitle(dat$marine.park) +
+ #        facet_grid(year ~ scientific)
+ #    })
+ #
+ #    validate(
+ #      need(nrow(dat) > 0, "Sorry, there is not enough data to create a KDE for the species you requested. Please change your input selections")
+ #    )
+ #
+ #    cowplot::plot_grid(plotlist = plot_list, ncol = 1)
+ #  }) #%>%
+ #    #TODO change this to be only one dataset
+ #    #bindCache(input$fish.state.park.dropdown, input$fish.state.method.dropdown, input$fish.state.fished.species.dropdown)
+ #
+ #  # #   ####### ►  Make KDE plot interactive so the height changes with the number of inputs ----
+ #  # output$ui.fish.state.fished.species.kde.plot <- renderPlot({
+ #  #   plotOutput("fish.state.fished.species.kde.plot", height = 300 * length(unique(fish_alldata()$marine.park)))
+ #  # })
+ #  #
+ #  ####### ►  Fished species abundance plot -----
+ #  output$fish.state.fished.species.abundance.plot <- renderPlot({
+ #    req(input$fish.state.park.dropdown, input$fish.state.method.dropdown, input$fish.state.fished.species.dropdown)
+ #
+ #    dat <- fish_fishedabundance()[scientific %in% c(input$fish.state.fished.species.dropdown)]
+ #
+ #    ggplot(dat, aes(x = year, y = total.abundance, fill = status)) +
+ #      stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
+ #      stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
+ #      xlab("Year") +
+ #      ylab("Average abundance of target species per sample \n(+/- SE)") +
+ #      scale_y_continuous(expand = c(0, 0.1)) +
+ #
+ #      scale_fill_manual(values = c("#b9e6fb",
+ #                                   "#7bbc63")) +
+ #      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+ #      ggh4x::facet_wrap2(vars(marine.park, scientific), axes = "all", ncol = 1, scales = "free_y") +
+ #      scale_x_continuous(
+ #        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+ #        expand = expand_scale(mult = c(0, 0.05))
+ #      ) +
+ #      ggplot_mpatheme()
+ #  }) #%>%
+ #    #TODO change this to be only one dataset
+ #    #bindCache(input$fish.state.park.dropdown, input$fish.state.method.dropdown, input$fish.state.fished.species.dropdown)
+ #
+ #  # ####### ►  Make fished abundance plot interactive so the height changes with the number of inputs ----
+ #  output$ui.fish.state.fished.species.abundance.plot <- renderUI({
+ #
+ #    dat <- fish_fishedabundance()[scientific %in% c(input$fish.state.fished.species.dropdown)]
+ #
+ #    plotOutput("fish.state.fished.species.abundance.plot", height = length(unique(dat$marine.park))*200)
+ #  })
+ #
+ #  ####### ►  All species abundance ----
+ #  output$fish.state.all.species.abundance.plot <- renderPlot({
+ #
+ #    req(fish_abundance())
+ #
+ #    dat <- fish_abundance()[scientific %in% c(input$fish.state.all.species.dropdown)]
+ #
+ #    ggplot(dat, aes(x = year, y = maxn, fill = status)) +
+ #      stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
+ #      stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
+ #      xlab("Year") +
+ #      ylab("Average abundance of species per sample \n(+/- SE)") +
+ #      scale_y_continuous(expand = c(0, 0.1)) +
+ #      scale_fill_manual(values = c("#b9e6fb",
+ #                                   "#7bbc63")) +
+ #      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+ #      ggh4x::facet_wrap2(vars(marine.park, scientific), axes = "all", ncol = 1, scales = "free_y") +
+ #      scale_x_continuous(
+ #        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+ #        expand = expand_scale(mult = c(0, 0.05))
+ #      ) +
+ #      ggplot_mpatheme()
+ #
+ #
+ #  }) #%>%
+ #    #bindCache(fish_abundance())
+ #
+ #  # TODO COME BACK AND MAKE THIS ONE WORK - FOR SOME REASON STOPS DROPDOWN FROM SHOWING UP.
+ #  # NEED TO CHANGE IN UI TOO
+ #    ####### ►  Make all species abundance plot interactive so the height changes with the number of inputs ----
+ #    output$ui.fish.state.all.species.abundance.plot <- renderPlot({
+ #
+ #      dat <- fish_abundance()[scientific %in% c(input$fish.state.all.species.dropdown)]
+ #
+ #      plotOutput("fish.state.all.species.abundance.plot", height = 600)
+ #    })
+ #
+ #  ####### ►  Leaflet All Species ----
+ #  output$fish.state.all.species.leaflet <- renderLeaflet({
+ #
+ #    dat <- fish_abundance()[scientific %in% c(input$fish.state.all.species.dropdown)]
+ #
+ #    overzero.ta <- dplyr::filter(dat, maxn > 0)
+ #    equalzero.ta <- dplyr::filter(dat, maxn == 0)
+ #    max.ta <- max(overzero.ta$maxn)
+ #
+ #    map <- leaflet_basemap(fish_samplingeffort()) %>%
+ #      fitBounds(
+ #        ~ min(longitude),
+ #        ~ min(latitude),
+ #        ~ max(longitude),
+ #        ~ max(latitude)
+ #      ) %>%
+ #      addGlPolygons(
+ #        data =  mpa_data$state.mp,
+ #        color = ~ mpa_data$state.pal(zone),
+ #        popup =  mpa_data$state.mp$COMMENTS,
+ #        group = "Marine Parks"
+ #      ) %>%
+ #      addLegend(
+ #        pal = mpa_data$state.pal,
+ #        values = mpa_data$state.mp$zone,
+ #        opacity = 1,
+ #        title = "Zones",
+ #        position = "bottomleft",
+ #        group = "Marine Parks"
+ #      ) %>%
+ #      addLayersControl(
+ #        overlayGroups = c(
+ #          "Marine Parks",
+ #          "Abundance"
+ #        ),
+ #        options = layersControlOptions(collapsed = FALSE)
+ #      ) %>%
+ #      add_legend_ta(
+ #        colors = c("black", "blue", "blue"),
+ #        labels = c(0, round(max.ta / 2), max.ta),
+ #        sizes = c(5, 20, 40), group = "Abundance"
+ #      )
+ #
+ #    if (nrow(overzero.ta)) {
+ #      map <- map %>%
+ #        addCircleMarkers(
+ #          data = overzero.ta,
+ #          lat = ~latitude,
+ #          lng = ~longitude,
+ #          radius = ~ (((maxn / max(maxn)) * 20)),
+ #          fillOpacity = 0.5,
+ #          stroke = FALSE,
+ #          label = ~ as.character(maxn),
+ #          group = "Abundance",
+ #          color = "blue"
+ #        )
+ #    }
+ #
+ #    if (nrow(equalzero.ta)) {
+ #      map <- map %>%
+ #        addCircleMarkers(
+ #          data = equalzero.ta,
+ #          lat = ~latitude,
+ #          lng = ~longitude,
+ #          radius = 2,
+ #          fillOpacity = 0.5,
+ #          color = "black",
+ #          stroke = FALSE,
+ #          label = ~ as.character(maxn),
+ #          group = "Abundance"
+ #        )
+ #    }
+ #    map
+ #  })
 
   #   #----------------------------------------------------------------------------#
   #### MARINE PARK PLOTS ----
@@ -947,20 +969,20 @@ app_server <- function(input, output, session) {
   ####### ►  Sampling effort leaflet ----
   output$fish.park.sampling.leaflet <- renderLeaflet({
 
-    iconSet <- awesomeIconList(
-      'consistent' = makeAwesomeIcon(
-        icon = 'surf',
-        iconColor = 'white',
-        library = 'fa',
-        markerColor = 'green' #Possible values are "red", "darkred", "lightred", "orange", "beige", "green", "darkgreen", "lightgreen", "blue", "darkblue", "lightblue", "purple", "darkpurple", "pink", "cadetblue", "white", "gray", "lightgray", "black"
-      ),
-      'intermittent' = makeAwesomeIcon(
-        icon = 'surf',
-        iconColor = 'white',
-        library = 'fa',
-        markerColor = 'orange'
-      )
-    )
+    # iconSet <- awesomeIconList(
+    #   'consistent' = makeAwesomeIcon(
+    #     icon = 'surf',
+    #     iconColor = 'white',
+    #     library = 'fa',
+    #     markerColor = 'green' #Possible values are "red", "darkred", "lightred", "orange", "beige", "green", "darkgreen", "lightgreen", "blue", "darkblue", "lightblue", "purple", "darkpurple", "pink", "cadetblue", "white", "gray", "lightgray", "black"
+    #   ),
+    #   'intermittent' = makeAwesomeIcon(
+    #     icon = 'surf',
+    #     iconColor = 'white',
+    #     library = 'fa',
+    #     markerColor = 'orange'
+    #   )
+    # )
     # data needed
     dat <- fish_park_samplingeffort()
 
@@ -981,79 +1003,92 @@ app_server <- function(input, output, session) {
       addLayersControl(
         overlayGroups = c("Sampling locations", "Marine Parks"),
         options = layersControlOptions(collapsed = FALSE)
+      )%>%
+      leaflet::addAwesomeMarkers(data = dat,
+                                 lng = ~longitude,
+                                 lat = ~latitude,
+                                 icon = leaflet::awesomeIcons(
+                                   icon = 'surf',
+                                   iconColor = 'white',
+                                   library = 'fa',
+                                   markerColor = 'green' #Possible values are "red", "darkred", "lightred", "orange", "beige", "green", "darkgreen", "lightgreen", "blue", "darkblue", "lightblue", "purple", "darkpurple", "pink", "cadetblue", "white", "gray", "lightgray", "black"
+                                 ),
+                                 popup = ~content,
+                                 label = ~as.character(sample),
+                                 group = "Sampling locations"
       )
 
-    # If the method = DOVs then split based off complete or incomplete
-    if(input$fish.park.method.dropdown %in% "stereo-DOVs"){
-
-      map <- map %>%
-        leaflegend::addLegendAwesomeIcon(iconSet = iconSet,
-                                         orientation = 'horizontal',
-                                         title = htmltools::tags$div(
-                                           style = 'font-size: 15px;',
-                                           'Site visted:'),
-                                         labelStyle = 'font-size: 12px;',
-                                         position = 'bottomleft',
-                                         group = 'Sampling locations')
-
-    complete <- dat %>%
-      dplyr::filter(complete %in% "Yes")
-
-    incomplete <- dat %>%
-      dplyr::filter(!complete %in% "Yes")
-
-    if (nrow(complete)) {
-      map <- map %>%
-        leaflet::addAwesomeMarkers(data = complete,
-                                   lng = ~longitude,
-                                   lat = ~latitude,
-                                   icon = leaflet::awesomeIcons(
-                                     icon = 'surf',
-                                     iconColor = 'white',
-                                     library = 'fa',
-                                     markerColor = 'green' #Possible values are "red", "darkred", "lightred", "orange", "beige", "green", "darkgreen", "lightgreen", "blue", "darkblue", "lightblue", "purple", "darkpurple", "pink", "cadetblue", "white", "gray", "lightgray", "black"
-                                   ),
-                                   popup = ~content,
-                                   label = ~as.character(sample),
-                                   group = "Sampling locations"
-        )
-    }
-
-    if (nrow(incomplete)) {
-      map <- map %>%
-        leaflet::addAwesomeMarkers(data = incomplete,
-                                   lng = ~longitude,
-                                   lat = ~latitude,
-                                   icon = leaflet::awesomeIcons(
-                                     icon = 'surf',
-                                     iconColor = 'white',
-                                     library = 'fa',
-                                     markerColor = 'orange' #Possible values are "red", "darkred", "lightred", "orange", "beige", "green", "darkgreen", "lightgreen", "blue", "darkblue", "lightblue", "purple", "darkpurple", "pink", "cadetblue", "white", "gray", "lightgray", "black"
-                                   ),
-                                   popup = ~content,
-                                   label = ~as.character(sample),
-                                   group = "Sampling locations"
-        )
-    }
-
-    }
-
-    if(!input$fish.park.method.dropdown %in% "stereo-DOVs"){
-        map <- map %>%
-          leaflet::addAwesomeMarkers(data = dat,
-                                     lng = ~longitude,
-                                     lat = ~latitude,
-                                     icon = leaflet::awesomeIcons(
-                                       icon = 'surf',
-                                       iconColor = 'white',
-                                       library = 'fa',
-                                       markerColor = 'green' #Possible values are "red", "darkred", "lightred", "orange", "beige", "green", "darkgreen", "lightgreen", "blue", "darkblue", "lightblue", "purple", "darkpurple", "pink", "cadetblue", "white", "gray", "lightgray", "black"
-                                     ),
-                                     popup = ~content,
-                                     label = ~as.character(sample),
-                                     group = "Sampling locations"
-          )
-      }
+    # # If the method = DOVs then split based off complete or incomplete
+    # if(input$fish.park.method.dropdown %in% "stereo-DOVs"){
+    #
+    #   map <- map %>%
+    #     leaflegend::addLegendAwesomeIcon(iconSet = iconSet,
+    #                                      orientation = 'horizontal',
+    #                                      title = htmltools::tags$div(
+    #                                        style = 'font-size: 15px;',
+    #                                        'Site visted:'),
+    #                                      labelStyle = 'font-size: 12px;',
+    #                                      position = 'bottomleft',
+    #                                      group = 'Sampling locations')
+    #
+    # complete <- dat %>%
+    #   dplyr::filter(complete %in% "Yes")
+    #
+    # incomplete <- dat %>%
+    #   dplyr::filter(!complete %in% "Yes")
+    #
+    # if (nrow(complete)) {
+    #   map <- map %>%
+    #     leaflet::addAwesomeMarkers(data = complete,
+    #                                lng = ~longitude,
+    #                                lat = ~latitude,
+    #                                icon = leaflet::awesomeIcons(
+    #                                  icon = 'surf',
+    #                                  iconColor = 'white',
+    #                                  library = 'fa',
+    #                                  markerColor = 'green' #Possible values are "red", "darkred", "lightred", "orange", "beige", "green", "darkgreen", "lightgreen", "blue", "darkblue", "lightblue", "purple", "darkpurple", "pink", "cadetblue", "white", "gray", "lightgray", "black"
+    #                                ),
+    #                                popup = ~content,
+    #                                label = ~as.character(sample),
+    #                                group = "Sampling locations"
+    #     )
+    # }
+    #
+    # if (nrow(incomplete)) {
+    #   map <- map %>%
+    #     leaflet::addAwesomeMarkers(data = incomplete,
+    #                                lng = ~longitude,
+    #                                lat = ~latitude,
+    #                                icon = leaflet::awesomeIcons(
+    #                                  icon = 'surf',
+    #                                  iconColor = 'white',
+    #                                  library = 'fa',
+    #                                  markerColor = 'orange' #Possible values are "red", "darkred", "lightred", "orange", "beige", "green", "darkgreen", "lightgreen", "blue", "darkblue", "lightblue", "purple", "darkpurple", "pink", "cadetblue", "white", "gray", "lightgray", "black"
+    #                                ),
+    #                                popup = ~content,
+    #                                label = ~as.character(sample),
+    #                                group = "Sampling locations"
+    #     )
+    # }
+    #
+    # }
+    #
+    # if(!input$fish.park.method.dropdown %in% "stereo-DOVs"){
+    #     map <- map %>%
+    #       leaflet::addAwesomeMarkers(data = dat,
+    #                                  lng = ~longitude,
+    #                                  lat = ~latitude,
+    #                                  icon = leaflet::awesomeIcons(
+    #                                    icon = 'surf',
+    #                                    iconColor = 'white',
+    #                                    library = 'fa',
+    #                                    markerColor = 'green' #Possible values are "red", "darkred", "lightred", "orange", "beige", "green", "darkgreen", "lightgreen", "blue", "darkblue", "lightblue", "purple", "darkpurple", "pink", "cadetblue", "white", "gray", "lightgray", "black"
+    #                                  ),
+    #                                  popup = ~content,
+    #                                  label = ~as.character(sample),
+    #                                  group = "Sampling locations"
+    #       )
+    #   }
     map
   })
 
@@ -1148,25 +1183,18 @@ app_server <- function(input, output, session) {
   output$fish.park.total.plot <- renderPlot({
 
     ta <- fish_park_ta()
-    dat <- ta[complete %in% c("Yes")]
-
-
-    print(unique(dat$status))
-
-    # label <- grobTree(textGrob(as.character("Total abundance"),
-    #   x = 0.01, y = 0.97, hjust = 0,
-    #   gp = gpar(col = "black", fontsize = 13, fontface = "italic")
-    # ))
+    dat <- ta[complete %in% c("Consistently sampled")]
 
     gazetted <- unique(dat$gazetted)
     re.zoned <- unique(dat$re.zoned)
+
+    min.year <- min(dat$year)
 
     p <- ggplot(dat, aes(x = year, y = value, fill = status)) +
       stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
       xlab("Year") +
       ylab("Average total abundance per sample \n(+/- SE)") +
-      # annotation_custom(label) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       scale_x_continuous(
         breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
@@ -1177,29 +1205,38 @@ app_server <- function(input, output, session) {
       ggplot_mpatheme() #+
 
     # THESE ARE HOW TO ADD RE_ZONED AND GAZETTED, THEY CAN BE TURNED OFF
-    # if(!gazetted %in% c("NA", NA, NULL)){
-    #   p <- p + geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-    #     geom_label(
-    #       x = gazetted,
-    #       y = +Inf,
-    #       label = "\n\n gazetted",
-    #       size = 5,
-    #       fill = "white",
-    #       check_overlap = TRUE,
-    #       label.size = NA
-    #     )}
-    #
-    # if(!re.zoned %in% c("NA", NA, NULL)){
-    #   p <- p + geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
-    #     geom_label(
-    #       x = re.zoned,
-    #       y = +Inf,
-    #       label = "\n\n rezoned",
-    #       size = 5,
-    #       fill = "white",
-    #       check_overlap = TRUE,
-    #       label.size = NA
-    #     )}
+    if(!gazetted %in% c("NA", NA, NULL)){
+
+      if(min.year < gazetted) {
+
+      p <- p + geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+        geom_label(
+          x = gazetted,
+          y = +Inf,
+          label = "\n\n gazetted",
+          size = 5,
+          fill = "white",
+          check_overlap = TRUE,
+          label.size = NA
+        )}
+
+    }
+
+    if(!re.zoned %in% c("NA", NA, NULL)){
+
+      if(min.year < re.zoned) {
+      p <- p + geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+        geom_label(
+          x = re.zoned,
+          y = +Inf,
+          label = "\n\n rezoned",
+          size = 5,
+          fill = "white",
+          check_overlap = TRUE,
+          label.size = NA
+        )}
+
+    }
     p
   }) #%>%
     #bindCache(fish_park_ta())
@@ -1209,19 +1246,13 @@ app_server <- function(input, output, session) {
 
     dat <- fish_park_ta()
 
-    # label <- grobTree(textGrob(as.character("Total abundance"),
-    #                            x = 0.01, y = 0.97, hjust = 0,
-    #                            gp = gpar(col = "black", fontsize = 13, fontface = "italic")
-    # ))
-
     if(input$fish.park.method.dropdown %in% "stereo-DOVs"){
 
-      ggplot(dat, aes(x = year, y = value, fill = status)) +
-        stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
+      ggplot(dat, aes(x = year, y = value, fill = status, group = complete)) +
+        stat_summary(aes(shape = complete), fun.y = mean, geom = "point", size = 6, col = "black", position = position_dodge(width = 0.5)) +
         stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
         xlab("Year") +
         ylab("Average total abundance per sample \n(+/- SE)") +
-        # annotation_custom(label) +
         stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
         scale_x_continuous(
           breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
@@ -1229,6 +1260,8 @@ app_server <- function(input, output, session) {
         ) +
         scale_fill_manual(values = c("#b9e6fb",
                                      "#7bbc63")) +
+        scale_shape_manual(values = c("Consistently sampled" = 21,
+                                      "Intermittently sampled" = 22)) +
         ggh4x::facet_wrap2(vars(site), axes = "all", ncol = 3) +
         ggplot_mpatheme()
     }
@@ -1256,18 +1289,15 @@ app_server <- function(input, output, session) {
   output$fish.park.total.sanctuary.plot <- renderPlot({
 
     dat <- fish_park_ta()
+    dat <- dat[complete %in% c("Consistently sampled")]
 
-    # label <- grobTree(textGrob(as.character("Total abundance"),
-    #                            x = 0.01, y = 0.97, hjust = 0,
-    #                            gp = gpar(col = "black", fontsize = 13, fontface = "italic")
-    # ))
 
-    ggplot(dat, aes(x = year, y = value, fill = status)) +
+    p <- ggplot(dat, aes(x = year, y = value, fill = status)) +
       stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
       xlab("Year") +
       ylab("Average total abundance per sample \n(+/- SE)") +
-      # annotation_custom(label) +
+
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       scale_x_continuous(
         breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
@@ -1279,6 +1309,48 @@ app_server <- function(input, output, session) {
       # facet_wrap(dbca_sanctuary ~ ., scales = "free", ncol = 3) +
       ggh4x::facet_wrap2(vars(dbca_sanctuary), axes = "all", ncol = 3) +
       ggplot_mpatheme()
+
+    gazetted <- unique(dat$gazetted)
+    re.zoned <- unique(dat$re.zoned)
+    min.year <- min(dat$year)
+
+    # THESE ARE HOW TO ADD RE_ZONED AND GAZETTED, THEY CAN BE TURNED OFF
+    if(!gazetted %in% c("NA", NA, NULL)){
+
+      if(min.year < gazetted) {
+
+        p <- p + geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+          geom_label(
+            x = gazetted,
+            y = +Inf,
+            label = "\n\n gazetted",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+
+    if(!re.zoned %in% c("NA", NA, NULL)){
+
+      if(min.year < re.zoned) {
+        p <- p + geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+          geom_label(
+            x = re.zoned,
+            y = +Inf,
+            label = "\n\n rezoned",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+    p
+
+
+
   }) %>%
     bindCache(fish_park_ta())
 
@@ -1313,13 +1385,9 @@ app_server <- function(input, output, session) {
   ####### ►  Total abundance by Zone ----
   output$fish.park.total.zone.plot <- renderPlot({
     dat <- fish_park_ta()
+    dat <- dat[complete %in% c("Consistently sampled")]
 
-    # label <- grobTree(textGrob(as.character("Total abundance"),
-    #                            x = 0.01, y = 0.97, hjust = 0,
-    #                            gp = gpar(col = "black", fontsize = 13, fontface = "italic")
-    # ))
-
-    ggplot(dat, aes(x = year, y = value, fill = dbca_zone)) +
+    p <- ggplot(dat, aes(x = year, y = value, fill = dbca_zone)) +
       stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
       xlab("Year") +
@@ -1331,6 +1399,46 @@ app_server <- function(input, output, session) {
       ) +
       scale_fill_manual(values = c(pal)) +
       ggplot_mpatheme()
+
+    gazetted <- unique(dat$gazetted)
+    re.zoned <- unique(dat$re.zoned)
+    min.year <- min(dat$year)
+
+    # THESE ARE HOW TO ADD RE_ZONED AND GAZETTED, THEY CAN BE TURNED OFF
+    if(!gazetted %in% c("NA", NA, NULL)){
+
+      if(min.year < gazetted) {
+
+        p <- p + geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+          geom_label(
+            x = gazetted,
+            y = +Inf,
+            label = "\n\n gazetted",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+
+    if(!re.zoned %in% c("NA", NA, NULL)){
+
+      if(min.year < re.zoned) {
+        p <- p + geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+          geom_label(
+            x = re.zoned,
+            y = +Inf,
+            label = "\n\n rezoned",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+    p
+
 
   }) %>%
     bindCache(fish_park_ta())
@@ -1351,16 +1459,12 @@ app_server <- function(input, output, session) {
   ####### ►  Species richness ----
   output$fish.park.rich.plot <- renderPlot({
 
-    dat <- fish_park_sr()
+    dat <- fish_park_sr_overall()
+    dat <- dat[complete %in% c("Consistently sampled")]
 
-    # label <- grobTree(textGrob(as.character("Species richness"),
-    #   x = 0.01, y = 0.97, hjust = 0,
-    #   gp = gpar(col = "black", fontsize = 13, fontface = "italic")
-    # ))
-
-    ggplot(dat, aes(x = year, y = value, fill = status)) +
-      stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
-      stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
+    p <- ggplot(dat, aes(x = year, y = mean, fill = status)) +
+      geom_point(shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
+      geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.2, position=position_dodge(.5)) +
       xlab("Year") +
       ylab("Average number of species per sample \n(+/- SE)") +
       #annotation_custom(label) +
@@ -1372,6 +1476,46 @@ app_server <- function(input, output, session) {
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       ggplot_mpatheme()
+
+
+    gazetted <- unique(dat$gazetted)
+    re.zoned <- unique(dat$re.zoned)
+    min.year <- min(dat$year)
+
+    # THESE ARE HOW TO ADD RE_ZONED AND GAZETTED, THEY CAN BE TURNED OFF
+    if(!gazetted %in% c("NA", NA, NULL)){
+
+      if(min.year < gazetted) {
+
+        p <- p + geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+          geom_label(
+            x = gazetted,
+            y = +Inf,
+            label = "\n\n gazetted",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+
+    if(!re.zoned %in% c("NA", NA, NULL)){
+
+      if(min.year < re.zoned) {
+        p <- p + geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+          geom_label(
+            x = re.zoned,
+            y = +Inf,
+            label = "\n\n rezoned",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+    p
   }) #%>% bindCache(fish_park_sr())
 
   ####### ►  Species richness by site ----
@@ -1379,28 +1523,23 @@ app_server <- function(input, output, session) {
 
     dat <- fish_park_sr()
 
-    # label <- grobTree(textGrob(as.character("Species richness"),
-    #                            x = 0.01, y = 0.97, hjust = 0,
-    #                            gp = gpar(col = "black", fontsize = 13, fontface = "italic")
-    # ))
-
     if(input$fish.park.method.dropdown %in% "stereo-DOVs"){
 
       ggplot(dat, aes(x = year, y = value, fill = status)) +
-        stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
+        stat_summary(aes(shape = complete), fun.y = mean, geom = "point", size = 6, col = "black", position = position_dodge(width = 0.5)) +
         stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
         xlab("Year") +
         ylab("Average number of species per sample \n(+/- SE)") +
-        #annotation_custom(label) +
         stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
         scale_x_continuous(
           breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
           expand = expand_scale(mult = c(0, 0.05))
         ) +
+
+        scale_shape_manual(values = c("Consistently sampled" = 21,
+                                      "Intermittently sampled" = 22)) +
         scale_fill_manual(values = c("#b9e6fb",
                                      "#7bbc63")) +
-
-        # facet_wrap(site ~ ., scales = "free", ncol = 3) +
         ggh4x::facet_wrap2(vars(site), axes = "all", ncol = 3) +
         ggplot_mpatheme()
     }
@@ -1427,18 +1566,13 @@ app_server <- function(input, output, session) {
   output$fish.park.rich.sanctuary.plot <- renderPlot({
 
     dat <- fish_park_sr()
+    dat <- dat[complete %in% c("Consistently sampled")]
 
-    # label <- grobTree(textGrob(as.character("Species richness"),
-    #                            x = 0.01, y = 0.97, hjust = 0,
-    #                            gp = gpar(col = "black", fontsize = 13, fontface = "italic")
-    # ))
-
-    ggplot(dat, aes(x = year, y = value, fill = status)) +
+    p <- ggplot(dat, aes(x = year, y = value, fill = status)) +
       stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
       xlab("Year") +
       ylab("Average number of species per sample \n(+/- SE)") +
-      #annotation_custom(label) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
       scale_x_continuous(
         breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
@@ -1446,10 +1580,49 @@ app_server <- function(input, output, session) {
       ) +
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
-      # ggplot_mpatheme() +
-      # facet_wrap(dbca_sanctuary ~ ., scales = "free", ncol = 3) +
       ggh4x::facet_wrap2(vars(dbca_sanctuary), axes = "all", ncol = 3) +
       ggplot_mpatheme()
+
+
+    gazetted <- unique(dat$gazetted)
+    re.zoned <- unique(dat$re.zoned)
+    min.year <- min(dat$year)
+
+    # THESE ARE HOW TO ADD RE_ZONED AND GAZETTED, THEY CAN BE TURNED OFF
+    if(!gazetted %in% c("NA", NA, NULL)){
+
+      if(min.year < gazetted) {
+
+        p <- p + geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+          geom_label(
+            x = gazetted,
+            y = +Inf,
+            label = "\n\n gazetted",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+
+    if(!re.zoned %in% c("NA", NA, NULL)){
+
+      if(min.year < re.zoned) {
+        p <- p + geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+          geom_label(
+            x = re.zoned,
+            y = +Inf,
+            label = "\n\n rezoned",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+    p
+
   }) %>%
     bindCache(fish_park_sr())
 
@@ -1470,8 +1643,9 @@ app_server <- function(input, output, session) {
   output$fish.park.rich.zone.plot <- renderPlot({
 
     dat <- fish_park_sr()
+    dat <- dat[complete %in% c("Consistently sampled")]
 
-    ggplot(dat, aes(x = year, y = value, fill = dbca_zone)) +
+    p <- ggplot(dat, aes(x = year, y = value, fill = dbca_zone)) +
       stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
@@ -1483,6 +1657,47 @@ app_server <- function(input, output, session) {
       ) +
       scale_fill_manual(values = c(pal)) +
       ggplot_mpatheme()
+
+
+    gazetted <- unique(dat$gazetted)
+    re.zoned <- unique(dat$re.zoned)
+    min.year <- min(dat$year)
+
+    # THESE ARE HOW TO ADD RE_ZONED AND GAZETTED, THEY CAN BE TURNED OFF
+    if(!gazetted %in% c("NA", NA, NULL)){
+
+      if(min.year < gazetted) {
+
+        p <- p + geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+          geom_label(
+            x = gazetted,
+            y = +Inf,
+            label = "\n\n gazetted",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+
+    if(!re.zoned %in% c("NA", NA, NULL)){
+
+      if(min.year < re.zoned) {
+        p <- p + geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+          geom_label(
+            x = re.zoned,
+            y = +Inf,
+            label = "\n\n rezoned",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+    p
+
   })
 
 
@@ -1504,6 +1719,7 @@ app_server <- function(input, output, session) {
   output$fish.park.stack.plot <- renderPlot({
 
     maxn.sum <- fish_park_abundance() %>%
+      dplyr::filter(!genus %in% c("Unknown", NA)) %>%
       mutate(scientific = paste(genus, species, sep = " ")) %>%
       group_by(scientific) %>%
       dplyr::summarise(maxn = sum(maxn)) %>%
@@ -1527,9 +1743,14 @@ app_server <- function(input, output, session) {
 
     dat <- fish_park_trophicabundance()[trophic.group %in% c(input$fish.park.trophic.dropdown)]
 
-    ggplot(dat, aes(x = year, y = total.abundance, fill = status)) +
-      stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
-      stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
+    #TODO figure out why trophic has two gazettal (NA and 2018) for Ngari Capes
+    gazetted <- min(dat$gazetted)
+    re.zoned <- min(dat$re.zoned)
+    min.year <- min(dat$year)
+
+    p <- ggplot(dat, aes(x = year, y = mean, fill = status)) +
+      geom_point(shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
+      geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.2, position=position_dodge(.5)) +
       xlab("Year") +
       ylab("Average abundance per sample \n(+/- SE)") +
       scale_y_continuous(expand = c(0, 0.1)) +
@@ -1540,9 +1761,103 @@ app_server <- function(input, output, session) {
       scale_fill_manual(values = c("#b9e6fb",
                                    "#7bbc63")) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
-      # facet_wrap(trophic.group ~ ., scales = "free", ncol = 1) +
-      ggh4x::facet_wrap2(vars(trophic.group), axes = "all", ncol = 1) +
       ggplot_mpatheme()
+
+    # THESE ARE HOW TO ADD RE_ZONED AND GAZETTED, THEY CAN BE TURNED OFF
+    if(!gazetted %in% c("NA", NA, NULL)){
+
+      if(min.year < gazetted) {
+
+        p <- p + geom_vline(data = gazetted, aes(xintercept = gazetted), linetype = "dashed") +
+          geom_label(
+            x = gazetted,
+            y = +Inf,
+            label = "\n\n gazetted",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+
+    if(!re.zoned %in% c("NA", NA, NULL)){
+
+      if(min.year < re.zoned) {
+        p <- p + geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+          geom_label(
+            x = re.zoned,
+            y = +Inf,
+            label = "\n\n rezoned",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+    p + ggh4x::facet_wrap2(vars(trophic.group), axes = "all", ncol = 1)
+
+    # dat <- fish_park_trophicabundance()[trophic.group %in% c(input$fish.park.trophic.dropdown)]
+    #
+    # p <- ggplot(dat, aes(x = year, y = total.abundance, fill = status)) +
+    #   stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
+    #   stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
+    #   xlab("Year") +
+    #   ylab("Average abundance per sample \n(+/- SE)") +
+    #   scale_y_continuous(expand = c(0, 0.1)) +
+    #   scale_x_continuous(
+    #     breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+    #     expand = expand_scale(mult = c(0, 0.05))
+    #   ) +
+    #   scale_fill_manual(values = c("#b9e6fb",
+    #                                "#7bbc63")) +
+    #   stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+    #   # facet_wrap(trophic.group ~ ., scales = "free", ncol = 1) +
+    #   ggh4x::facet_wrap2(vars(trophic.group), axes = "all", ncol = 1) +
+    #   ggplot_mpatheme()
+    #
+    # #TODO figure out why trophic has two gazettal (NA and 2018) for Ngari Capes
+    # gazetted <- min(dat$gazetted)
+    # re.zoned <- min(dat$re.zoned)
+    # min.year <- min(dat$year)
+    #
+    # # THESE ARE HOW TO ADD RE_ZONED AND GAZETTED, THEY CAN BE TURNED OFF
+    # if(!gazetted %in% c("NA", NA, NULL)){
+    #
+    #   if(min.year < gazetted) {
+    #
+    #     p <- p + geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+    #       geom_label(
+    #         x = gazetted,
+    #         y = +Inf,
+    #         label = "\n\n gazetted",
+    #         size = 5,
+    #         fill = "white",
+    #         check_overlap = TRUE,
+    #         label.size = NA
+    #       )}
+    #
+    # }
+    #
+    # if(!re.zoned %in% c("NA", NA, NULL)){
+    #
+    #   if(min.year < re.zoned) {
+    #     p <- p + geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+    #       geom_label(
+    #         x = re.zoned,
+    #         y = +Inf,
+    #         label = "\n\n rezoned",
+    #         size = 5,
+    #         fill = "white",
+    #         check_overlap = TRUE,
+    #         label.size = NA
+    #       )}
+    #
+    # }
+    # p
+
+
   }) #%>% bindCache(fish_park_trophicabundance())
 
   ####### ►  KDE plot ----
@@ -1592,7 +1907,7 @@ app_server <- function(input, output, session) {
 
     dat <- fish_park_fishedabundance()[scientific %in% c(input$fish.park.fished.species.dropdown)]
 
-    ggplot(dat, aes(x = year, y = total.abundance, fill = status)) +
+    p <- ggplot(dat, aes(x = year, y = total.abundance, fill = status)) +
       stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
       xlab("Year") +
@@ -1608,7 +1923,112 @@ app_server <- function(input, output, session) {
       # facet_wrap(scientific ~ ., scales = "free", ncol = 1) +
       ggh4x::facet_wrap2(vars(scientific), axes = "all", ncol = 1) +
       ggplot_mpatheme()
+
+    gazetted <- unique(dat$gazetted)
+    re.zoned <- unique(dat$re.zoned)
+    min.year <- min(dat$year)
+
+    # THESE ARE HOW TO ADD RE_ZONED AND GAZETTED, THEY CAN BE TURNED OFF
+    if(!gazetted %in% c("NA", NA, NULL)){
+
+      if(min.year < gazetted) {
+
+        p <- p + geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+          geom_label(
+            x = gazetted,
+            y = +Inf,
+            label = "\n\n gazetted",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+
+    if(!re.zoned %in% c("NA", NA, NULL)){
+
+      if(min.year < re.zoned) {
+        p <- p + geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+          geom_label(
+            x = re.zoned,
+            y = +Inf,
+            label = "\n\n rezoned",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+    p
+
+
   }) #%>% bindCache(fish_park_fishedabundance())
+
+
+  ####### ►  Fished Species Summed ----
+  output$fish.park.fished.sum.plot <- renderPlot({
+
+    dat <- fish_park_fishedsum()
+
+    # First attempt at summarised data
+    p <- ggplot(dat, aes(x = year, y = mean, fill = status)) +
+      geom_point(shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
+      geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.2,
+                    position=position_dodge(.5)) +
+      xlab("Year") +
+      ylab("Average abundance of target species per sample \n(+/- SE)") +
+      #annotation_custom(label) +
+      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+      scale_x_continuous(
+        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+        expand = expand_scale(mult = c(0, 0.05))
+      ) +
+      scale_fill_manual(values = c("#b9e6fb",
+                                   "#7bbc63")) +
+      ggplot_mpatheme()
+
+    gazetted <- unique(dat$gazetted)
+    re.zoned <- unique(dat$re.zoned)
+    min.year <- min(dat$year)
+
+    # THESE ARE HOW TO ADD RE_ZONED AND GAZETTED, THEY CAN BE TURNED OFF
+    if(!gazetted %in% c("NA", NA, NULL)){
+
+      if(min.year < gazetted) {
+
+        p <- p + geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+          geom_label(
+            x = gazetted,
+            y = +Inf,
+            label = "\n\n gazetted",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+
+    if(!re.zoned %in% c("NA", NA, NULL)){
+
+      if(min.year < re.zoned) {
+        p <- p + geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+          geom_label(
+            x = re.zoned,
+            y = +Inf,
+            label = "\n\n rezoned",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+    p
+
+  })
 
   ####### ►  All species abundance ----
   output$fish.park.all.species.abundance.plot <- renderPlot({
@@ -1616,7 +2036,7 @@ app_server <- function(input, output, session) {
     req(fish_park_abundance_species())
     dat <- fish_park_abundance_species()
 
-    ggplot(dat, aes(x = year, y = maxn, fill = status)) +
+    p <- ggplot(dat, aes(x = year, y = maxn, fill = status)) +
       stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
       stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
       xlab("Year") +
@@ -1632,6 +2052,47 @@ app_server <- function(input, output, session) {
       # facet_wrap(scientific ~ ., scales = "free", ncol = 1) +
       ggh4x::facet_wrap2(vars(scientific), axes = "all", ncol = 1) +
       ggplot_mpatheme()
+
+    gazetted <- unique(dat$gazetted)
+    re.zoned <- unique(dat$re.zoned)
+    min.year <- min(dat$year)
+
+    # THESE ARE HOW TO ADD RE_ZONED AND GAZETTED, THEY CAN BE TURNED OFF
+    if(!gazetted %in% c("NA", NA, NULL)){
+
+      if(min.year < gazetted) {
+
+        p <- p + geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+          geom_label(
+            x = gazetted,
+            y = +Inf,
+            label = "\n\n gazetted",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+
+    if(!re.zoned %in% c("NA", NA, NULL)){
+
+      if(min.year < re.zoned) {
+        p <- p + geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+          geom_label(
+            x = re.zoned,
+            y = +Inf,
+            label = "\n\n rezoned",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+    p
+
+
   }) #%>% bindCache(fish_park_abundance_species())
 
 
@@ -1976,7 +2437,7 @@ app_server <- function(input, output, session) {
 
       p <- ggplot(data = subset(benthic_park_coral_cover(), !plot_year %in% c("1999")), aes(x = plot_year, y = mean)) +
         geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = .025) +
-        stat_smooth(method = "gam", formula = y ~ s(x, k = 5), se = TRUE, size = 1, col = "black", linetype = "solid") +
+        # stat_smooth(method = "gam", formula = y ~ s(x, k = 5), se = TRUE, size = 1, col = "black", linetype = "solid") +
         geom_point(size = 2) +
         xlab("") +
         ylab("% Coral Cover (mean ± SE)") +
@@ -2013,7 +2474,7 @@ app_server <- function(input, output, session) {
 
       p <- ggplot(data = subset(benthic_park_coral_cover_sector(), !plot_year %in% c("1999")), aes(x = plot_year, y = mean)) +
         geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = .025) +
-        stat_smooth(method = "gam", formula = y ~ s(x, k = 5), se = TRUE, size = 1, col = "black", linetype = "solid") +
+        # stat_smooth(method = "gam", formula = y ~ s(x, k = 5), se = TRUE, size = 1, col = "black", linetype = "solid") +
         geom_point(size = 2) +
         xlab("") +
         ylab("% Coral Cover (mean ± SE)") +
@@ -2032,7 +2493,7 @@ app_server <- function(input, output, session) {
 
       p <- ggplot(data = subset(benthic_park_coral_cover_sector(), !plot_year %in% c("1999")), aes(x = plot_year, y = mean)) +
         geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = .025) + # error bars
-        stat_smooth(method = "gam", formula = y ~ poly(x, 3), se = F, size = 0.3, col = "black", linetype = "dashed") +
+        # stat_smooth(method = "gam", formula = y ~ poly(x, 3), se = F, size = 0.3, col = "black", linetype = "dashed") +
         geom_hline(yintercept = 0, linetype = 2, colour = "grey") +
         geom_point(size=1) +
         xlab("") +
@@ -2059,7 +2520,7 @@ app_server <- function(input, output, session) {
       pd <- position_dodge(.25)
 
       p <- ggplot(benthic_rec_3c2(), aes(x=year, y=mean)) +
-        geom_smooth(method = "gam", formula = y ~  s(x, k=length(unique(benthic_rec_3c2()$year)-2)), se=F, size = 1, col="black") +
+        # geom_smooth(method = "gam", formula = y ~  s(x, k=length(unique(benthic_rec_3c2()$year)-2)), se=F, size = 1, col="black") +
         geom_point(position = pd, size = 2)+
         xlab("") +
         ylab("Number of coral recruits per tile") +

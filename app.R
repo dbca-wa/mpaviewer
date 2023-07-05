@@ -1,8 +1,8 @@
-# Launch the ShinyApp (Do not remove this comment)
+## Launch the ShinyApp (Do not remove this comment)
 # To deploy, run: rsconnect::deployApp()
 # Or use the blue button on top of this file
 
-# Google Sheets Auth ----
+## Google Sheets Auth ----
 # options(gargle_oauth_cache = ".secrets")
 # # check the value of the option, if you like
 # gargle::gargle_oauth_cache()
@@ -25,7 +25,12 @@ options("golem.app.prod" = TRUE)
 
 # shinyOptions(cache = cachem::cache_disk("./bind-cache"))
 
+# RUN app
 mpaviewer::run_app()
+
+# # For profiling app
+# profvis::profvis({ mpaviewer::run_app() }
+#         , prof_output = 'profile')
 
 # Step 5. Deploy to shiny server for testing
 # rsconnect::deployApp()

@@ -97,6 +97,8 @@ googledrive_download_data <- function() {
     }
   }
 
+
+  # TODO implement this in the metadata reading in - just change the codes rather than changing the folder names
   codes <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1OuOt80TvJBCMPLR6oy7YhfoSD4VjC73cuKovGobxiyI/edit?usp=sharing",
                                      sheet = "park_codes")
 
@@ -111,7 +113,7 @@ googledrive_download_data <- function() {
     file.rename(code, new.name)
   }
 
-  setwd("C:/GitHub/mpaviewer") # NEED to find a way to fix htis
+  setwd("C:/GitHub/mpaviewer") # NEED to find a way to fix this
 
   # Folder with images
   drive.folder <- "https://drive.google.com/drive/folders/1PeEcdENN0BhXpkzryqsBbq-0kFn_1N7z"
