@@ -1265,8 +1265,7 @@ app_server <- function(input, output, session) {
         ggh4x::facet_wrap2(vars(site), axes = "all", ncol = 3) +
         ggplot_mpatheme()
     }
-  }) %>%
-    bindCache(fish_park_ta())
+  }) #%>% bindCache(fish_park_ta())
 
   output$ui.fish.park.total.site.plot <- renderUI({
     dat <- fish_park_ta()
@@ -1282,8 +1281,7 @@ app_server <- function(input, output, session) {
       tagList(h4("Total abundance by site:"),
               plotOutput("fish.park.total.site.plot", height = p.height))
     }
-  }) %>%
-    bindCache(fish_park_ta())
+  }) #%>% bindCache(fish_park_ta())
 
   ####### ►  Total abundance by Sanctuary ----
   output$fish.park.total.sanctuary.plot <- renderPlot({
@@ -1351,8 +1349,7 @@ app_server <- function(input, output, session) {
 
 
 
-  }) %>%
-    bindCache(fish_park_ta())
+  }) # %>% bindCache(fish_park_ta())
 
   output$ui.fish.park.total.sanctuary.plot <- renderUI({
     dat <- fish_park_ta()
@@ -1440,8 +1437,7 @@ app_server <- function(input, output, session) {
     p
 
 
-  }) %>%
-    bindCache(fish_park_ta())
+  }) # %>% bindCache(fish_park_ta())
 
   output$ui.fish.park.total.zone.plot <- renderUI({
     dat <- fish_park_ta()
@@ -1453,8 +1449,7 @@ app_server <- function(input, output, session) {
     }
 
     plotOutput("fish.park.total.zone.plot", height = p.height)
-  }) %>%
-    bindCache(fish_park_ta())
+  }) # %>% bindCache(fish_park_ta())
 
   ####### ►  Species richness ----
   output$fish.park.rich.plot <- renderPlot({
@@ -1467,16 +1462,11 @@ app_server <- function(input, output, session) {
       geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.2, position=position_dodge(.5)) +
       xlab("Year") +
       ylab("Average number of species per sample \n(+/- SE)") +
-      #annotation_custom(label) +
       stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
-      scale_x_continuous(
-        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
-        expand = expand_scale(mult = c(0, 0.05))
-      ) +
-      scale_fill_manual(values = c("#b9e6fb",
-                                   "#7bbc63")) +
+      scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+                         expand = expand_scale(mult = c(0, 0.05))) +
+      scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
       ggplot_mpatheme()
-
 
     gazetted <- unique(dat$gazetted)
     re.zoned <- unique(dat$re.zoned)
@@ -1516,7 +1506,7 @@ app_server <- function(input, output, session) {
 
     }
     p
-  }) #%>% bindCache(fish_park_sr())
+  }) # %>% bindCache(fish_park_sr())
 
   ####### ►  Species richness by site ----
   output$fish.park.rich.site.plot <- renderPlot({
@@ -1543,8 +1533,7 @@ app_server <- function(input, output, session) {
         ggh4x::facet_wrap2(vars(site), axes = "all", ncol = 3) +
         ggplot_mpatheme()
     }
-  }) %>%
-    bindCache(fish_park_sr())
+  }) # %>% bindCache(fish_park_sr())
 
   output$ui.fish.park.rich.site.plot <- renderUI({
     dat <- fish_park_sr()
@@ -1559,8 +1548,7 @@ app_server <- function(input, output, session) {
       tagList(h4("Species richness by site:"),
               plotOutput("fish.park.rich.site.plot", height = p.height))
     }
-  }) %>%
-    bindCache(fish_park_sr())
+  }) #%>% bindCache(fish_park_sr())
 
   ####### ►  Species richness by Sanctuary ----
   output$fish.park.rich.sanctuary.plot <- renderPlot({
@@ -1623,8 +1611,7 @@ app_server <- function(input, output, session) {
     }
     p
 
-  }) %>%
-    bindCache(fish_park_sr())
+  }) #%>% bindCache(fish_park_sr())
 
   output$ui.fish.park.rich.sanctuary.plot <- renderUI({
     dat <- fish_park_sr()
@@ -1636,8 +1623,7 @@ app_server <- function(input, output, session) {
     }
 
     plotOutput("fish.park.rich.sanctuary.plot", height = p.height)
-  }) %>%
-    bindCache(fish_park_sr())
+  }) #%>% bindCache(fish_park_sr())
 
   ####### ►  Species richness by Zone ----
   output$fish.park.rich.zone.plot <- renderPlot({
@@ -1712,8 +1698,7 @@ app_server <- function(input, output, session) {
     }
 
     plotOutput("fish.park.rich.zone.plot", height = p.height)
-  }) %>%
-    bindCache(fish_park_sr())
+  }) #%>% bindCache(fish_park_sr())
 
   ####### ►  Stacked Abundance Plot ----
   output$fish.park.stack.plot <- renderPlot({

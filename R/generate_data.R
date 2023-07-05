@@ -708,7 +708,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   # reduced by 50 000 rows
 
   ta.sr <- all.data %>%
-    dplyr::group_by(marine.park, method, year, status, metric, gazetted, re.zoned) %>%
+    dplyr::group_by(marine.park, method, year, status, metric, gazetted, re.zoned, complete) %>%
     dplyr::summarise(mean = mean(value), se = mpaviewer::se(value)) %>%
     dplyr::ungroup()
 
@@ -810,6 +810,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   mpa_data <- structure(
     list(
       downloaded_on = Sys.time(),
+      ta.sr = ta.sr,
       lats = lats,
       # abundance = abundance,  # Turned off to speed up app
       # trophic.abundance = trophic.abundance,
