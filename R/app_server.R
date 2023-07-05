@@ -26,7 +26,7 @@ app_server <- function(input, output, session) {
   #   )
   # }
 
-  shinyOptions(cache = cachem::cache_disk("./bind-cache"))
+  # shinyOptions(cache = cachem::cache_disk("./bind-cache"))
 
   # mpa_data <- reactive({readRDS(here::here("inst/data/mpa_data.rds"))})
   load("inst/data/mpa_data1.Rdata")
