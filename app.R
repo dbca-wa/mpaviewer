@@ -16,7 +16,7 @@ pkgload::load_all(export_all = FALSE, helpers = FALSE, attach_testthat = FALSE)
 # mpaviewer::googledrive_download_data()
 
 # Step 3. Generate new data
-# Sys.time()
+# Sys.time() "2023-07-05 08:42:56 +08"
 # mpaviewer::generate_data()
 # Sys.time()
 

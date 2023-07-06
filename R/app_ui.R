@@ -244,7 +244,8 @@ app_ui <- function(request) {
                     withSpinner(uiOutput("ui.fish.park.rich.sanctuary.plot")),
 
                     h4("Species richness by zone:"),
-                    withSpinner(uiOutput("ui.fish.park.rich.zone.plot")),
+                    # withSpinner(uiOutput("ui.fish.park.rich.zone.plot")),
+                    withSpinner(plotOutput("fish.park.rich.zone.plot", height = 250)),
 
                     ## Only show site plots if stereo-DOVs
                     withSpinner(uiOutput("ui.fish.park.rich.site.plot")),
@@ -265,7 +266,8 @@ app_ui <- function(request) {
                     withSpinner(uiOutput("ui.fish.park.total.sanctuary.plot")),
 
                     h4("Total abundance by zone:"),
-                    withSpinner(uiOutput("ui.fish.park.total.zone.plot")),
+                    # withSpinner(uiOutput("ui.fish.park.total.zone.plot")),
+                    withSpinner(plotOutput("fish.park.total.zone.plot", height = 250)),
 
                     ## Only show site plots if stereo-DOVs
                     withSpinner(uiOutput("ui.fish.park.total.site.plot")),
@@ -277,7 +279,11 @@ app_ui <- function(request) {
                   conditionalPanel(
                     'input.fishparkmetric == "Target species"',
 
+                    h4("Total abundance of targeted species:"),
                     withSpinner(plotOutput("fish.park.fished.sum.plot", height = 250)),
+
+                    h4("Total abundance of targeted species by sanctuary:"),
+                    withSpinner(plotOutput("fish.park.fished.sum.sanctuary.plot")), # TODO change to uioutput
 
                     htmlOutput("fish.park.fished.species.dropdown"),
                     withSpinner(plotOutput("fish.park.fished.species.abundance.plot", height = 250)),

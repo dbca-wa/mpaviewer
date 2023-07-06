@@ -698,6 +698,17 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   abundance.sum <- data.table::data.table(abundance.sum)
   # reduced by 6 million rows
 
+  top.ten <- abundance %>%
+    dplyr::filter(!genus == family) %>%
+    dplyr::group_by(marine.park, method, scientific) %>%
+    dplyr::summarise(maxn = sum(maxn)) %>%
+    dplyr::ungroup() %>%
+    dplyr::group_by(marine.park, method) %>%
+    dplyr::arrange(desc(maxn)) %>%
+    dplyr::top_n(10)
+
+  top.ten <- data.table::data.table(top.ten)
+
   trophic.sum <- trophic.abundance %>%
     dplyr::group_by(marine.park, method, year, status, trophic.group, gazetted, re.zoned) %>% # TODO see if i need to include lat and lon in here
     dplyr::summarise(mean = mean(total.abundance), se = mpaviewer::se(total.abundance)) %>%
@@ -715,21 +726,21 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   ta.sr <- data.table::data.table(ta.sr)
 
   ta.sr.sanctuary <- all.data %>%
-    dplyr::group_by(marine.park, method, year, status, metric, dbca_sanctuary, gazetted, re.zoned) %>%
+    dplyr::group_by(marine.park, method, year, status, metric, dbca_sanctuary, gazetted, re.zoned, complete) %>%
     dplyr::summarise(mean = mean(value), se = mpaviewer::se(value)) %>%
     dplyr::ungroup()
 
   ta.sr.sanctuary <- data.table::data.table(ta.sr.sanctuary)
 
   ta.sr.zone <- all.data %>%
-    dplyr::group_by(marine.park, method, year, status, metric, dbca_zone, gazetted, re.zoned) %>%
+    dplyr::group_by(marine.park, method, year, status, metric, dbca_zone, gazetted, re.zoned, complete) %>%
     dplyr::summarise(mean = mean(value), se = mpaviewer::se(value)) %>%
     dplyr::ungroup()
 
   ta.sr.zone <- data.table::data.table(ta.sr.zone)
 
   ta.sr.site <- all.data %>%
-    dplyr::group_by(marine.park, method, year, status, metric, site, gazetted, re.zoned) %>%
+    dplyr::group_by(marine.park, method, year, status, metric, site, gazetted, re.zoned, complete) %>%
     dplyr::summarise(mean = mean(value), se = mpaviewer::se(value)) %>%
     dplyr::ungroup()
 
@@ -737,19 +748,35 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   # TODO create top ten per park here
 
-  fish.species.sum <- fished.abundance %>%
-    dplyr::group_by(marine.park, method, year, status, scientific, gazetted, re.zoned) %>% # TODO see if i need to include lat and lon in here
+  fished.species.sum <- fished.abundance %>%
+    dplyr::group_by(marine.park, method, year, status, scientific, gazetted, re.zoned, complete) %>% # TODO see if i need to include lat and lon in here
     dplyr::summarise(mean = mean(total.abundance), se = mpaviewer::se(total.abundance)) %>%
     dplyr::ungroup()
 
-  fish.species.sum <- data.table::data.table(fish.species.sum)
+  fished.species.sum <- data.table::data.table(fished.species.sum)
 
   fished.sum <- fished.summed %>%
-    dplyr::group_by(marine.park, method, year, status, gazetted, re.zoned) %>% # TODO see if i need to include lat and lon in here
+    dplyr::group_by(marine.park, method, year, status, gazetted, re.zoned, complete) %>% # TODO see if i need to include lat and lon in here
     dplyr::summarise(mean = mean(total.abundance), se = mpaviewer::se(total.abundance)) %>%
     dplyr::ungroup()
 
   fished.sum <- data.table::data.table(fished.sum)
+
+  fished.sum.sanctuary <- fished.summed %>%
+    dplyr::group_by(marine.park, method, year, status, gazetted, re.zoned, complete, dbca_sanctuary) %>% # TODO see if i need to include lat and lon in here
+    dplyr::summarise(mean = mean(total.abundance), se = mpaviewer::se(total.abundance)) %>%
+    dplyr::ungroup()
+
+  fished.sum.sanctuary <- data.table::data.table(fished.sum.sanctuary)
+
+
+
+
+
+
+
+
+
 
 # TODO split these into ones that have been reformatted and ones that don't need it
   # Using data table to set keys for faster filtering ----
@@ -783,9 +810,9 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   data.table::setkey(ta.sr.sanctuary)
   data.table::setkey(ta.sr.zone)
   data.table::setkey(ta.sr.site)
-  data.table::setkey(fish.species.sum)
+  data.table::setkey(fished.species.sum)
   data.table::setkey(fished.sum)
-
+  data.table::setkey(top.ten)
 
 
   data.table::setkey(lats)
@@ -802,7 +829,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   data.table::setkey(coral_cover_metadata)
   data.table::setkey(rec_3b)
   data.table::setkey(rec_3c2)
-  data.table::setkey(common.names)
+  # data.table::setkey(common.names) # Not needed
   data.table::setkey(foa.codes)
   data.table::setkey(interpretation.trends)
 
@@ -810,15 +837,22 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   mpa_data <- structure(
     list(
       downloaded_on = Sys.time(),
-      ta.sr = ta.sr,
+      ta.sr = ta.sr,  # summarised
+      ta.sr.sanctuary = ta.sr.sanctuary,  # summarised
+      ta.sr.zone = ta.sr.zone,  # summarised
+      ta.sr.site = ta.sr.site,  # summarised
+      top.ten = top.ten,  # summarised
+      abundance.sum = abundance.sum, # summarised
       lats = lats,
       # abundance = abundance,  # Turned off to speed up app
       # trophic.abundance = trophic.abundance,
-      trophic.sum = trophic.sum,
+      trophic.sum = trophic.sum,  # summarised
       all.data = all.data,
-      # fished.complete.length = fished.complete.length, # Turned off to speed up app
+      fished.complete.length = fished.complete.length, # Turned off to speed up app
       fished.abundance = fished.abundance,
-      fished.sum = fished.sum, # first summarised dataset
+      fished.sum = fished.sum, # summarised
+      fished.sum.sanctuary = fished.sum.sanctuary, # summarised
+      fished.species.sum = fished.species.sum, # summarised
       metadata = metadata,
       sampling.effort = sampling.effort,
       state.mp = state.mp,
@@ -828,7 +862,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
       coral_cover_metadata = coral_cover_metadata,
       rec_3b = rec_3b,
       rec_3c2 = rec_3c2,
-      common.names = common.names,
+      # common.names = common.names, # Not needed
       foa.codes = foa.codes,
       interpretation.trends = interpretation.trends
       ),
@@ -836,8 +870,8 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   )
 
   if (save == TRUE) {
-    saveRDS(mpa_data, dest, compress = FALSE) #"xz"
-    save(mpa_data, file = here::here("inst/data/mpa_data1.Rdata"))
+    # saveRDS(mpa_data, dest, compress = FALSE) #"xz"
+    save(mpa_data, file = here::here("inst/data/mpa_data.Rdata"))
     # saveRDS(x, "inst/data/mpa_data.rds", compress = FALSE) #"xz"
   }
 
