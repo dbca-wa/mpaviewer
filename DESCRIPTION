@@ -41,6 +41,7 @@ Imports:
     readr (>= 2.1.4),
     rgdal (>= 1.6.6),
     rlang,
+    scales,
     sf,
     shiny (>= 1.7.1),
     shinycssloaders (>= 1.0.0),

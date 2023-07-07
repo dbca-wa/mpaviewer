@@ -83,15 +83,17 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::rename(marine.park = full.name) %>%
     dplyr::select(marine.park, code)
 
-  fished.species <- life.history %>%
-    dplyr::filter(target.code %in% c("Highly Retained")) %>% # Changed 21/06/2023
-    dplyr::select(code, genus, species) %>%
-    dplyr::distinct() %>%
-    dplyr::full_join(codes) %>%
-    dplyr::filter(!is.na(marine.park)) %>% # To get rid of ones that don't have data yet
-    dplyr::filter(!is.na(genus))
+  # fished.species <- life.history %>%
+  #   dplyr::filter(target.code %in% c("Highly Retained")) %>%
+  #   dplyr::select(code, genus, species) %>%
+  #   dplyr::distinct() %>%
+  #   dplyr::full_join(codes) %>%
+  #   dplyr::filter(!is.na(marine.park)) %>% # To get rid of ones that don't have data yet
+  #   dplyr::filter(!is.na(genus))
 
-  unique(life.history$trophic.guild)
+  fished.species <- googlesheets4::read_sheet(dbca.googlesheet.url, sheet = "target_species") %>%
+    GlobalArchive::ga.clean.names()
+
 
   trophic.groups <- life.history %>%
     dplyr::select(-c(target.code, feeding.guild, trophic.guild)) %>% # TODO use the regions for this
@@ -508,7 +510,19 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   ##                      ABUNDANCE METRICS                  ----
   ## _______________________________________________________ ----
 
+  names(abundance)
+
+  species.to.keep <- fished.species %>%
+    tidyr::separate(report.as, into = c("genus", "species")) %>%
+    dplyr::select(marine.park, method, genus, species)
+
   fished.abundance <- dplyr::semi_join(abundance, fished.species) %>%
+    dplyr::left_join(fished.species) %>%
+    dplyr::select(-c(family, scientific)) %>%
+    tidyr::separate(report.as, into = c("genus", "species")) %>%
+    dplyr::left_join(common.names) %>%
+    dplyr::mutate(scientific = paste0(genus, " ", species, " (", australian.common.name, ")")) %>%
+    # dplyr::filter(maxn > 0) # NOTE REMEMBER TO TURN OFFF!!!!!
     dplyr::group_by(marine.park, campaignid, method, sample, family, genus, species, scientific, id, species.key) %>%
     dplyr::summarise(total.abundance = sum(maxn)) %>%
     dplyr::ungroup() %>%
@@ -521,7 +535,9 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(id = paste(campaignid, sample, method, sep = "_")) %>% # These are just for checking the number of rows
     dplyr::mutate(species.key = paste0(family, genus, species)) %>% # These are just for checking the number of rows
     # Need to only keep the species that are targeted in that marine park
-    dplyr::semi_join(fished.species)
+    dplyr::semi_join(species.to.keep)
+
+    names(fished.abundance) %>% sort()
 
   length(unique(fished.abundance$id)) # 6066
   unique(fished.abundance$marine.park)
@@ -688,15 +704,35 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   # Write data to .rds
   # -----------------------------------------------------------------------------#
 
+  # Abundance without zeros for leaflet
+  abundance.leaflet <- abundance %>%
+    dplyr::group_by(marine.park, method, latitude, longitude, year, status, site, sample, scientific, complete) %>%
+    dplyr::summarise(maxn = sum(maxn)) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(maxn > 0)
+
+  abundance.leaflet <- data.table::data.table(abundance.leaflet)
+
+  metadata.leaflet <- metadata %>%
+    dplyr::select(marine.park, method, latitude, longitude, year, status, site, sample, complete)
+
+  metadata.leaflet <- data.table::data.table(metadata.leaflet)
 
   # Reformat data into summaries before sending to shinyapp
   abundance.sum <- abundance %>%
-    dplyr::group_by(marine.park, method, year, status, scientific, gazetted, re.zoned) %>% # TODO see if i need to include lat and lon in here
+    dplyr::group_by(marine.park, method, year, status, scientific, gazetted, re.zoned, complete) %>%
     dplyr::summarise(mean = mean(maxn), se = mpaviewer::se(maxn)) %>%
     dplyr::ungroup()
 
   abundance.sum <- data.table::data.table(abundance.sum)
   # reduced by 6 million rows
+
+  abundance.sum.sanctuary <- abundance %>%
+    dplyr::group_by(marine.park, method, year, status, scientific, gazetted, re.zoned, complete, dbca_sanctuary) %>%
+    dplyr::summarise(mean = mean(maxn), se = mpaviewer::se(maxn)) %>%
+    dplyr::ungroup()
+
+  abundance.sum.sanctuary <- data.table::data.table(abundance.sum.sanctuary)
 
   top.ten <- abundance %>%
     dplyr::filter(!genus == family) %>%
@@ -710,7 +746,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   top.ten <- data.table::data.table(top.ten)
 
   trophic.sum <- trophic.abundance %>%
-    dplyr::group_by(marine.park, method, year, status, trophic.group, gazetted, re.zoned) %>% # TODO see if i need to include lat and lon in here
+    dplyr::group_by(marine.park, method, year, status, trophic.group, gazetted, re.zoned, complete) %>%
     dplyr::summarise(mean = mean(total.abundance), se = mpaviewer::se(total.abundance)) %>%
     dplyr::ungroup()
 
@@ -746,37 +782,53 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   ta.sr.site <- data.table::data.table(ta.sr.site)
 
-  # TODO create top ten per park here
+  # Lists for dropdowns
+  ordered.top.fished.species <- fished.abundance %>%
+    dplyr::group_by(marine.park, method, scientific) %>%
+    dplyr::summarise(total = sum(total.abundance)) %>%
+    dplyr::ungroup() %>%
+    dplyr::arrange(desc(total))
+
+  ordered.top.fished.species <- data.table::data.table(ordered.top.fished.species)
+
+  ordered.top.species <- abundance %>%
+    dplyr::group_by(marine.park, method, scientific) %>%
+    dplyr::summarise(total = sum(maxn)) %>%
+    dplyr::ungroup() %>%
+    dplyr::arrange(desc(total))
+
+  ordered.top.species <- data.table::data.table(ordered.top.species)
+
+
 
   fished.species.sum <- fished.abundance %>%
-    dplyr::group_by(marine.park, method, year, status, scientific, gazetted, re.zoned, complete) %>% # TODO see if i need to include lat and lon in here
+    dplyr::group_by(marine.park, method, year, status, scientific, gazetted, re.zoned, complete) %>%
     dplyr::summarise(mean = mean(total.abundance), se = mpaviewer::se(total.abundance)) %>%
     dplyr::ungroup()
 
   fished.species.sum <- data.table::data.table(fished.species.sum)
 
+  fished.species.sum.sanctuary <- fished.abundance %>%
+    dplyr::group_by(marine.park, method, year, status, scientific, gazetted, re.zoned, complete, dbca_sanctuary) %>%
+    dplyr::summarise(mean = mean(total.abundance), se = mpaviewer::se(total.abundance)) %>%
+    dplyr::ungroup()
+
+  fished.species.sum.sanctuary <- data.table::data.table(fished.species.sum.sanctuary)
+
+
   fished.sum <- fished.summed %>%
-    dplyr::group_by(marine.park, method, year, status, gazetted, re.zoned, complete) %>% # TODO see if i need to include lat and lon in here
+    dplyr::group_by(marine.park, method, year, status, gazetted, re.zoned, complete) %>%
     dplyr::summarise(mean = mean(total.abundance), se = mpaviewer::se(total.abundance)) %>%
     dplyr::ungroup()
 
   fished.sum <- data.table::data.table(fished.sum)
 
   fished.sum.sanctuary <- fished.summed %>%
-    dplyr::group_by(marine.park, method, year, status, gazetted, re.zoned, complete, dbca_sanctuary) %>% # TODO see if i need to include lat and lon in here
+    dplyr::group_by(marine.park, method, year, status, gazetted, re.zoned, complete, dbca_sanctuary) %>%
     dplyr::summarise(mean = mean(total.abundance), se = mpaviewer::se(total.abundance)) %>%
     dplyr::ungroup()
 
   fished.sum.sanctuary <- data.table::data.table(fished.sum.sanctuary)
-
-
-
-
-
-
-
-
-
 
 # TODO split these into ones that have been reformatted and ones that don't need it
   # Using data table to set keys for faster filtering ----
@@ -805,14 +857,20 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   # common.names <- data.table::data.table(common.names) # Not needed
 
   data.table::setkey(abundance.sum)
+  data.table::setkey(abundance.sum.sanctuary)
   data.table::setkey(trophic.sum)
   data.table::setkey(ta.sr)
   data.table::setkey(ta.sr.sanctuary)
   data.table::setkey(ta.sr.zone)
   data.table::setkey(ta.sr.site)
   data.table::setkey(fished.species.sum)
+  data.table::setkey(fished.sum.sanctuary)
   data.table::setkey(fished.sum)
   data.table::setkey(top.ten)
+  data.table::setkey(ordered.top.fished.species)
+  data.table::setkey(ordered.top.species)
+  data.table::setkey(abundance.leaflet)
+  data.table::setkey(metadata.leaflet)
 
 
   data.table::setkey(lats)
@@ -842,7 +900,12 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
       ta.sr.zone = ta.sr.zone,  # summarised
       ta.sr.site = ta.sr.site,  # summarised
       top.ten = top.ten,  # summarised
+      ordered.top.fished.species = ordered.top.fished.species,
+      ordered.top.species = ordered.top.species,
       abundance.sum = abundance.sum, # summarised
+      abundance.sum.sanctuary = abundance.sum.sanctuary, # summarised
+      abundance.leaflet = abundance.leaflet,
+      metadata.leaflet = metadata.leaflet,
       lats = lats,
       # abundance = abundance,  # Turned off to speed up app
       # trophic.abundance = trophic.abundance,
@@ -853,6 +916,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
       fished.sum = fished.sum, # summarised
       fished.sum.sanctuary = fished.sum.sanctuary, # summarised
       fished.species.sum = fished.species.sum, # summarised
+      fished.species.sum.sanctuary = fished.species.sum.sanctuary, # summarised
       metadata = metadata,
       sampling.effort = sampling.effort,
       state.mp = state.mp,
@@ -869,11 +933,11 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     class = "mpa_data"
   )
 
-  if (save == TRUE) {
+  # if (save == TRUE) {
     # saveRDS(mpa_data, dest, compress = FALSE) #"xz"
     save(mpa_data, file = here::here("inst/data/mpa_data.Rdata"))
     # saveRDS(x, "inst/data/mpa_data.rds", compress = FALSE) #"xz"
-  }
+  # }
 
   mpa_data
 }

@@ -2,7 +2,7 @@
 #'
 #' @param input,output,session Internal parameters for {shiny}.
 #'     DO NOT REMOVE.
-#' @import shiny leaflet dplyr grid ggplot2 leafgl rgdal forcats cachem leaflegend ggh4x
+#' @import shiny leaflet dplyr grid ggplot2 leafgl rgdal forcats cachem leaflegend ggh4x scales
 #' @noRd
 #'
 
@@ -85,13 +85,9 @@ app_server <- function(input, output, session) {
   output$fish.park.fished.species.dropdown <- renderUI({
     req(input$fish.park.dropdown, input$fish.park.method.dropdown)
 
-    dat <- mpa_data$fished.species.sum[marine.park %in% c(input$fish.park.dropdown) &
-                                         method %in% c(input$fish.park.method.dropdown) &
-                                         mean > 0]
+    dat <- mpa_data$ordered.top.fished.species[marine.park %in% c(input$fish.park.dropdown) &
+                                         method %in% c(input$fish.park.method.dropdown)]
     choices <- dat %>%
-      dplyr::group_by(scientific) %>%
-      dplyr::summarise(total = sum(mean)) %>%
-      dplyr::ungroup() %>%
       dplyr::arrange(desc(total)) %>%
       dplyr::distinct(scientific) %>%
       dplyr::pull("scientific")
@@ -109,14 +105,10 @@ app_server <- function(input, output, session) {
   ####### ►  Create an all species dropdown ----
   output$UIfish.park.all.species.dropdown <- renderUI({
 
-      dat <- mpa_data$abundance.sum[marine.park %in% c(input$fish.park.dropdown) &
-                                  method %in% c(input$fish.park.method.dropdown) &
-                                  mean > 0]
+      dat <- mpa_data$ordered.top.species[marine.park %in% c(input$fish.park.dropdown) &
+                                  method %in% c(input$fish.park.method.dropdown)]
 
       choices <- dat %>%
-        dplyr::group_by(scientific) %>%
-        dplyr::summarise(total = sum(mean)) %>%
-        dplyr::ungroup() %>%
         dplyr::arrange(desc(total)) %>%
         dplyr::distinct(scientific) %>%
         dplyr::pull("scientific")
@@ -311,9 +303,33 @@ app_server <- function(input, output, session) {
         "<b>Location:</b>", location, "<br/>",
         "<b>Number of times sampled:</b>", number.of.times.sampled, "<br/>"
       ))
-  }) #%>% bindCache(input$fish.park.dropdown, input$fish.park.method.dropdown)
+  })
 
-  ####### ►  Abundance by species ----
+  ####### ►  Abundance by species NOT summarised (for leaflets)----
+  fish_park_abundance_species_leaflet <- reactive({
+    req(input$fish.park.dropdown, input$fish.park.method.dropdown, input$fish.park.all.species.dropdown)
+
+    dat <- mpa_data$abundance.leaflet[marine.park %in% c(input$fish.park.dropdown)]
+    dat <- dat[method %in% c(input$fish.park.method.dropdown)]
+    dat <- dat[scientific %in% c(input$fish.park.all.species.dropdown)]
+
+    dat
+
+  })
+
+  ####### ►  Metadata for leaflet Abundance by species -----
+  fish_park_metadata_leaflet <- reactive({
+    req(input$fish.park.dropdown, input$fish.park.method.dropdown, input$fish.park.all.species.dropdown)
+
+    dat <- mpa_data$metadata.leaflet[marine.park %in% c(input$fish.park.dropdown)]
+    dat <- dat[method %in% c(input$fish.park.method.dropdown)]
+
+    dat
+
+  })
+
+
+  ####### ►  Abundance by species summarised ----
   fish_park_abundance_species <- reactive({
     req(input$fish.park.dropdown, input$fish.park.method.dropdown, input$fish.park.all.species.dropdown)
 
@@ -323,7 +339,19 @@ app_server <- function(input, output, session) {
 
     dat
 
-  }) #%>% bindCache(input$fish.park.dropdown, input$fish.park.method.dropdown, input$fish.park.all.species.dropdown)
+  })
+
+  ####### ►  Abundance by species by Sanctuary----
+  fish_park_abundance_species_sanctuary <- reactive({
+    req(input$fish.park.dropdown, input$fish.park.method.dropdown, input$fish.park.all.species.dropdown)
+
+    dat <- mpa_data$abundance.sum.sanctuary[marine.park %in% c(input$fish.park.dropdown)]
+    dat <- dat[method %in% c(input$fish.park.method.dropdown)]
+    dat <- dat[scientific %in% c(input$fish.park.all.species.dropdown)]
+
+    dat
+
+  })
 
   ####### ►  Top ten species ----
   fish_park_top_ten <- reactive({
@@ -336,11 +364,22 @@ app_server <- function(input, output, session) {
 
   })
 
-  ####### ►  TODO reformat into summarised data+ plot
+  ####### ►  Individual Fished species abundance ----
   fish_park_fishedabundance <- reactive({
     req(input$fish.park.dropdown, input$fish.park.method.dropdown)
 
-    dat <- mpa_data$fished.abundance[marine.park %in% c(input$fish.park.dropdown)]
+    dat <- mpa_data$fished.species.sum[marine.park %in% c(input$fish.park.dropdown)]
+    dat <- dat[method %in% c(input$fish.park.method.dropdown)]
+
+    dat
+
+  })
+
+  ####### ►  Individual Fished species abundance by sanctuary ----
+  fish_park_fishedabundance_sanctuary <- reactive({
+    req(input$fish.park.dropdown, input$fish.park.method.dropdown)
+
+    dat <- mpa_data$fished.species.sum.sanctuary[marine.park %in% c(input$fish.park.dropdown)]
     dat <- dat[method %in% c(input$fish.park.method.dropdown)]
 
     dat
@@ -444,7 +483,6 @@ app_server <- function(input, output, session) {
     map
   })
 
-  # TODO TURN THIS BACK ON WHEN IT DOESN'T BREAK EVERYTHING
   ####### ►  Leaflet - Total abundance and species richness ----
   output$fish.park.metric.leaflet <- renderLeaflet({
 
@@ -615,7 +653,7 @@ app_server <- function(input, output, session) {
       if (length(unique(dat$site)) %in% c(1,2,3) ){
         p.height <- 250
       } else {
-        p.height <- 250 * ceiling(length(unique(dat$site))/3)
+        p.height <- 175 * ceiling(length(unique(dat$site))/3)
       }
 
       tagList(h4("Total abundance by site:"),
@@ -687,7 +725,7 @@ app_server <- function(input, output, session) {
     if (length(unique(dat$dbca_sanctuary)) %in% c(1,2,3) ){
       p.height <- 250
     } else {
-      p.height <- 250 * ceiling(length(unique(dat$dbca_sanctuary))/3)
+      p.height <- 175 * ceiling(length(unique(dat$dbca_sanctuary))/3)
     }
 
     plotOutput("fish.park.total.sanctuary.plot", height = p.height)
@@ -863,7 +901,7 @@ app_server <- function(input, output, session) {
       if (length(unique(dat$site)) %in% c(1,2,3) ){
         p.height <- 250
       } else {
-        p.height <- 250 * ceiling(length(unique(dat$site))/3)
+        p.height <- 175 * ceiling(length(unique(dat$site))/3)
       }
       tagList(h4("Species richness by site:"),
               plotOutput("fish.park.rich.site.plot", height = p.height))
@@ -934,7 +972,7 @@ app_server <- function(input, output, session) {
     if (length(unique(dat$dbca_sanctuary)) %in% c(1,2,3) ){
       p.height <- 250
     } else {
-      p.height <- 250 * ceiling(length(unique(dat$dbca_sanctuary))/3)
+      p.height <- 175 * ceiling(length(unique(dat$dbca_sanctuary))/3)
     }
 
     plotOutput("fish.park.rich.sanctuary.plot", height = p.height)
@@ -1149,9 +1187,9 @@ app_server <- function(input, output, session) {
   }) #%>% bindCache(fish_park_trophicabundance())
 
   ####### ►  KDE plot ----
-  # TODO fix sizing and change to summarised data
+  # 20 individuals min to plot a line (KDE). Depends on scale. If zones in one year then you need 20 in the zone for that year.
   output$fish.park.fished.species.kde.plot <- renderPlot({
-    req(input$fish.park.method.dropdown, input$fish.park.dropdown, input$fish.park.fished.species.dropdown) #, input$fish.park.site.dropdown
+    req(fish_park_fishedcompletelength())
 
     more.than.20 <- fish_park_fishedcompletelength() %>%
       dplyr::group_by(marine.park, method, campaignid, status, scientific) %>%
@@ -1163,6 +1201,7 @@ app_server <- function(input, output, session) {
     dat <- fish_park_fishedcompletelength()[scientific %in% c(input$fish.park.fished.species.dropdown)]
     dat <- dat[length > 0]
     dat <- dat[!is.na(length)]
+    dat <- dat[complete %in% c("Consistently sampled")]
 
     dat <- dat %>%
       dplyr::semi_join(more.than.20)
@@ -1188,78 +1227,107 @@ app_server <- function(input, output, session) {
                                    "#7bbc63")) +
       ylab("Weighted KDE (*1000)") +
       xlab("Total Length (mm)") +
-      facet_grid(year ~ scientific)
-  }) #%>% bindCache(fish_park_fishedcompletelength())
-
-  ####### ►  Fished abundance ----
-  # TODO change to summarised
-  # TODO change to only consistent
-
-  output$fish.park.fished.species.abundance.plot <- renderPlot({
-
-    dat <- fish_park_fishedabundance()[scientific %in% c(input$fish.park.fished.species.dropdown)]
-
-    p <- ggplot(dat, aes(x = year, y = total.abundance, fill = status)) +
-      stat_summary(fun.y = mean, geom = "point", shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
-      stat_summary(fun.ymin = se.min, fun.ymax = se.max, geom = "errorbar", width = 0.1, col = "black", position = position_dodge(width = 0.5)) +
-      xlab("Year") +
-      ylab("Average abundance of target species per sample \n(+/- SE)") +
-      scale_y_continuous(expand = c(0, 0.1)) +
-      scale_x_continuous(
-        breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
-        expand = expand_scale(mult = c(0, 0.05))
-      ) +
-      scale_fill_manual(values = c("#b9e6fb",
-                                   "#7bbc63")) +
-      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
-      # facet_wrap(scientific ~ ., scales = "free", ncol = 1) +
-      ggh4x::facet_wrap2(vars(scientific), axes = "all", ncol = 1) +
-      ggplot_mpatheme()
-
-    gazetted <- unique(dat$gazetted)
-    re.zoned <- unique(dat$re.zoned)
-    min.year <- min(dat$year)
-
-    # Add gazettal and rezoned dates if they occured after sampling
-    if(!gazetted %in% c("NA", NA, NULL)){
-
-      if(min.year < gazetted) {
-
-        p <- p + geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
-          geom_label(
-            x = gazetted,
-            y = +Inf,
-            label = "\n\n gazetted",
-            size = 5,
-            fill = "white",
-            check_overlap = TRUE,
-            label.size = NA
-          )}
-
-    }
-
-    if(!re.zoned %in% c("NA", NA, NULL)){
-
-      if(min.year < re.zoned) {
-        p <- p + geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
-          geom_label(
-            x = re.zoned,
-            y = +Inf,
-            label = "\n\n rezoned",
-            size = 5,
-            fill = "white",
-            check_overlap = TRUE,
-            label.size = NA
-          )}
-
-    }
-    p
-
-
+      ggplot_mpatheme() +
+      facet_grid(rows = vars(year))
   })
 
+  output$ui.fish.park.fished.species.kde.plot <- renderUI({
+    more.than.20 <- fish_park_fishedcompletelength() %>%
+      dplyr::group_by(marine.park, method, campaignid, status, scientific) %>%
+      dplyr::summarise(number = sum(number)) %>%
+      dplyr::filter(number > 20) %>%
+      dplyr::ungroup() %>%
+      dplyr::distinct(marine.park, method, campaignid, status, scientific)
 
-  ####### ►  Fished Species Summed ----
+    dat <- fish_park_fishedcompletelength()[scientific %in% c(input$fish.park.fished.species.dropdown)]
+    dat <- dat[length > 0]
+    dat <- dat[!is.na(length)]
+    dat <- dat[complete %in% c("Consistently sampled")]
+
+    dat <- dat %>%
+      dplyr::semi_join(more.than.20)
+
+    validate(
+      need(nrow(dat) > 0, "Sorry, there is not enough data to create a KDE for the species you requested. Please change your input selections")
+    )
+
+      p.height <- 175 * length(unique(dat$year))
+
+    plotOutput("fish.park.fished.species.kde.plot", height = p.height)
+  })
+
+  # ####### ►  KDE plot by sanctuary ----
+  # # 20 individuals min to plot a line (KDE). Depends on scale. If zones in one year then you need 20 in the zone for that year.
+  # output$fish.park.fished.species.kde.sanctuary.plot <- renderPlot({
+  #   req(fish_park_fishedcompletelength())
+  #
+  #   more.than.20 <- fish_park_fishedcompletelength() %>%
+  #     dplyr::group_by(marine.park, method, campaignid, status, scientific, dbca_sanctuary) %>%
+  #     dplyr::summarise(number = sum(number)) %>%
+  #     dplyr::filter(number > 20) %>%
+  #     dplyr::ungroup() %>%
+  #     dplyr::distinct(marine.park, method, campaignid, status, scientific, dbca_sanctuary)
+  #
+  #   dat <- fish_park_fishedcompletelength()[scientific %in% c(input$fish.park.fished.species.dropdown)]
+  #   dat <- dat[length > 0]
+  #   dat <- dat[!is.na(length)]
+  #   dat <- dat[complete %in% c("Consistently sampled")]
+  #
+  #   dat <- dat %>%
+  #     dplyr::semi_join(more.than.20)
+  #
+  #   validate(
+  #     need(nrow(dat) > 0, "Sorry, there is not enough data to create a KDE for the species you requested. Please change your input selections")
+  #   )
+  #
+  #   ggplot(dat, aes(x = length, fill = status)) +
+  #     geom_density(aes(y = ..density.. * 1000), alpha = 0.5, size = 0.7) +
+  #     theme(legend.position = ("bottom")) +
+  #     theme(
+  #       strip.text.y = element_text(size = 12, angle = 270),
+  #       strip.background = element_blank(),
+  #       axis.title = element_text(face = "bold"),
+  #       plot.title = element_text(face = "italic", hjust = 0.5),
+  #       strip.text.x = element_text(size = 14),
+  #       panel.grid.major = element_blank(),
+  #       panel.grid.minor = element_blank()
+  #     ) +
+  #     scale_y_continuous(expand = c(0, 0.1)) +
+  #     scale_fill_manual(values = c("#b9e6fb",
+  #                                  "#7bbc63")) +
+  #     ylab("Weighted KDE (*1000)") +
+  #     xlab("Total Length (mm)") +
+  #     ggplot_mpatheme() +
+  #     facet_grid(rows = vars(year, dbca_sanctuary))
+  # })
+  #
+  # output$ui.fish.park.fished.species.kde.sanctuary.plot <- renderUI({
+  #   more.than.20 <- fish_park_fishedcompletelength() %>%
+  #     dplyr::group_by(marine.park, method, campaignid, status, scientific, dbca_sanctuary) %>%
+  #     dplyr::summarise(number = sum(number)) %>%
+  #     dplyr::filter(number > 20) %>%
+  #     dplyr::ungroup() %>%
+  #     dplyr::distinct(marine.park, method, campaignid, status, scientific, dbca_sanctuary)
+  #
+  #   dat <- fish_park_fishedcompletelength()[scientific %in% c(input$fish.park.fished.species.dropdown)]
+  #   dat <- dat[length > 0]
+  #   dat <- dat[!is.na(length)]
+  #   dat <- dat[complete %in% c("Consistently sampled")]
+  #
+  #   dat <- dat %>%
+  #     dplyr::semi_join(more.than.20)
+  #
+  #   validate(
+  #     need(nrow(dat) > 0, "Sorry, there is not enough data to create a KDE for the species you requested. Please change your input selections")
+  #   )
+  #
+  #   p.height <- 175 * length(unique(dat$year))
+  #
+  #   plotOutput("fish.park.fished.species.kde.sanctuary.plot", height = p.height)
+  # })
+
+
+  ####### ►  Summed Fished Species ----
   output$fish.park.fished.sum.plot <- renderPlot({
     # Summarised
     # Only includes consistently sampled sites
@@ -1320,13 +1388,14 @@ app_server <- function(input, output, session) {
 
   })
 
-  ####### ►  Fished Species Summed by Sanctuary ----
+  ####### ►  Summed Fished Species by Sanctuary ----
   output$fish.park.fished.sum.sanctuary.plot <- renderPlot({
-    # TODO change to only consistent
     req(fish_park_fishedsum_sanctuary())
     # Summarised
+    # Only includes consistently sampled sites
 
     dat <- fish_park_fishedsum_sanctuary()
+    dat <- dat[complete %in% c("Consistently sampled")]
 
     p <- ggplot(dat, aes(x = year, y = mean, fill = status)) +
       geom_point(shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
@@ -1381,23 +1450,156 @@ app_server <- function(input, output, session) {
 
   })
 
-  # output$ui.fish.park.fished.sum.sanctuary.plot <- renderUI({
-  #   dat <- fish_park_fishedsum_sanctuary()
-  #
-  #   if (length(unique(dat$dbca_sanctuary)) %in% c(1,2,3) ){
-  #     p.height <- 250
-  #   } else {
-  #     p.height <- 250 * ceiling(length(unique(dat$dbca_sanctuary))/3)
-  #   }
-  #
-  #   plotOutput("fish.park.fished.sum.sanctuary.plot", height = p.height)
-  # })
+  output$ui.fish.park.fished.sum.sanctuary.plot <- renderUI({
+    dat <- fish_park_fishedsum_sanctuary()
 
-  ####### ►  All species abundance ----
+    if (length(unique(dat$dbca_sanctuary)) %in% c(1,2,3) ){
+      p.height <- 250
+    } else {
+      p.height <- 175 * ceiling(length(unique(dat$dbca_sanctuary))/3)
+    }
+
+    plotOutput("fish.park.fished.sum.sanctuary.plot", height = p.height)
+  })
+
+  ####### ►  Individual Fished species abundance ----
+  # Summarised
+  # Only includes consistently sampled sites
+
+  output$fish.park.fished.species.abundance.plot <- renderPlot({
+
+    dat <- fish_park_fishedabundance()[scientific %in% c(input$fish.park.fished.species.dropdown)]
+    dat <- dat[complete %in% c("Consistently sampled")]
+
+    p <- ggplot(dat, aes(x = year, y = mean, fill = status)) +
+      geom_point(shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
+      geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width=.2, position = position_dodge(.5)) +
+      xlab("Year") +
+      ylab("Average abundance of target species per sample \n(+/- SE)") +
+      scale_y_continuous(expand = c(0, 0.1)) +
+      scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+                         expand = expand_scale(mult = c(0, 0.05))) +
+      scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
+      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+      ggh4x::facet_wrap2(vars(scientific), axes = "all", ncol = 1) +
+      ggplot_mpatheme()
+
+    gazetted <- unique(dat$gazetted)
+    re.zoned <- unique(dat$re.zoned)
+    min.year <- min(dat$year)
+
+    # Add gazettal and rezoned dates if they occured after sampling
+    if(!gazetted %in% c("NA", NA, NULL)){
+      if(min.year < gazetted) {
+        p <- p + geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+          geom_label(
+            x = gazetted,
+            y = +Inf,
+            label = "\n\n gazetted",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+    if(!re.zoned %in% c("NA", NA, NULL)){
+      if(min.year < re.zoned) {
+        p <- p + geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+          geom_label(
+            x = re.zoned,
+            y = +Inf,
+            label = "\n\n rezoned",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+    p
+  })
+
+
+  ####### ►  Individual Fished species abundance by Sanctuary ----
+  # Summarised
+  # Only includes consistently sampled sites
+
+  output$fish.park.fished.species.abundance.sanctuary.plot <- renderPlot({
+
+    dat <- fish_park_fishedabundance_sanctuary()[scientific %in% c(input$fish.park.fished.species.dropdown)]
+    dat <- dat[complete %in% c("Consistently sampled")]
+
+    p <- ggplot(dat, aes(x = year, y = mean, fill = status)) +
+      geom_point(shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
+      geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width=.2, position = position_dodge(.5)) +
+      xlab("Year") +
+      ylab("Average abundance of target species per sample \n(+/- SE)") +
+      scale_y_continuous(expand = c(0, 0.1)) +
+      scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+                         expand = expand_scale(mult = c(0, 0.05))) +
+      scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
+      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+      ggh4x::facet_wrap2(vars(dbca_sanctuary), axes = "all", ncol = 3) +
+      ggplot_mpatheme()
+
+    gazetted <- unique(dat$gazetted)
+    re.zoned <- unique(dat$re.zoned)
+    min.year <- min(dat$year)
+
+    # Add gazettal and rezoned dates if they occured after sampling
+    if(!gazetted %in% c("NA", NA, NULL)){
+      if(min.year < gazetted) {
+        p <- p + geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+          geom_label(
+            x = gazetted,
+            y = +Inf,
+            label = "\n\n gazetted",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+    if(!re.zoned %in% c("NA", NA, NULL)){
+      if(min.year < re.zoned) {
+        p <- p + geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+          geom_label(
+            x = re.zoned,
+            y = +Inf,
+            label = "\n\n rezoned",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+    p
+  })
+
+  output$ui.fish.park.fished.species.abundance.sanctuary.plot <- renderUI({
+    dat <- fish_park_fishedabundance_sanctuary()
+
+    if (length(unique(dat$dbca_sanctuary)) %in% c(1,2,3) ){
+      p.height <- 250
+    } else {
+      p.height <- 175 * ceiling(length(unique(dat$dbca_sanctuary))/3)
+    }
+
+    plotOutput("fish.park.fished.species.abundance.sanctuary.plot", height = p.height)
+  })
+
+
+  ####### ►  Individual Species abundance ----
   output$fish.park.all.species.abundance.plot <- renderPlot({
-    # TODO change to only consistent
+    # Summarised
+    # Only includes consistently sampled sites
+
     req(fish_park_abundance_species())
     dat <- fish_park_abundance_species()
+    dat <- dat[complete %in% c("Consistently sampled")]
 
     p <- ggplot(dat, aes(x = year, y = mean, fill = status)) +
       geom_point(shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
@@ -1452,20 +1654,95 @@ app_server <- function(input, output, session) {
     p
 
 
-  }) #%>% bindCache(fish_park_abundance_species())
+  })
 
 
-  # TODO THIS APPEARS TO BREAK INDIVIDUAL SPECIES PLOT
+  ####### ►  Individual Species abundance by Sanctuary ----
+  # Summarised
+  # Only includes consistently sampled sites
+
+  output$fish.park.all.species.abundance.sanctuary.plot <- renderPlot({
+
+    dat <- fish_park_abundance_species_sanctuary()
+    dat <- dat[complete %in% c("Consistently sampled")]
+
+    p <- ggplot(dat, aes(x = year, y = mean, fill = status)) +
+      geom_point(shape = 23, size = 6, col = "black", position = position_dodge(width = 0.5)) +
+      geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width=.2, position = position_dodge(.5)) +
+      xlab("Year") +
+      ylab("Average abundance of target species per sample \n(+/- SE)") +
+      scale_y_continuous(expand = c(0, 0.1)) +
+      scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+                         expand = expand_scale(mult = c(0, 0.05))) +
+      scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
+      stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+      ggh4x::facet_wrap2(vars(dbca_sanctuary), axes = "all", ncol = 3) +
+      ggplot_mpatheme()
+
+    gazetted <- unique(dat$gazetted)
+    re.zoned <- unique(dat$re.zoned)
+    min.year <- min(dat$year)
+
+    # Add gazettal and rezoned dates if they occured after sampling
+    if(!gazetted %in% c("NA", NA, NULL)){
+      if(min.year < gazetted) {
+        p <- p + geom_vline(aes(xintercept = gazetted), linetype = "dashed") +
+          geom_label(
+            x = gazetted,
+            y = +Inf,
+            label = "\n\n gazetted",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+    if(!re.zoned %in% c("NA", NA, NULL)){
+      if(min.year < re.zoned) {
+        p <- p + geom_vline(aes(xintercept = re.zoned), linetype = "dashed") +
+          geom_label(
+            x = re.zoned,
+            y = +Inf,
+            label = "\n\n rezoned",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA
+          )}
+
+    }
+    p
+  })
+
+  output$ui.fish.park.all.species.abundance.sanctuary.plot <- renderUI({
+    dat <- fish_park_abundance_species_sanctuary()
+
+    if (length(unique(dat$dbca_sanctuary)) %in% c(1,2,3) ){
+      p.height <- 250
+    } else {
+      p.height <- 175 * ceiling(length(unique(dat$dbca_sanctuary))/3)
+    }
+
+    plotOutput("fish.park.all.species.abundance.sanctuary.plot", height = p.height)
+  })
+
+
+
   ###### ►  Leaflet - All species abundance ----
   output$fish.park.all.species.leaflet <- renderLeaflet({
 
-    req(fish_park_abundance_species())
+    req(fish_park_abundance_species_leaflet())
 
-    dat <- fish_park_abundance_species()
+    dat <- fish_park_abundance_species_leaflet()
+
+    dat <- dplyr::full_join(dat, fish_park_metadata_leaflet()) %>%
+      tidyr::replace_na(list(maxn = 0))
 
     print(unique(dat$scientific))
 
     # TODO I don't think this is the complete data?!?!?!?
+
     overzero.ta <- dplyr::filter(dat, maxn > 0) #%>% dplyr::glimpse()
     equalzero.ta <- dplyr::filter(dat, maxn == 0) #%>% dplyr::glimpse()
 
@@ -1503,7 +1780,8 @@ app_server <- function(input, output, session) {
       map <- map %>%
         addCircleMarkers(
           data = overzero.ta, lat = ~latitude, lng = ~longitude,
-          radius = ~ (((maxn / max(maxn)) * 20)), fillOpacity = 0.5, stroke = FALSE,
+          radius = ~ scales::rescale(maxn, c(5, 25)), #((((maxn / max(maxn))) * 20)),
+          fillOpacity = 0.5, stroke = FALSE,
           label = ~ as.character(maxn), group = "Abundance", color = "blue"
         )
     }
@@ -1512,7 +1790,7 @@ app_server <- function(input, output, session) {
       map <- map %>%
         addCircleMarkers(
           data = equalzero.ta, lat = ~latitude, lng = ~longitude,
-          radius = 2, fillOpacity = 0.5, color = "black", stroke = FALSE,
+          radius = 3, fillOpacity = 0.5, color = "black", stroke = FALSE,
           label = ~ as.character(maxn), group = "Abundance"
         )
     }
@@ -1531,14 +1809,14 @@ app_server <- function(input, output, session) {
     print(park)
 
     img(src = paste0("www/images/fish_", park, ".jpg"), align = "right", width = "100%") # removed www from URL to get rid of golem
-  }) #%>% bindCache(input$fish.park.dropdown)
+  })
 
   output$ui.benthic.park.image <- renderUI({
     park <- stringr::str_replace_all(tolower(input$benthic.park.coralcover.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
     print(park)
 
     img(src = paste0("www/images/coral_", park, ".jpg"), align = "right", width = "100%")  # removed www from URL to get rid of golem
-  }) #%>% bindCache(input$benthic.park.coralcover.dropdown)
+  })
 
   # Species iFrames -----
   ####### ►  State All species ----

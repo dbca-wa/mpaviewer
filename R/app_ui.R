@@ -190,7 +190,7 @@ app_ui <- function(request) {
                 ## MARINE PARK ----
                 tabPanel(
                   "Marine park",
-                  style = "overflow: auto", #TODO check this was visible
+                  style = "overflow: auto",
                   # box(width = 12, title = "Filter data", solidHeader = TRUE, #status = "warning",
                   column(
                     width = 6,
@@ -283,17 +283,27 @@ app_ui <- function(request) {
                     withSpinner(plotOutput("fish.park.fished.sum.plot", height = 250)),
 
                     h4("Total abundance of targeted species by sanctuary:"),
-                    withSpinner(plotOutput("fish.park.fished.sum.sanctuary.plot")), # TODO change to uioutput
+                    withSpinner(uiOutput("ui.fish.park.fished.sum.sanctuary.plot")),
 
                     htmlOutput("fish.park.fished.species.dropdown"),
                     withSpinner(plotOutput("fish.park.fished.species.abundance.plot", height = 250)),
-                    withSpinner(plotOutput("fish.park.fished.species.kde.plot", height = 500)),
+                    withSpinner(uiOutput("ui.fish.park.fished.species.abundance.sanctuary.plot")),
+
+                    # withSpinner(plotOutput("fish.park.fished.species.kde.plot", height = 500)),
+                    withSpinner(uiOutput("ui.fish.park.fished.species.kde.plot")),
+
+                    # withSpinner(uiOutput("ui.fish.park.fished.species.kde.sanctuary.plot")),
                     htmlOutput("fish.park.fished.species.iframe")
                   ),
                   conditionalPanel(
                     'input.fishparkmetric == "Individual species"',
                     htmlOutput("UIfish.park.all.species.dropdown"),
+
+                    h4("Total abundance of chosen species:"),
                     withSpinner(plotOutput("fish.park.all.species.abundance.plot", height = 250)),
+
+                    h4("Total abundance of chosen species by sanctuary:"),
+                    withSpinner(uiOutput("ui.fish.park.all.species.abundance.sanctuary.plot")),
 
                     h4("Spatial"),
                     withSpinner(leafletOutput(width = "100%", "fish.park.all.species.leaflet", height = 500)),
@@ -313,7 +323,7 @@ app_ui <- function(request) {
 
                 # ## STATE ----
                 # tabPanel("State-wide",
-                #          style = "overflow: auto", #TODO check this was visible
+                #          style = "overflow: auto",
                 #          # column(width = 5,
                 #          htmlOutput("fish.state.park.dropdown"),
                 #          htmlOutput("fish.state.method.dropdown", multiple = FALSE),

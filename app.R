@@ -2,7 +2,7 @@
 # To deploy, run: rsconnect::deployApp()
 # Or use the blue button on top of this file
 
-## Google Sheets Auth ----
+# # Google Sheets Auth ----
 # options(gargle_oauth_cache = ".secrets")
 # # check the value of the option, if you like
 # gargle::gargle_oauth_cache()
@@ -16,7 +16,7 @@ pkgload::load_all(export_all = FALSE, helpers = FALSE, attach_testthat = FALSE)
 # mpaviewer::googledrive_download_data()
 
 # Step 3. Generate new data
-# Sys.time() "2023-07-05 08:42:56 +08"
+# Sys.time() # "2023-07-06 10:20:33 +08"
 # mpaviewer::generate_data()
 # Sys.time()
 

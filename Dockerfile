@@ -47,6 +47,7 @@ RUN Rscript -e 'remotes::install_version("leafgl", upgrade="never", version = "0
 RUN Rscript -e 'remotes::install_version("golem", upgrade="never", version = "0.3.3")'
 RUN Rscript -e 'remotes::install_version("ckanr", upgrade="never", version = "0.6.0")'
 RUN Rscript -e 'remotes::install_version("data.table", upgrade="never", version = "1.13.6")'
+RUN Rscript -e 'remotes::install_version("scales", upgrade="never", version = "1.2.1")'
 RUN Rscript -e 'remotes::install_github("UWAMEGFisheries/GlobalArchive@f3c4315600a0396c7f72382b81d9073d346d431d")'
 #RUN Rscript -e 'remotes::install_version("ggbreak", upgrade="never", version = "0.1.1")'
 
