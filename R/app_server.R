@@ -629,7 +629,7 @@ app_server <- function(input, output, session) {
 
     dat <- fish_park_ta_site()
 
-    if(input$fish.park.method.dropdown %in% "stereo-DOVs"){
+    if(input$fish.park.method.dropdown %in% c("stereo-DOVs", "stereo-ROVs")){
 
       ggplot(dat, aes(x = year, y = mean, fill = status, group = complete)) +
         geom_point(aes(shape = complete), size = 6, col = "black", position = position_dodge(width = 0.5)) +
@@ -648,7 +648,7 @@ app_server <- function(input, output, session) {
   output$ui.fish.park.total.site.plot <- renderUI({
     dat <- fish_park_ta_site()
 
-    if(input$fish.park.method.dropdown %in% "stereo-DOVs"){
+    if(input$fish.park.method.dropdown %in% c("stereo-DOVs", "stereo-ROVs")){
 
       if (length(unique(dat$site)) %in% c(1,2,3) ){
         p.height <- 250
@@ -876,7 +876,7 @@ app_server <- function(input, output, session) {
 
     dat <- fish_park_sr_site()
 
-    if(input$fish.park.method.dropdown %in% "stereo-DOVs"){
+    if(input$fish.park.method.dropdown %in% c("stereo-DOVs", "stereo-ROVs")){
 
       ggplot(dat, aes(x = year, y = mean, fill = status)) +
         geom_point(aes(shape = complete), size = 6, col = "black", position = position_dodge(width = 0.5)) +
@@ -896,7 +896,7 @@ app_server <- function(input, output, session) {
   output$ui.fish.park.rich.site.plot <- renderUI({
     dat <- fish_park_sr_site()
 
-    if(input$fish.park.method.dropdown %in% "stereo-DOVs"){
+    if(input$fish.park.method.dropdown %in% c("stereo-DOVs", "stereo-ROVs")){
 
       if (length(unique(dat$site)) %in% c(1,2,3) ){
         p.height <- 250

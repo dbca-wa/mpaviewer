@@ -13,10 +13,10 @@
 pkgload::load_all(export_all = FALSE, helpers = FALSE, attach_testthat = FALSE)
 
 # Step 2. Download all data from GoogleDrive (only if it has been updated)
-# mpaviewer::googledrive_download_data()
+# mpaviewer::googledrive_download_data() # takes 11 minutes
 
 # Step 3. Generate new data
-# Sys.time() # "2023-07-06 10:20:33 +08"
+# Sys.time() # 15:54:56
 # mpaviewer::generate_data()
 # Sys.time()
 

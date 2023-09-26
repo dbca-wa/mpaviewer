@@ -167,15 +167,15 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(method = forcats::fct_recode(method,
                                                "stereo-BRUVs" = "BRUVs",
                                                "stereo-BRUVs" = "BRUVS",
-                                               "stereo-DOVs" = "DOVs")) %>%
+                                               "stereo-DOVs" = "DOVs",
+                                               "stereo-ROVs" = "ROVs")) %>%
     dplyr::left_join(.,complete.sites) %>%
     dplyr::left_join(.,complete.needed.campaigns) %>%
     dplyr::mutate(complete = dplyr::if_else(is.na(complete.needed), "Consistently sampled", complete)) %>%
     tidyr::replace_na(list(complete = "Intermittently sampled")) %>%
-    dplyr::mutate(sample = dplyr::if_else(is.na(sample) & method%in% "stereo-DOVs", paste(opcode, period, sep = "_"), sample)) %>%
+    dplyr::mutate(sample = dplyr::if_else(is.na(sample) & method%in% c("stereo-DOVs", "stereo-ROVs"), paste(opcode, period, sep = "_"), sample)) %>%
     dplyr::mutate(sample = dplyr::if_else(is.na(sample), opcode, sample)) %>%
     dplyr::select(marine.park, method, campaignid, sample, latitude, longitude, date, time, location, status, site, successful.count, successful.length, depth, observer, year, month, day, gazetted, re.zoned, complete, dbca_zone, dbca_sanctuary) # Trying to remove columns to save space/time to load the app
-
 
   names(metadata) %>% sort()
   unique(metadata$complete)
@@ -300,8 +300,9 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(method = forcats::fct_recode(method,
                                                "stereo-BRUVs" = "BRUVs",
                                                "stereo-BRUVs" = "BRUVS",
-                                               "stereo-DOVs" = "DOVs")) %>%
-    dplyr::mutate(sample = dplyr::if_else(method %in% "stereo-DOVs", paste(opcode, period, sep = "_"), opcode)) %>%
+                                               "stereo-DOVs" = "DOVs",
+                                               "stereo-ROVs" = "ROVs")) %>%
+    dplyr::mutate(sample = dplyr::if_else(method %in% c("stereo-DOVs", "stereo-ROVs"), paste(opcode, period, sep = "_"), opcode)) %>%
     # Attempt to partially tidy the data ----
     dplyr::filter(!family %in% c("Unknown", NA)) %>%
     dplyr::mutate(species = dplyr::if_else(is.na(species), "spp", species)) %>%
@@ -319,8 +320,9 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(method = forcats::fct_recode(method,
                                                "stereo-BRUVs" = "BRUVs",
                                                "stereo-BRUVs" = "BRUVS",
-                                               "stereo-DOVs" = "DOVs")) %>%
-    dplyr::mutate(sample = dplyr::if_else(method %in% "stereo-DOVs", paste(opcode, period, sep = "_"), opcode)) %>%
+                                               "stereo-DOVs" = "DOVs",
+                                               "stereo-ROVs" = "ROVs")) %>%
+    dplyr::mutate(sample = dplyr::if_else(method %in% c("stereo-DOVs","stereo-ROVs"), paste(opcode, period, sep = "_"), opcode)) %>%
     dplyr::mutate(sample = stringr::str_replace_all(.$sample, "SIMP_20200323_PP_DOV_3.", "SIMP_20200323_PP_DOV_3")) # to fix mistake
 
   lengths <- list.files(path = data.dir, recursive = T, pattern = "_Lengths.txt", full.names = T) %>%
@@ -332,8 +334,9 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(method = forcats::fct_recode(method,
                                                "stereo-BRUVs" = "BRUVs",
                                                "stereo-BRUVs" = "BRUVS",
-                                               "stereo-DOVs" = "DOVs")) %>%
-    dplyr::mutate(sample = dplyr::if_else(method %in% "stereo-DOVs", paste(opcode, period, sep = "_"), opcode)) %>%
+                                               "stereo-DOVs" = "DOVs",
+                                               "stereo-ROVs" = "ROVs")) %>%
+    dplyr::mutate(sample = dplyr::if_else(method %in% c("stereo-DOVs", "stereo-ROVs"), paste(opcode, period, sep = "_"), opcode)) %>%
     dplyr::mutate(sample = stringr::str_replace_all(.$sample, "SIMP_20200323_PP_DOV_3.", "SIMP_20200323_PP_DOV_3")) # to fix mistake
 
   ## _______________________________________________________ ----
