@@ -16,7 +16,7 @@ pkgload::load_all(export_all = FALSE, helpers = FALSE, attach_testthat = FALSE)
 # mpaviewer::googledrive_download_data() # takes 11 minutes
 
 # Step 3. Generate new data
-# Sys.time() # 15:54:56
+# Sys.time() # takes 7 mins
 # mpaviewer::generate_data()
 # Sys.time()
 

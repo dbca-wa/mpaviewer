@@ -65,6 +65,14 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     GlobalArchive::ga.clean.names() %>%
     dplyr::rename(code = region.code)
 
+  life.history <- googlesheets4::read_sheet(dbca.googlesheet.url, sheet = "functional_traits") %>%
+    GlobalArchive::ga.clean.names() %>%
+    dplyr::select(!complex_functional_group) %>%
+    dplyr::rename(trophic.group = simple_functional_group) %>%
+    dplyr::glimpse()
+
+# unique(life.history$trophic.group)
+
   complete.sites <- googlesheets4::read_sheet(dbca.googlesheet.url, sheet = "temporal_years_sites") %>%
     dplyr::mutate(year = strsplit(as.character(include_years), split = ", "))%>%
     tidyr::unnest(year) %>%
@@ -96,20 +104,20 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
 
   trophic.groups <- life.history %>%
-    dplyr::select(-c(target.code, feeding.guild, trophic.guild)) %>% # TODO use the regions for this
-    dplyr::mutate(trophic.group = stringr::str_replace_all(.$community, c("NANA" = "Unknown",
-                                                                              "NA" = "Unknown",
-                                                                              "planktivore" = "Planktivore",
-                                                                              "Algal Feeder" = "Algal feeder"))) %>%
-    tidyr::replace_na(list(trophic.group = "Unknown")) %>%
+    # dplyr::select(-c(target.code, feeding.guild, trophic.guild)) %>% # TODO use the regions for this
+    # dplyr::mutate(trophic.group = stringr::str_replace_all(.$community, c("NANA" = "Unknown",
+    #                                                                           "NA" = "Unknown",
+    #                                                                           "planktivore" = "Planktivore",
+    #                                                                           "Algal Feeder" = "Algal feeder"))) %>%
+    # tidyr::replace_na(list(trophic.group = "Unknown")) %>%
     dplyr::distinct() %>%
-    dplyr::full_join(codes)%>%
-    dplyr::filter(!is.na(marine.park)) %>% # To get rid of ones that don't have data yet
+    # dplyr::full_join(codes)%>%
+    # dplyr::filter(!is.na(marine.park)) %>% # To get rid of ones that don't have data yet
     dplyr::filter(!is.na(genus))
 
-  test <- trophic.groups %>%
-    # filter(is.na(marine.park)) %>%
-    dplyr::distinct(code, marine.park)
+  # test <- trophic.groups %>%
+  #   # filter(is.na(marine.park)) %>%
+  #   dplyr::distinct(code, marine.park)
 
   test <- trophic.groups %>%
     dplyr::group_by(family, genus, species) %>%
@@ -575,7 +583,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   length(unique(trophic.abundance$trophic.group)) # 9
   length(unique(trophic.abundance$id))
-  9 * 6066
+  9 * 8870
 
   total.abundance <- abundance %>%
     dplyr::group_by(marine.park, campaignid, method, sample) %>%
