@@ -52,6 +52,17 @@ app_server <- function(input, output, session) {
   })
 
   ####### ►  Create method dropdown ----
+  # observeEvent(input$fish.park.dropdown, {
+  #   dat <- mpa_data$metadata[marine.park %in% c(input$fish.park.dropdown)]
+  #
+  #   glimpse(unique(dat$method))
+  #
+  #   updateSelectizeInput(session, "fish.park.method.dropdown", "Choose a method:", server = TRUE,
+  #                        choices = c(unique(sort(dat$method))))
+  # }, priority = 0)
+
+
+
   output$fish.park.method.dropdown <- renderUI({
     req(input$fish.park.dropdown)
 
@@ -69,14 +80,6 @@ app_server <- function(input, output, session) {
     print("choices")
     print(choices)
 
-    # pickerInput(
-    #   inputId = "fish.park.method.dropdown",
-    #   label = "Choose a method:",
-    #   choices = c(choices),
-    #   multiple = FALSE,
-    #   selected = choices[1],
-    #   options = list(`actions-box` = TRUE, `live-search` = TRUE, `dropup-auto` = FALSE)
-    # )
 
     create_dropdown("fish.park.method.dropdown", choices, "Choose a method:", FALSE)
   }) #%>% bindCache(input$fish.park.dropdown)
