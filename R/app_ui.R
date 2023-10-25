@@ -195,7 +195,9 @@ app_ui <- function(request) {
                   column(
                     width = 6,
                     htmlOutput("fish.park.dropdown"),
-                    htmlOutput("fish.park.method.dropdown")
+                    uiOutput("fish.park.method.dropdown")
+                    # selectizeInput("fish.park.method.dropdown", "Choose a method:", multiple = FALSE, choices = character(0))
+
                     # selectizeInput("fish.park.method.dropdown", "Choose a method:",
                     #                selected = "stereo-BRUVs", multiple = FALSE,
                     #                choices = c("stereo-BRUVs", "stereo-DOVs", "stereo-ROVs"))
