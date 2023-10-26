@@ -573,11 +573,11 @@ app_ui <- function(request) {
               width = 12,
               # width = "55%", # was 95%
               id = "tabset1", height = "78vh",
-              tabPanel("Accessibility",
-                       style = "overflow: visible",
-                       # column(width = 5,
-                       htmltools::includeMarkdown("inst/app/www/accessibility.md")
-              ),
+              # tabPanel("Accessibility",
+              #          style = "overflow: visible",
+              #          # column(width = 5,
+              #          htmltools::includeMarkdown("inst/app/www/accessibility.md")
+              # ),
               tabPanel("Contact",
                        style = "overflow: visible"#,
                        # column(width = 5,
