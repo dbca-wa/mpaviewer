@@ -4,7 +4,7 @@
 #'     DO NOT REMOVE.
 #' @importFrom shiny tags
 #' @importFrom shinycssloaders withSpinner
-#' @import shinyWidgets shinydashboard
+#' @import shinyWidgets shinydashboard htmltools
 #' @noRd
 app_ui <- function(request) {
 

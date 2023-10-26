@@ -2,7 +2,7 @@
 #'
 #' @param input,output,session Internal parameters for {shiny}.
 #'     DO NOT REMOVE.
-#' @import shiny leaflet dplyr grid ggplot2 leafgl rgdal forcats cachem leaflegend ggh4x scales
+#' @import shiny leaflet dplyr grid ggplot2 leafgl rgdal forcats cachem leaflegend ggh4x scales htmltools
 #' @noRd
 #'
 
@@ -1883,43 +1883,43 @@ app_server <- function(input, output, session) {
   })
 
   ####### ►  Info buttons ----
-  observeEvent(input$state.ta,
-               showModal(modalDialog(
-                 title = "How do we measure total abundance?",
-                 htmltools::includeMarkdown(paste0("inst/app/www/popups/total.abundance.md"))))
-  )
-
-  observeEvent(input$state.sr,
-               showModal(modalDialog(
-                 title = "How do we measure species richness?",
-                 htmltools::includeMarkdown(paste0("inst/app/www/popups/species.richness.md"))))
-  )
-
-
-  observeEvent(input$park.ta,
-               showModal(modalDialog(
-                 title = "How do we measure total abundance?",
-                 htmltools::includeMarkdown(paste0("inst/app/www/popups/total.abundance.md"))))
-  )
-
-  observeEvent(input$park.sr,
-               showModal(modalDialog(
-                 title = "How do we measure species richness?",
-                 htmltools::includeMarkdown(paste0("inst/app/www/popups/species.richness.md"))))
-  )
+  # observeEvent(input$state.ta,
+  #              showModal(modalDialog(
+  #                title = "How do we measure total abundance?",
+  #                htmltools::includeMarkdown(paste0("inst/app/www/popups/total.abundance.md"))))
+  # )
+  #
+  # observeEvent(input$state.sr,
+  #              showModal(modalDialog(
+  #                title = "How do we measure species richness?",
+  #                htmltools::includeMarkdown(paste0("inst/app/www/popups/species.richness.md"))))
+  # )
+  #
+  #
+  # observeEvent(input$park.ta,
+  #              showModal(modalDialog(
+  #                title = "How do we measure total abundance?",
+  #                htmltools::includeMarkdown(paste0("inst/app/www/popups/total.abundance.md"))))
+  # )
+  #
+  # observeEvent(input$park.sr,
+  #              showModal(modalDialog(
+  #                title = "How do we measure species richness?",
+  #                htmltools::includeMarkdown(paste0("inst/app/www/popups/species.richness.md"))))
+  # )
 
   # MARINE PARK ----
   # FOR FISH
-  observeEvent(
-    input$alert.marinepark,
-
-    showModal(modalDialog(
-      title = input$fish.park.dropdown,
-      htmltools::includeMarkdown(paste0("inst/app/www/popups/fish_",
-                                        stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", " " = "")), ".md"))
-    ))
-
-  )
+  # observeEvent(
+  #   input$alert.marinepark,
+  #
+  #   showModal(modalDialog(
+  #     title = input$fish.park.dropdown,
+  #     htmltools::includeMarkdown(paste0("inst/app/www/popups/fish_",
+  #                                       stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", " " = "")), ".md"))
+  #   ))
+  #
+  # )
 
   # Interpretation of trends ----
   ####### ►  Total abundance ----
