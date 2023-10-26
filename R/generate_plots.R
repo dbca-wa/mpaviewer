@@ -71,7 +71,9 @@ generate_plots <- function() {
       }
       p
 
-      png(paste0("inst/app/www/plots/", marinepark, "_", method, "_total_abundance.png"))
+      park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
+
+      png(paste0("inst/app/www/plots/", park.name, "_", method, "_total_abundance.png"), width = 800, height = 400)
       print(p)
       dev.off()
 

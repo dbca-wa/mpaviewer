@@ -9,8 +9,6 @@
 # googlesheets4::gs4_auth()
 # 2
 
-# library(markdown)
-
 # Step 1. Load all functions from package
 pkgload::load_all(export_all = FALSE, helpers = FALSE, attach_testthat = FALSE)
 
