@@ -1,10 +1,8 @@
 Package: mpaviewer
 Title: MPA Viewer
 Version: 0.0.0.9000
-Authors@R: 
-    person("Brooke", "Gibbons", , "brooke.gibbons@uwa.edu.au", role = c("cre", "aut"))
-Description: An interactive overview of selected biodiversity assets in
-    Marine Protected Areas of Western Australia.
+Authors@R: person('Brooke', 'Gibbons', email = 'brooke.gibbons@uwa.edu.au', role = c('cre', 'aut'))
+Description: An interactive overview of selected biodiversity assets in Marine Protected Areas of Western Australia.
 License: MIT + file LICENSE
 URL: https://github.com/dbca-wa/mpaviewer
 BugReports: https://github.com/dbca-wa/mpaviewer/issues
@@ -35,6 +33,7 @@ Imports:
     leafgl (>= 0.1.1),
     leaflegend,
     leaflet (>= 2.1.2),
+    markdown,
     magrittr (>= 2.0.3),
     plyr (>= 1.8.8),
     purrr (>= 1.0.1),

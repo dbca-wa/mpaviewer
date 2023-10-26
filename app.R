@@ -9,6 +9,8 @@
 # googlesheets4::gs4_auth()
 # 2
 
+# library(markdown)
+
 # Step 1. Load all functions from package
 pkgload::load_all(export_all = FALSE, helpers = FALSE, attach_testthat = FALSE)
 
@@ -28,10 +30,6 @@ options("golem.app.prod" = TRUE)
 # RUN app
 mpaviewer::run_app()
 
-# # For profiling app
-# profvis::profvis({ mpaviewer::run_app() }
-#         , prof_output = 'profile')
-
 # Step 5. Deploy to shiny server for testing
 # rsconnect::deployApp()
 
@@ -39,6 +37,7 @@ mpaviewer::run_app()
 # sampling.effot <- mpa_data$sampling.effort
 # metadata <- mpa_data$metadata
 #
+# # For profiling app
 # profvis::profvis({
 #   print(
 #     mpaviewer::run_app()

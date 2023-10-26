@@ -867,6 +867,13 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   # common.names <- data.table::data.table(common.names) # Not needed
 
+
+  methods <- metadata %>%
+    dplyr::distinct(marine.park, method) %>%
+    dplyr::mutate(marine.park = as.character(marine.park))
+
+  data.table::setkey(methods)
+
   data.table::setkey(abundance.sum)
   data.table::setkey(abundance.sum.sanctuary)
   data.table::setkey(trophic.sum)
@@ -918,6 +925,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
       abundance.leaflet = abundance.leaflet,
       metadata.leaflet = metadata.leaflet,
       lats = lats,
+      methods = methods,
       # abundance = abundance,  # Turned off to speed up app
       # trophic.abundance = trophic.abundance,
       trophic.sum = trophic.sum,  # summarised

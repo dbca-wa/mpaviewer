@@ -195,7 +195,13 @@ app_ui <- function(request) {
                   column(
                     width = 6,
                     htmlOutput("fish.park.dropdown"),
-                    htmlOutput("fish.park.method.dropdown")#,
+                    uiOutput("fish.park.method.dropdown")
+                    # selectizeInput("fish.park.method.dropdown", "Choose a method:", multiple = FALSE, choices = character(0))
+
+                    # selectizeInput("fish.park.method.dropdown", "Choose a method:",
+                    #                selected = "stereo-BRUVs", multiple = FALSE,
+                    #                choices = c("stereo-BRUVs", "stereo-DOVs", "stereo-ROVs"))
+                    #,
                     # htmlOutput("fish.park.site.dropdown")
                   ),
                   column(
@@ -567,11 +573,11 @@ app_ui <- function(request) {
               width = 12,
               # width = "55%", # was 95%
               id = "tabset1", height = "78vh",
-              tabPanel("Accessibility",
-                       style = "overflow: visible",
-                       # column(width = 5,
-                       htmltools::includeMarkdown("inst/app/www/accessibility.md")
-              ),
+              # tabPanel("Accessibility",
+              #          style = "overflow: visible",
+              #          # column(width = 5,
+              #          htmltools::includeMarkdown("inst/app/www/accessibility.md")
+              # ),
               tabPanel("Contact",
                        style = "overflow: visible"#,
                        # column(width = 5,
