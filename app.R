@@ -20,21 +20,20 @@ pkgload::load_all(export_all = FALSE, helpers = FALSE, attach_testthat = FALSE)
 # mpaviewer::generate_data()
 # Sys.time()
 
-# Step 4. Run demo app
-options("golem.app.prod" = TRUE)
+# Step 4. Generate new plots
+# Sys.time()
+# mpaviewer::generate_plots() # TODO figure out how to get this to work
+# Sys.time()
 
-# shinyOptions(cache = cachem::cache_disk("./bind-cache"))
+# Step 5. Run demo app
+options("golem.app.prod" = TRUE)
 
 # RUN app
 mpaviewer::run_app()
 
-# Step 5. Deploy to shiny server for testing
+# Step 6. Deploy to shiny server for testing
 # rsconnect::deployApp()
 
-# # lats <- mpa_data$lats
-# sampling.effot <- mpa_data$sampling.effort
-# metadata <- mpa_data$metadata
-#
 # # For profiling app
 # profvis::profvis({
 #   print(

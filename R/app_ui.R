@@ -97,7 +97,7 @@ app_ui <- function(request) {
       shinydashboardPlus::dashboardSidebar(
         # div(class = "sticky_footer", p("test footer")),
 
-        tags$style(".left-side, .main-sidebar {padding-top: 55px}"),
+
         tags$head(tags$style(HTML('.box{-webkit-box-shadow: none; -moz-box-shadow: none;box-shadow: none;}'))),
 
         width = "125px",
@@ -118,6 +118,47 @@ app_ui <- function(request) {
         )
       ),
       shinydashboard::dashboardBody(
+
+        tags$style(
+          type = "text/css",
+          "
+      .loader {
+        min-height: 80px !important;
+      }
+    "
+        ),
+
+    tags$style(".left-side, .main-sidebar {padding-top: 55px}
+
+.wrap
+{
+    width: 500px;
+    height: 750px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.frame
+{
+    width: 1000px;
+    height: 1300px;
+    border: 0;
+
+    -ms-transform: scale(0.5);
+    -moz-transform: scale(0.5);
+    -o-transform: scale(0.5);
+    -webkit-transform: scale(0.5);
+    transform: scale(0.5);
+
+    -ms-transform-origin: 0 0;
+    -moz-transform-origin: 0 0;
+    -o-transform-origin: 0 0;
+    -webkit-transform-origin: 0 0;
+    transform-origin: 0 0;
+}
+
+                   "),
+
         tags$head(
           tags$style(HTML(".main-sidebar { font-size: 18px; }
                        .skin-blue .main-header .navbar .sidebar-toggle {display: none;}
@@ -138,6 +179,9 @@ app_ui <- function(request) {
         #   -webkit-transition: all .3s ease;
         #   transition: all .3s ease;
         # }
+
+        tags$style(".small-box.bg-yellow { background-color: #0CA2B0 !important; color: #ffffff !important; }"),
+        tags$style(".inner { color: #ffffff !important; }"),
 
         tags$head(tags$style(HTML(
           ".myClass {
@@ -180,11 +224,77 @@ app_ui <- function(request) {
           tabItem(
             tabName = "fishtab",
             fluidRow(
+
+
+              # valueBoxOutput("box.total.fish"),
+
               tabBox(
                 title = "Choose a spatial scale to plot",
                 width = 8,
                 # width = "55%", # was 95%
                 id = "tabset1", height = "78vh",
+
+
+                ## STATE ----
+                tabPanel("State-wide summary",
+                         style = "overflow: auto",
+                         # column(width = 5,
+                         # htmlOutput("fish.state.park.dropdown"),
+                         # h4("State summary:"),
+                         valueBoxOutput("box.total.number.fish", width = 6),
+                         valueBoxOutput("box.total.species.fish", width = 6),
+
+                         h4("Marine Parks Surveyed:"),
+                         uiOutput("statewide_plots"),
+                         # htmlOutput("fish.state.method.dropdown", multiple = FALSE)#,
+                         # selectInput(
+                         #   width = "100%",
+                         #   "fishstatemetric",
+                         #   "Choose a group of metrics to plot:",
+                         #   choices = c("Whole assemblage", "Individual species", "Target species", "Life history traits"),
+                         #   multiple = FALSE,
+                         #   selectize = TRUE
+                         # ),
+                         # conditionalPanel(
+                         #   'input.fishstatemetric == "Whole assemblage"',
+                         #
+                         #   h4("Species richness  ", actionButton("state.sr", label = " ", icon = icon("info"), icon.library = "font awesome", style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
+                         #   withSpinner(uiOutput("ui.fish.state.rich.plot")), # ui.
+                         #
+                         #   h4("Total abundance  ", actionButton("state.ta", label = " ", icon = icon("info"), icon.library = "font awesome", style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
+                         #   withSpinner(uiOutput("ui.fish.state.total.plot")), # ui.
+                         #
+                         #   h4("Spatial"),
+                         #   withSpinner(leafletOutput(width = "100%", "fish.state.metric.leaflet", height = 500))
+                         #
+                         #   # plotOutput("fish.state.stack.plot", height = 500)
+                         # ),
+                         # conditionalPanel(
+                         #   'input.fishstatemetric == "Target species"',
+                         #   htmlOutput("fish.state.fished.species.dropdown"),
+                         #   withSpinner(uiOutput("ui.fish.state.fished.species.abundance.plot")),
+                         #   withSpinner(plotOutput("fish.state.fished.species.kde.plot", height = 500)), #TODO make this a better height
+                         #   htmlOutput("fish.state.fished.species.iframe")
+                         # ),
+                         # conditionalPanel(
+                         #   'input.fishstatemetric == "Individual species"',
+                         #   htmlOutput("fish.state.all.species.dropdown"),
+                         #   withSpinner(plotOutput("fish.state.all.species.abundance.plot", height = 600)),
+                         #
+                         #   h4("Spatial"),
+                         #   withSpinner(leafletOutput(width = "100%", "fish.state.all.species.leaflet", height = 500)),
+                         #
+                         #   br(),
+                         #
+                         #   htmlOutput("fish.state.all.species.iframe")
+                         # ),
+                         # conditionalPanel(
+                         #   'input.fishstatemetric == "Life history traits"',
+                         #   htmlOutput("fish.state.trophic.dropdown"),
+                         #   withSpinner(uiOutput("ui.fish.state.trophic.plot"))
+                         # )
+                ),
+                # )
 
 
                 ## MARINE PARK ----
@@ -242,7 +352,7 @@ app_ui <- function(request) {
                                                           icon = icon("info"),
                                                           icon.library = "font awesome",
                                                           style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
-                    withSpinner(plotOutput("fish.park.rich.plot", height = 250)),
+                    withSpinner(uiOutput("fish.park.rich.plot", height = 350)),
 
                     uiOutput("fish.park.rich.trend"),
 
@@ -261,7 +371,7 @@ app_ui <- function(request) {
                                                         icon.library = "font awesome",
                                                         style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
 
-                    withSpinner(plotOutput("fish.park.total.plot", height = 250)),
+                    withSpinner(uiOutput("fish.park.total.plot", height = 350)),
 
                     uiOutput("fish.park.total.trend"),
 
@@ -311,75 +421,22 @@ app_ui <- function(request) {
                     h4("Total abundance of chosen species by sanctuary:"),
                     withSpinner(uiOutput("ui.fish.park.all.species.abundance.sanctuary.plot")),
 
+                    fluidRow(
+                      box(
                     h4("Spatial"),
-                    withSpinner(leafletOutput(width = "100%", "fish.park.all.species.leaflet", height = 500)),
-
-                    br(),
-
-                    htmlOutput("fish.park.all.species.iframe")
+                    withSpinner(leafletOutput(width = "100%", "fish.park.all.species.leaflet", height = 600))),
+                    box(
+                    div(class = "wrap",
+                    htmlOutput("fish.park.all.species.iframe"))
+                    ))
                   ),
                   conditionalPanel(
                     'input.fishparkmetric == "Life history traits"',
                     htmlOutput("fish.park.trophic.dropdown"),
                     withSpinner(plotOutput("fish.park.trophic.plot", height = 750))
                   )
-                )
-                #,
+                )#, # End tab panel for marine park
 
-
-                # ## STATE ----
-                # tabPanel("State-wide",
-                #          style = "overflow: auto",
-                #          # column(width = 5,
-                #          htmlOutput("fish.state.park.dropdown"),
-                #          htmlOutput("fish.state.method.dropdown", multiple = FALSE),
-                #          selectInput(
-                #            width = "100%",
-                #            "fishstatemetric",
-                #            "Choose a group of metrics to plot:",
-                #            choices = c("Whole assemblage", "Individual species", "Target species", "Life history traits"),
-                #            multiple = FALSE,
-                #            selectize = TRUE
-                #          ),
-                #          conditionalPanel(
-                #            'input.fishstatemetric == "Whole assemblage"',
-                #
-                #            h4("Species richness  ", actionButton("state.sr", label = " ", icon = icon("info"), icon.library = "font awesome", style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
-                #            withSpinner(uiOutput("ui.fish.state.rich.plot")), # ui.
-                #
-                #            h4("Total abundance  ", actionButton("state.ta", label = " ", icon = icon("info"), icon.library = "font awesome", style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
-                #            withSpinner(uiOutput("ui.fish.state.total.plot")), # ui.
-                #
-                #            h4("Spatial"),
-                #            withSpinner(leafletOutput(width = "100%", "fish.state.metric.leaflet", height = 500))
-                #
-                #            # plotOutput("fish.state.stack.plot", height = 500)
-                #          ),
-                #          conditionalPanel(
-                #            'input.fishstatemetric == "Target species"',
-                #            htmlOutput("fish.state.fished.species.dropdown"),
-                #            withSpinner(uiOutput("ui.fish.state.fished.species.abundance.plot")),
-                #            withSpinner(plotOutput("fish.state.fished.species.kde.plot", height = 500)), #TODO make this a better height
-                #            htmlOutput("fish.state.fished.species.iframe")
-                #          ),
-                #          conditionalPanel(
-                #            'input.fishstatemetric == "Individual species"',
-                #            htmlOutput("fish.state.all.species.dropdown"),
-                #            withSpinner(plotOutput("fish.state.all.species.abundance.plot", height = 600)),
-                #
-                #            h4("Spatial"),
-                #            withSpinner(leafletOutput(width = "100%", "fish.state.all.species.leaflet", height = 500)),
-                #
-                #            br(),
-                #
-                #            htmlOutput("fish.state.all.species.iframe")
-                #          ),
-                #          conditionalPanel(
-                #            'input.fishstatemetric == "Life history traits"',
-                #            htmlOutput("fish.state.trophic.dropdown"),
-                #            withSpinner(uiOutput("ui.fish.state.trophic.plot"))
-                #          )
-                # )
               ),
 
               # box(solidHeader = TRUE, "test box"),
@@ -390,7 +447,7 @@ app_ui <- function(request) {
                   box(
                     width = 12, title = "Sampling locations",
                     conditionalPanel(
-                      'input.tabset1 == "State-wide"',
+                      'input.tabset1 == "State-wide summary"',
                       withSpinner(leafletOutput(width = "100%", "fish.state.sampling.leaflet", height = "78vh")),
                       style="z-index:1002;"
                     ),
@@ -417,7 +474,7 @@ app_ui <- function(request) {
                 width = 8,
                 # width = "55%", # was 95%
                 id = "tabset2", height = "78vh",
-                tabPanel("State-wide",
+                tabPanel("State-wide summary",
                          style = "overflow: visible",
                          # column(width = 5,
 
@@ -549,7 +606,7 @@ app_ui <- function(request) {
                   box(
                     width = 12, title = "Sampling locations",
                     conditionalPanel(
-                      'input.tabset2 == "State-wide"',
+                      'input.tabset2 == "State-wide summary"',
                       withSpinner(leafletOutput(width = "100%", "benthic.state.sampling.leaflet", height = "78vh")),
                       style = "z-index:1002;"
                     ),

@@ -148,5 +148,15 @@ googledrive_download_data <- function() {
   }
 
 
+  # Find all files in the pop-ups folder to turn into html
+  files <- dir("inst/app/www/popups")
+
+  for (i in unique(files)) {
+
+    rmarkdown::render(paste0("inst/app/www/popups/", i))
+
+  }
+
+
 
 }

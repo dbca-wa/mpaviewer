@@ -171,6 +171,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
                                                                 "Reserve" = "No-take",
                                                                 "No-Take" = "No-take",
                                                                 "Protected" = "No-take"))) %>%
+    dplyr::mutate(dbca_zone = stringr::str_replace_all(.$dbca_zone, c("Sanctuary Zone" = "Sanctuary"))) %>%
     dplyr::filter(!marine.park %in% c("archive", "C:")) %>% # get rid of old files
     dplyr::mutate(method = forcats::fct_recode(method,
                                                "stereo-BRUVs" = "BRUVs",
@@ -294,15 +295,17 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   names(length)
 
   ### ► EventMeasure data ----
-  em.campaigns <- list.files(path = data.dir, recursive = T, pattern = "_Lengths.txt", full.names = T) %>%
+  em.campaigns <- list.files(path = data.dir, recursive = T, pattern = "_Lengths.txt|_Lengths.TXT", full.names = T) %>%
     purrr::map_df(~ read_dbca_files_txt(.)) %>%
-    dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Lengths.txt" = ""))) %>%
+    dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Lengths.txt" = "",
+                                                                        "_Lengths.TXT" = ""))) %>%
     dplyr::distinct(campaignid) %>%
     dplyr::pull("campaignid")
 
-  points <- list.files(path = data.dir, recursive = T, pattern = "_Points.txt", full.names = T) %>%
+  points <- list.files(path = data.dir, recursive = T, pattern = "_Points.txt|_Points.TXT", full.names = T) %>%
     purrr::map_df(~ read_dbca_files_txt(.)) %>%
-    dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Points.txt" = ""))) %>%
+    dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Points.txt" = "",
+                                                                        "_Points.TXT" = ""))) %>%
     dplyr::mutate(number = as.numeric(number)) %>%
     dplyr::filter(!marine.park %in% c("archive", "C:")) %>% # get rid of old files
     dplyr::mutate(method = forcats::fct_recode(method,
@@ -320,9 +323,9 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   unique(points$campaignid)
 
-  threed.points <- list.files(path = data.dir, recursive = T, pattern = "_3DPoints.txt", full.names = T) %>%
+  threed.points <- list.files(path = data.dir, recursive = T, pattern = "_3DPoints.txt|_3DPoints.TXT", full.names = T) %>%
     purrr::map_df(~ read_dbca_files_txt(.)) %>%
-    dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_3DPoints.txt" = ""))) %>%
+    dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_3DPoints.txt" = "", "_3DPoints.TXT" = ""))) %>%
     dplyr::mutate(number = as.numeric(number)) %>%
     dplyr::filter(!marine.park %in% c("archive", "C:")) %>% # get rid of old files
     dplyr::mutate(method = forcats::fct_recode(method,
@@ -333,9 +336,10 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(sample = dplyr::if_else(method %in% c("stereo-DOVs","stereo-ROVs"), paste(opcode, period, sep = "_"), opcode)) %>%
     dplyr::mutate(sample = stringr::str_replace_all(.$sample, "SIMP_20200323_PP_DOV_3.", "SIMP_20200323_PP_DOV_3")) # to fix mistake
 
-  lengths <- list.files(path = data.dir, recursive = T, pattern = "_Lengths.txt", full.names = T) %>%
+  lengths <- list.files(path = data.dir, recursive = T, pattern = "_Lengths.txt|_Lengths.TXT", full.names = T) %>%
     purrr::map_df(~ read_dbca_files_txt(.)) %>%
-    dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Lengths.txt" = ""))) %>%
+    dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Lengths.txt" = "",
+                                                                        "_Lengths.TXT" = ""))) %>%
     dplyr::mutate(number = as.numeric(number)) %>%
     dplyr::mutate(length = as.numeric(length)) %>%
     dplyr::filter(!marine.park %in% c("archive", "C:")) %>% # get rid of old files
@@ -414,7 +418,6 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   ## _______________________________________________________ ----
 
   # stereo-DOV abundance from 3D points and lengths
-
   dov.abundance <- dplyr::bind_rows(lengths, threed.points) %>%
 
     # Attempt to partially tidy the data ----
@@ -484,21 +487,21 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(species.key = paste0(family, genus, species)) %>% # These are just for checking the number of rows
     dplyr::full_join(metadata)
 
-  length(unique(abundance$id)) # 6066
+  # length(unique(abundance$id)) # 6066
 
-  test <- dplyr::anti_join(abundance, metadata) %>%
-    dplyr::distinct(marine.park, campaignid, sample, method)
-
-  length(unique(abundance$species.key)) # 1009 species
-
-  1009 * 6066 # = 6120594 (correct number of rows)
-
-  test <- abundance %>%
-    dplyr::group_by(id, species.key) %>%
-    dplyr::summarise(n = dplyr::n())
+  # test <- dplyr::anti_join(abundance, metadata) %>%
+  #   dplyr::distinct(marine.park, campaignid, sample, method)
+  #
+  # length(unique(abundance$species.key)) # 1009 species
+  #
+  # 1009 * 6066 # = 6120594 (correct number of rows)
+  #
+  # test <- abundance %>%
+  #   dplyr::group_by(id, species.key) %>%
+  #   dplyr::summarise(n = dplyr::n())
 
   # CHECKS on abundance data ----
-  unique(abundance$marine.park)
+  # unique(abundance$marine.park)
   abundance$marine.park <- forcats::fct_relevel(abundance$marine.park, c(unique(lats$marine.park)))
 
   complete.length.summary <- complete.length %>%
@@ -553,10 +556,10 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   length(unique(fished.abundance$id)) # 6066
   unique(fished.abundance$marine.park)
   unique(metadata$marine.park)
-
-  test <- fished.abundance %>%
-    dplyr::group_by(marine.park, scientific) %>%
-    dplyr::summarise(n = dplyr::n())
+#
+#   test <- fished.abundance %>%
+#     dplyr::group_by(marine.park, scientific) %>%
+#     dplyr::summarise(n = dplyr::n())
 
   # The correct number of rows is not easy to calculate - due to number of species being different for each marine park
   fished.summed <- fished.abundance %>%
@@ -567,7 +570,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::full_join(metadata)
 
   # If there are any NAs the marine park is missing from the life history sheet
-  test <- fished.summed %>% dplyr::filter(is.na(total.abundance))
+  # test <- fished.summed %>% dplyr::filter(is.na(total.abundance))
 
   trophic.abundance <- dplyr::left_join(abundance, trophic.groups) %>%
     tidyr::replace_na(list(trophic.group = "Unknown")) %>%
@@ -581,9 +584,9 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::full_join(metadata) %>%
     dplyr::mutate(id = paste(campaignid, sample, method, sep = "_"))
 
-  length(unique(trophic.abundance$trophic.group)) # 9
-  length(unique(trophic.abundance$id))
-  9 * 8870
+  # length(unique(trophic.abundance$trophic.group)) # 9
+  # length(unique(trophic.abundance$id))
+  # 9 * 8870
 
   total.abundance <- abundance %>%
     dplyr::group_by(marine.park, campaignid, method, sample) %>%
@@ -739,9 +742,10 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   # reduced by 6 million rows
 
   abundance.sum.sanctuary <- abundance %>%
-    dplyr::group_by(marine.park, method, year, status, scientific, gazetted, re.zoned, complete, dbca_sanctuary) %>%
+    dplyr::group_by(marine.park, method, year, status, scientific, gazetted, re.zoned, dbca_sanctuary, complete) %>% #complete,  #removed complete after meeting with Jordan 6th November
     dplyr::summarise(mean = mean(maxn), se = mpaviewer::se(maxn)) %>%
-    dplyr::ungroup()
+    dplyr::ungroup() %>%
+    dplyr::filter(!is.na(dbca_sanctuary))
 
   abundance.sum.sanctuary <- data.table::data.table(abundance.sum.sanctuary)
 
@@ -773,14 +777,15 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   ta.sr <- data.table::data.table(ta.sr)
 
   ta.sr.sanctuary <- all.data %>%
-    dplyr::group_by(marine.park, method, year, status, metric, dbca_sanctuary, gazetted, re.zoned, complete) %>%
+    dplyr::group_by(marine.park, method, year, status, metric, dbca_sanctuary, gazetted, re.zoned) %>% # removed complete after meeting with Jordan 6th Nov 2023
     dplyr::summarise(mean = mean(value), se = mpaviewer::se(value)) %>%
-    dplyr::ungroup()
+    dplyr::ungroup()%>%
+    dplyr::filter(!is.na(dbca_sanctuary))
 
   ta.sr.sanctuary <- data.table::data.table(ta.sr.sanctuary)
 
   ta.sr.zone <- all.data %>%
-    dplyr::group_by(marine.park, method, year, status, metric, dbca_zone, gazetted, re.zoned, complete) %>%
+    dplyr::group_by(marine.park, method, year, status, metric, dbca_zone, gazetted, re.zoned) %>% # removed complete after meeting with Jordan 6th Nov 2023
     dplyr::summarise(mean = mean(value), se = mpaviewer::se(value)) %>%
     dplyr::ungroup()
 
@@ -822,7 +827,8 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   fished.species.sum.sanctuary <- fished.abundance %>%
     dplyr::group_by(marine.park, method, year, status, scientific, gazetted, re.zoned, complete, dbca_sanctuary) %>%
     dplyr::summarise(mean = mean(total.abundance), se = mpaviewer::se(total.abundance)) %>%
-    dplyr::ungroup()
+    dplyr::ungroup()%>%
+    dplyr::filter(!is.na(dbca_sanctuary))
 
   fished.species.sum.sanctuary <- data.table::data.table(fished.species.sum.sanctuary)
 
@@ -837,7 +843,8 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   fished.sum.sanctuary <- fished.summed %>%
     dplyr::group_by(marine.park, method, year, status, gazetted, re.zoned, complete, dbca_sanctuary) %>%
     dplyr::summarise(mean = mean(total.abundance), se = mpaviewer::se(total.abundance)) %>%
-    dplyr::ungroup()
+    dplyr::ungroup()%>%
+    dplyr::filter(!is.na(dbca_sanctuary))
 
   fished.sum.sanctuary <- data.table::data.table(fished.sum.sanctuary)
 
@@ -872,8 +879,39 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::distinct(marine.park, method) %>%
     dplyr::mutate(marine.park = as.character(marine.park))
 
-  data.table::setkey(methods)
 
+  total.number.fish <- sum(abundance$maxn)
+
+  total.species.fish <- length(unique(abundance$scientific))
+
+  total.number.fish.park <- abundance %>%
+    dplyr::group_by(marine.park) %>%
+    dplyr::summarise(total = sum(maxn))
+
+  total.species.fish.park <- abundance %>%
+    dplyr::filter(maxn > 0) %>%
+    dplyr::group_by(marine.park) %>%
+    dplyr::summarise(richness = dplyr::n_distinct(scientific))
+
+  mins.watched <- metadata %>%
+    dplyr::group_by(marine.park, method) %>%
+    dplyr::summarise(total = dplyr::n()) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(mins.per.sample = dplyr::case_when(
+                  method %in% "stereo-BRUVs" ~ 60,
+                  method %in% "stereo-DOVs" ~ 20,
+                  method %in% "stereo-ROVs" ~ 20)) %>%
+    dplyr::mutate(mins.watched = total * mins.per.sample) %>%
+    dplyr::group_by(marine.park) %>%
+    dplyr::summarise(mins_watched = sum(mins.watched))
+
+  biggest.fish <- complete.length %>%
+    dplyr::filter(length > 0 ) %>%
+    dplyr::group_by(marine.park) %>%
+    dplyr::slice(which.max(length)) %>%
+    dplyr::select(marine.park, method, campaignid, family, genus, species, length)
+
+  data.table::setkey(methods)
   data.table::setkey(abundance.sum)
   data.table::setkey(abundance.sum.sanctuary)
   data.table::setkey(trophic.sum)
@@ -947,7 +985,12 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
       rec_3c2 = rec_3c2,
       # common.names = common.names, # Not needed
       foa.codes = foa.codes,
-      interpretation.trends = interpretation.trends
+      interpretation.trends = interpretation.trends,
+      total.number.fish = total.number.fish,
+      total.species.fish = total.species.fish,
+      total.number.fish.park = total.number.fish.park,
+      total.species.fish.park = total.species.fish.park,
+      mins.watched = mins.watched
       ),
     class = "mpa_data"
   )
