@@ -2,7 +2,6 @@
 % Please edit documentation in R/mpaviewer-package.R, R/mpaviewer.R
 \docType{package}
 \name{mpaviewer-package}
-\alias{mpaviewer}
 \alias{mpaviewer-package}
 \title{mpaviewer: MPA Viewer}
 \description{
