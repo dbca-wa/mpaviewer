@@ -65,6 +65,8 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     GlobalArchive::ga.clean.names() %>%
     dplyr::rename(code = region.code)
 
+  2
+
   life.history <- googlesheets4::read_sheet(dbca.googlesheet.url, sheet = "functional_traits") %>%
     GlobalArchive::ga.clean.names() %>%
     dplyr::select(!complex_functional_group) %>%
@@ -153,6 +155,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   metadata <- list.files(path = data.dir, recursive = T, pattern = "_Metadata.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
     purrr::map_df(~ read_dbca_files_csv(.)) %>% # combine into dataframe
+    dplyr::filter(!marine.park %in% "G:") %>%
     dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Metadata.csv" = ""))) %>%
     dplyr::mutate(year = substr(date, 1, 4)) %>%
     dplyr::mutate(year = as.numeric(year)) %>%
@@ -188,6 +191,8 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   names(metadata) %>% sort()
   unique(metadata$complete)
+
+  unique(metadata$marine.park)
 
   test.complete <- metadata %>%
     dplyr::filter(complete %in% "Consistently sampled")
@@ -365,7 +370,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   # samples not in count
   test <- dplyr::anti_join(metadata, count) # 1408 samples without fish? does that make sense
-
+  test <- dplyr::anti_join(metadata, points)
 
   ## _______________________________________________________ ----
   ##                     COMPLETE LENGTH DATA                ----
@@ -406,12 +411,15 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   length(unique(complete.length$id))
   length(unique(complete.length$scientific))
 
-  930 * 6066
+  1152 * 9123
 
   complete.length$marine.park <- forcats::fct_relevel(complete.length$marine.park, c(unique(lats$marine.park)))
 
   unique(complete.length$marine.park)
   names(complete.length)
+
+  t <- complete.length %>%
+    dplyr::filter(sample %in% "NCMP_22032022_EBS1-5_BRUV")
 
   ## _______________________________________________________ ----
   ##                  COMPLETE ABUNDANCE DATA                ----
@@ -487,14 +495,14 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(species.key = paste0(family, genus, species)) %>% # These are just for checking the number of rows
     dplyr::full_join(metadata)
 
-  # length(unique(abundance$id)) # 6066
+  length(unique(abundance$id)) # 9123
 
   # test <- dplyr::anti_join(abundance, metadata) %>%
   #   dplyr::distinct(marine.park, campaignid, sample, method)
   #
-  # length(unique(abundance$species.key)) # 1009 species
+  length(unique(abundance$species.key)) # 1237 species
   #
-  # 1009 * 6066 # = 6120594 (correct number of rows)
+  # 1237 * 9123 # = 11285151 (correct number of rows)
   #
   # test <- abundance %>%
   #   dplyr::group_by(id, species.key) %>%
@@ -624,8 +632,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   fished.complete.length <- dplyr::semi_join(complete.length, fished.species)
 
-  state.mp <- rgdal::readOGR(here::here("inst/data/spatial/WA_MPA_2018.shp"))
-
+  state.mp <- sf::st_read(here::here("inst/data/spatial/WA_MPA_2018.shp"))
 
   wampa  <- sf::st_read(here::here("inst/data/spatial/WA_MPA_2020_SP.shp"))                          # all wa mpas
   # simplify state parks names

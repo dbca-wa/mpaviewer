@@ -7,27 +7,9 @@
 #' @import shinyWidgets shinydashboard
 #' @noRd
 app_ui <- function(request) {
-
-
-  # ui <- fluidPage(
-  #   selectInput(
-  #     "input1",
-  #     "Dropdwon 1",
-  #     c("ID1","ID2"),
-  #     selected = "ID1",
-  #     multiple = FALSE
-  #   ),
-  #
-  #   htmlOutput("fish.state.method.dropdown", multiple = FALSE)
-  # )
-
-
-
   tagList(
     # Leave this function for adding external resources
     golem_add_external_resources(),
-    # mod_assetmap_ui("assetmap_ui_1")
-
     shinydashboardPlus::dashboardPage(
       shinydashboardPlus::dashboardHeader(
 
@@ -42,15 +24,10 @@ app_ui <- function(request) {
           href = "https://www.dbca.wa.gov.au/",
           tags$img(
             src = "www/DBCA_logo1_reversed_BCS.png",
-            width = "465px"#,
-            # height = "90px"#,
-            #style = "margin-top:-15px; padding-top:-50px; margin-bottom:-15px; padding-bottom:-50px;"#, width = "65"
+            width = "465px"
           )
         ),
         titleWidth = "500px",
-
-        # tags$li(a(href = "https://www.dbca.wa.gov.au/", target = "_blank", "DBCA Marine Monitoring Dashboard"), class = "myClass"),
-
         tags$li(actionButton("access", "Accessibility", class = "btn-btn-lg")
           # a(href = "https://www.dbca.wa.gov.au/", target = "_blank", "Accessibility")
           , class = "dropdown"
@@ -95,8 +72,6 @@ app_ui <- function(request) {
         # )
       ),
       shinydashboardPlus::dashboardSidebar(
-        # div(class = "sticky_footer", p("test footer")),
-
 
         tags$head(tags$style(HTML('.box{-webkit-box-shadow: none; -moz-box-shadow: none;box-shadow: none;}'))),
 
@@ -357,36 +332,36 @@ app_ui <- function(request) {
                     uiOutput("fish.park.rich.trend"),
 
                     h4("Species richness by sanctuary:"),
-                    withSpinner(uiOutput("ui.fish.park.rich.sanctuary.plot")),
+                    withSpinner(uiOutput("fish.park.rich.sanctuary.plot")),
 
                     h4("Species richness by zone:"),
-                    # withSpinner(uiOutput("ui.fish.park.rich.zone.plot")),
-                    withSpinner(plotOutput("fish.park.rich.zone.plot", height = 250)),
+                    withSpinner(uiOutput("fish.park.rich.zone.plot")),
+                    # withSpinner(plotOutput("fish.park.rich.zone.plot", height = 250)),
 
                     ## Only show site plots if stereo-DOVs
-                    withSpinner(uiOutput("ui.fish.park.rich.site.plot")),
+                    withSpinner(uiOutput("fish.park.rich.site.plot")),
 
                     h3("Total abundance:", actionButton("park.ta", label = " ",
                                                         icon = icon("info"),
                                                         icon.library = "font awesome",
                                                         style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
 
-                    withSpinner(uiOutput("fish.park.total.plot", height = 350)),
+                    withSpinner(uiOutput("fish.park.total.plot")),
 
                     uiOutput("fish.park.total.trend"),
 
-                    h4("Most abundant species:"), # TODO check
-                    withSpinner(plotOutput("fish.park.stack.plot", height = 500)),
+                    h4("Most abundant species:"),
+                    withSpinner(uiOutput("fish.park.stack.plot")),
 
                     h4("Total abundance by sanctuary:"),
-                    withSpinner(uiOutput("ui.fish.park.total.sanctuary.plot")),
+                    withSpinner(uiOutput("fish.park.total.sanctuary.plot")),
 
                     h4("Total abundance by zone:"),
                     # withSpinner(uiOutput("ui.fish.park.total.zone.plot")),
-                    withSpinner(plotOutput("fish.park.total.zone.plot", height = 250)),
+                    withSpinner(uiOutput("fish.park.total.zone.plot")),
 
                     ## Only show site plots if stereo-DOVs
-                    withSpinner(uiOutput("ui.fish.park.total.site.plot")),
+                    withSpinner(uiOutput("fish.park.total.site.plot")),
 
 
                     h4("Spatial"),
@@ -396,17 +371,18 @@ app_ui <- function(request) {
                     'input.fishparkmetric == "Target species"',
 
                     h4("Total abundance of targeted species:"),
-                    withSpinner(plotOutput("fish.park.fished.sum.plot", height = 250)),
+                    withSpinner(uiOutput("fish.park.fished.sum.plot")),
 
                     h4("Total abundance of targeted species by sanctuary:"),
-                    withSpinner(uiOutput("ui.fish.park.fished.sum.sanctuary.plot")),
+                    withSpinner(uiOutput("fish.park.fished.sum.sanctuary.plot")),
 
                     htmlOutput("fish.park.fished.species.dropdown"),
-                    withSpinner(plotOutput("fish.park.fished.species.abundance.plot", height = 250)),
-                    withSpinner(uiOutput("ui.fish.park.fished.species.abundance.sanctuary.plot")),
+                    withSpinner(uiOutput("fish.park.fished.species.abundance.plot")),
+                    withSpinner(uiOutput("fish.park.fished.species.abundance.sanctuary.plot")),
 
                     # withSpinner(plotOutput("fish.park.fished.species.kde.plot", height = 500)),
-                    withSpinner(uiOutput("ui.fish.park.fished.species.kde.plot")),
+                    h4("KDE:"),
+                    withSpinner(uiOutput("fish.park.fished.species.kde.plot")),
 
                     # withSpinner(uiOutput("ui.fish.park.fished.species.kde.sanctuary.plot")),
                     htmlOutput("fish.park.fished.species.iframe")
@@ -415,11 +391,11 @@ app_ui <- function(request) {
                     'input.fishparkmetric == "Individual species"',
                     htmlOutput("UIfish.park.all.species.dropdown"),
 
-                    h4("Total abundance of chosen species:"),
-                    withSpinner(plotOutput("fish.park.all.species.abundance.plot", height = 250)),
+                    # h4("Total abundance of chosen species:"),
+                    withSpinner(uiOutput("fish.park.all.species.abundance.plot")),
 
-                    h4("Total abundance of chosen species by sanctuary:"),
-                    withSpinner(uiOutput("ui.fish.park.all.species.abundance.sanctuary.plot")),
+                    # h4("Total abundance of chosen species by sanctuary:"),
+                    withSpinner(uiOutput("fish.park.all.species.abundance.sanctuary.plot")),
 
                     fluidRow(
                       box(
@@ -432,8 +408,8 @@ app_ui <- function(request) {
                   ),
                   conditionalPanel(
                     'input.fishparkmetric == "Life history traits"',
-                    htmlOutput("fish.park.trophic.dropdown"),
-                    withSpinner(plotOutput("fish.park.trophic.plot", height = 750))
+                    # htmlOutput("fish.park.trophic.dropdown"),
+                    withSpinner(uiOutput("fish.park.trophic.plot"))
                   )
                 )#, # End tab panel for marine park
 

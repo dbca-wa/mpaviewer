@@ -21,7 +21,7 @@ pkgload::load_all(export_all = FALSE, helpers = FALSE, attach_testthat = FALSE)
 # Sys.time()
 
 # Step 4. Generate new plots
-# Sys.time()
+# Sys.time() # Takes a few hours to run
 # mpaviewer::generate_plots() # TODO figure out how to get this to work
 # Sys.time()
 

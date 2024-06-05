@@ -37,7 +37,6 @@ Imports:
     plyr (>= 1.8.8),
     purrr (>= 1.0.1),
     readr (>= 2.1.4),
-    rgdal (>= 1.6.6),
     rlang,
     scales,
     sf,
