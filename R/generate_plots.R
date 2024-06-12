@@ -747,6 +747,8 @@ generate_plots <- function() {
 
   for(marinepark in unique(dat$marine.park)){
 
+    message(marinepark)
+
     temp <- dat[marine.park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
@@ -819,6 +821,8 @@ generate_plots <- function() {
   unique(dat$marine.park)
 
   for(marinepark in unique(dat$marine.park)){
+
+    message(marinepark)
 
     temp <- dat[marine.park %in% c(marinepark)]
 
