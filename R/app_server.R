@@ -12,14 +12,14 @@ app_server <- function(input, output, session) {
 
   output$box.total.number.fish <- renderValueBox({
 
-    valueBox(HTML(paste0('<p style = "color:#ffffff";><font size="+3">', prettyNum(mpa_data$total.number.fish,  big.mark = ","), '</font></p>')),
+    valueBox(HTML(paste0('<p style = "color:#ffffff";><font size="+3">', prettyNum(mpa_data$total_number_fish,  big.mark = ","), '</font></p>')),
              "Fish counted",
              icon = icon("fish"),
              color = "yellow") # have changed CSS colours
   })
 
   output$box.total.species.fish <- renderValueBox({
-    valueBox(HTML(paste0('<p style = "color:#ffffff";><font size="+3">', prettyNum(mpa_data$total.species.fish,  big.mark = ","), '</font></p>')),
+    valueBox(HTML(paste0('<p style = "color:#ffffff";><font size="+3">', prettyNum(mpa_data$total_species_fish,  big.mark = ","), '</font></p>')),
 
              "Fish species indentified",
              icon = icon("fish"),
@@ -28,9 +28,9 @@ app_server <- function(input, output, session) {
 
   output$statewide_plots <- renderUI({
     print("total fish")
-    total_fish <- mpa_data$total.number.fish.park #%>% dplyr::glimpse()
-    total_species <- mpa_data$total.species.fish.park # %>% glimpse()
-    mins_watched <- mpa_data$mins.watched
+    total_fish <- mpa_data$total_number_fish_park #%>% dplyr::glimpse()
+    total_species <- mpa_data$total_species_fish_park # %>% glimpse()
+    mins_watched <- mpa_data$mins_watched
 
     # if (nrow(total_fish) > 0) {
 
@@ -48,7 +48,7 @@ app_server <- function(input, output, session) {
           spe <- unique(total_spe$richness)
           mins <- unique(mins_watched$mins_watched)
 
-          marine_park <- unique(total_ind$marine.park)
+          marine_park <- unique(total_ind$marine_park)
 
           park <- stringr::str_replace_all(tolower(marine_park), c("marine park" = "", "island marine reserve" = "", " " = ""))
 
@@ -120,14 +120,14 @@ app_server <- function(input, output, session) {
   output$fish.park.dropdown <- renderUI({
 
     lats <- mpa_data$lats %>%
-      dplyr::arrange(desc(mean.lat)) # removed desc for marine park workshop
+      dplyr::arrange(desc(mean_lat)) # removed desc for marine park workshop
 
     pickerInput(
       inputId = "fish.park.dropdown",
       label = "Choose a marine park:",
-      choices = c(unique(lats$marine.park)),
+      choices = c(unique(lats$marine_park)),
       multiple = FALSE,
-      # selected = unique(lats$marine.park)[1],
+      # selected = unique(lats$marine_park)[1],
       options = list(`actions-box` = TRUE, `live-search` = TRUE, `dropup-auto` = FALSE)
     )
   })
@@ -137,7 +137,7 @@ app_server <- function(input, output, session) {
   output$fish.park.method.dropdown <- renderUI({
     req(input$fish.park.dropdown)
 
-  dat <- mpa_data$methods[marine.park %in% c(input$fish.park.dropdown)]
+  dat <- mpa_data$methods[marine_park %in% c(input$fish.park.dropdown)]
 
   glimpse(unique(dat$method))
 
@@ -151,12 +151,12 @@ app_server <- function(input, output, session) {
   output$fish.park.fished.species.dropdown <- renderUI({
     req(input$fish.park.dropdown, input$fish.park.method.dropdown)
 
-    dat <- mpa_data$ordered.top.fished.species[marine.park %in% c(input$fish.park.dropdown) &
+    dat <- mpa_data$ordered_top_fished_species[marine_park %in% c(input$fish.park.dropdown) &
                                          method %in% c(input$fish.park.method.dropdown)]
     choices <- dat %>%
       dplyr::arrange(desc(total)) %>%
-      dplyr::distinct(scientific) %>%
-      dplyr::pull("scientific")
+      dplyr::distinct(scientific_name) %>%
+      dplyr::pull("scientific_name")
 
     pickerInput(
       inputId = "fish.park.fished.species.dropdown",
@@ -172,13 +172,13 @@ app_server <- function(input, output, session) {
   ####### ►  Create an all species dropdown ----
   output$UIfish.park.all.species.dropdown <- renderUI({
 
-      dat <- mpa_data$ordered.top.species[marine.park %in% c(input$fish.park.dropdown) &
+      dat <- mpa_data$ordered_top_species[marine_park %in% c(input$fish.park.dropdown) &
                                   method %in% c(input$fish.park.method.dropdown)]
 
       choices <- dat %>%
         dplyr::arrange(desc(total)) %>%
-        dplyr::distinct(scientific) %>%
-        dplyr::pull("scientific")
+        dplyr::distinct(scientific_name) %>%
+        dplyr::pull("scientific_name")
 
       shinyWidgets::pickerInput(
         inputId = "fish.park.all.species.dropdown",
@@ -194,7 +194,7 @@ app_server <- function(input, output, session) {
   ####### ►  Create a trophic group dropdown ----
   # output$fish.park.trophic.dropdown <- renderUI({
   #
-  #   dat <- mpa_data$trophic.sum[marine.park %in% c(input$fish.park.dropdown) &
+  #   dat <- mpa_data$trophic.sum[marine_park %in% c(input$fish.park.dropdown) &
   #                                 method %in% c(input$fish.park.method.dropdown)]
   #
   #   choices <- dat %>%
@@ -218,7 +218,7 @@ app_server <- function(input, output, session) {
   fish_park_alldata <- reactive({
     req(input$fish.park.dropdown, input$fish.park.method.dropdown)
 
-    dat <- mpa_data$all.data[marine.park %in% c(input$fish.park.dropdown)]
+    dat <- mpa_data$all.data[marine_park %in% c(input$fish.park.dropdown)]
     dat <- dat[method %in% c(input$fish.park.method.dropdown)]
 
     dat
@@ -245,7 +245,7 @@ app_server <- function(input, output, session) {
   # fish_park_overall <- reactive({
   #   req(input$fish.park.dropdown, input$fish.park.method.dropdown)
   #
-  #   dat <- mpa_data$ta.sr[marine.park %in% c(input$fish.park.dropdown)]
+  #   dat <- mpa_data$ta_sr[marine_park %in% c(input$fish.park.dropdown)]
   #   dat <- dat[method %in% c(input$fish.park.method.dropdown)]
   #
   #   dat
@@ -273,7 +273,7 @@ app_server <- function(input, output, session) {
   fish_park_sanctuary <- reactive({
     req(input$fish.park.dropdown, input$fish.park.method.dropdown)
 
-    dat <- mpa_data$ta.sr.sanctuary[marine.park %in% c(input$fish.park.dropdown)]
+    dat <- mpa_data$ta_sr_sanctuary[marine_park %in% c(input$fish.park.dropdown)]
     dat <- dat[method %in% c(input$fish.park.method.dropdown)]
 
     dat
@@ -301,7 +301,7 @@ app_server <- function(input, output, session) {
   fish_park_site <- reactive({
     req(input$fish.park.dropdown, input$fish.park.method.dropdown)
 
-    dat <- mpa_data$ta.sr.site[marine.park %in% c(input$fish.park.dropdown)]
+    dat <- mpa_data$ta_sr_site[marine_park %in% c(input$fish.park.dropdown)]
     dat <- dat[method %in% c(input$fish.park.method.dropdown)]
 
     dat
@@ -329,7 +329,7 @@ app_server <- function(input, output, session) {
   fish_park_zone <- reactive({
     req(input$fish.park.dropdown, input$fish.park.method.dropdown)
 
-    dat <- mpa_data$ta.sr.zone[marine.park %in% c(input$fish.park.dropdown)]
+    dat <- mpa_data$ta_sr_zone[marine_park %in% c(input$fish.park.dropdown)]
     dat <- dat[method %in% c(input$fish.park.method.dropdown)]
 
     dat
@@ -358,7 +358,7 @@ app_server <- function(input, output, session) {
   fish_park_samplingeffort <- reactive({
     req(input$fish.park.dropdown, input$fish.park.method.dropdown)
 
-    dat <- mpa_data$sampling.effort[marine.park %in% c(input$fish.park.dropdown)]
+    dat <- mpa_data$sampling_effort[marine_park %in% c(input$fish.park.dropdown)]
     dat <- dat[method %in% c(input$fish.park.method.dropdown)]
 
     dat %>%
@@ -366,10 +366,10 @@ app_server <- function(input, output, session) {
         sep = " ",
         "<b>Sample:", sample, "</b>", "<br/>",
         "<b>Status:</b>", status, "<br/>",
-        "<b>Depth:</b>", depth, "m", "<br/>",
+        "<b>Depth:</b>", depth_m, "m", "<br/>",
         "<b>Site:</b>", site, "<br/>",
         "<b>Location:</b>", location, "<br/>",
-        "<b>Number of times sampled:</b>", number.of.times.sampled, "<br/>"
+        "<b>Number of times sampled:</b>", number_of_times_sampled, "<br/>"
       ))
   })
 
@@ -377,9 +377,9 @@ app_server <- function(input, output, session) {
   fish_park_abundance_species_leaflet <- reactive({
     req(input$fish.park.dropdown, input$fish.park.method.dropdown, input$fish.park.all.species.dropdown)
 
-    dat <- mpa_data$abundance.leaflet[marine.park %in% c(input$fish.park.dropdown)]
+    dat <- mpa_data$abundance_leaflet[marine_park %in% c(input$fish.park.dropdown)]
     dat <- dat[method %in% c(input$fish.park.method.dropdown)]
-    dat <- dat[scientific %in% c(input$fish.park.all.species.dropdown)]
+    dat <- dat[scientific_name %in% c(input$fish.park.all.species.dropdown)]
 
     dat
 
@@ -389,7 +389,7 @@ app_server <- function(input, output, session) {
   fish_park_metadata_leaflet <- reactive({
     req(input$fish.park.dropdown, input$fish.park.method.dropdown, input$fish.park.all.species.dropdown)
 
-    dat <- mpa_data$metadata.leaflet[marine.park %in% c(input$fish.park.dropdown)]
+    dat <- mpa_data$metadata_leaflet[marine_park %in% c(input$fish.park.dropdown)]
     dat <- dat[method %in% c(input$fish.park.method.dropdown)]
 
     dat
@@ -401,9 +401,9 @@ app_server <- function(input, output, session) {
   fish_park_abundance_species <- reactive({
     req(input$fish.park.dropdown, input$fish.park.method.dropdown, input$fish.park.all.species.dropdown)
 
-    dat <- mpa_data$abundance.sum[marine.park %in% c(input$fish.park.dropdown)] # changed from abundance to summarised
+    dat <- mpa_data$abundance.sum[marine_park %in% c(input$fish.park.dropdown)] # changed from abundance to summarised
     dat <- dat[method %in% c(input$fish.park.method.dropdown)]
-    dat <- dat[scientific %in% c(input$fish.park.all.species.dropdown)]
+    dat <- dat[scientific_name %in% c(input$fish.park.all.species.dropdown)]
 
     dat
 
@@ -413,9 +413,9 @@ app_server <- function(input, output, session) {
   fish_park_abundance_species_sanctuary <- reactive({
     req(input$fish.park.dropdown, input$fish.park.method.dropdown, input$fish.park.all.species.dropdown)
 
-    dat <- mpa_data$abundance.sum.sanctuary[marine.park %in% c(input$fish.park.dropdown)]
+    dat <- mpa_data$abundance_sum_sanctuary[marine_park %in% c(input$fish.park.dropdown)]
     dat <- dat[method %in% c(input$fish.park.method.dropdown)]
-    dat <- dat[scientific %in% c(input$fish.park.all.species.dropdown)]
+    dat <- dat[scientific_name %in% c(input$fish.park.all.species.dropdown)]
 
     dat
 
@@ -425,7 +425,7 @@ app_server <- function(input, output, session) {
   fish_park_top_ten <- reactive({
     req(input$fish.park.dropdown, input$fish.park.method.dropdown)
 
-    dat <- mpa_data$top.ten[marine.park %in% c(input$fish.park.dropdown)]
+    dat <- mpa_data$top_ten[marine_park %in% c(input$fish.park.dropdown)]
     dat <- dat[method %in% c(input$fish.park.method.dropdown)]
 
     dat
@@ -436,7 +436,7 @@ app_server <- function(input, output, session) {
   fish_park_fishedabundance <- reactive({
     req(input$fish.park.dropdown, input$fish.park.method.dropdown)
 
-    dat <- mpa_data$fished.species.sum[marine.park %in% c(input$fish.park.dropdown)]
+    dat <- mpa_data$fished_species_sum[marine_park %in% c(input$fish.park.dropdown)]
     dat <- dat[method %in% c(input$fish.park.method.dropdown)]
 
     dat
@@ -447,7 +447,7 @@ app_server <- function(input, output, session) {
   fish_park_fishedabundance_sanctuary <- reactive({
     req(input$fish.park.dropdown, input$fish.park.method.dropdown)
 
-    dat <- mpa_data$fished.species.sum.sanctuary[marine.park %in% c(input$fish.park.dropdown)]
+    dat <- mpa_data$fished_species_sum_sanctuary[marine_park %in% c(input$fish.park.dropdown)]
     dat <- dat[method %in% c(input$fish.park.method.dropdown)]
 
     dat
@@ -458,7 +458,7 @@ app_server <- function(input, output, session) {
   fish_park_fishedsum <- reactive({
     req(input$fish.park.dropdown, input$fish.park.method.dropdown)
 
-    dat <- mpa_data$fished.sum[marine.park %in% c(input$fish.park.dropdown)]
+    dat <- mpa_data$fished_sum[marine_park %in% c(input$fish.park.dropdown)]
     dat <- dat[method %in% c(input$fish.park.method.dropdown)]
 
     dat
@@ -469,7 +469,7 @@ app_server <- function(input, output, session) {
   fish_park_fishedsum_sanctuary <- reactive({
     req(input$fish.park.dropdown, input$fish.park.method.dropdown)
 
-    dat <- mpa_data$fished.sum.sanctuary[marine.park %in% c(input$fish.park.dropdown)]
+    dat <- mpa_data$fished_sum_sanctuary[marine_park %in% c(input$fish.park.dropdown)]
     dat <- dat[method %in% c(input$fish.park.method.dropdown)]
 
     dat
@@ -480,7 +480,7 @@ app_server <- function(input, output, session) {
   # fish_park_trophicabundance <- reactive({
   #   req(input$fish.park.dropdown, input$fish.park.method.dropdown)
   #
-  #   dat <- mpa_data$trophic.sum[marine.park %in% c(input$fish.park.dropdown)]
+  #   dat <- mpa_data$trophic.sum[marine_park %in% c(input$fish.park.dropdown)]
   #   dat <- dat[method %in% c(input$fish.park.method.dropdown)]
   #
   #   dat
@@ -491,7 +491,7 @@ app_server <- function(input, output, session) {
   fish_park_fishedcompletelength <- reactive({
     req(input$fish.park.dropdown, input$fish.park.method.dropdown)
 
-    dat <- mpa_data$fished.complete.length[marine.park %in% c(input$fish.park.dropdown)]
+    dat <- mpa_data$fished_complete_length[marine_park %in% c(input$fish.park.dropdown)]
     dat <- dat[method %in% c(input$fish.park.method.dropdown)]
 
     dat
@@ -502,7 +502,7 @@ app_server <- function(input, output, session) {
   fish_park_trends <- reactive({
     req(input$fish.park.dropdown, input$fish.park.method.dropdown)
 
-    dat <- mpa_data$interpretation.trends[marine.park %in% c(input$fish.park.dropdown)]
+    dat <- mpa_data$interpretation_trends[marine_park %in% c(input$fish.park.dropdown)]
     dat <- dat[method %in% c(input$fish.park.method.dropdown)]
 
     dat
@@ -514,7 +514,7 @@ app_server <- function(input, output, session) {
   # ####### ►  Create method dropdown ----
   # output$fish.state.method.dropdown <- renderUI({
   #   # choices <- mpa_data$metadata %>%
-  #   #   # dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
+  #   #   # dplyr::filter(marine_park %in% c(input$fish.state.park.dropdown)) %>%
   #   #   dplyr::distinct(method) %>%
   #   #   dplyr::pull("method")
   #   #
@@ -538,48 +538,48 @@ app_server <- function(input, output, session) {
       dplyr::filter(method %in% "stereo-BRUVs")
 
     bruvs <- sf::st_as_sf(x = bruvs,
-                          coords = c("longitude", "latitude"),
+                          coords = c("longitude_dd", "latitude_dd"),
                           crs = projcrs)
 
     dovs <- fish_samplingeffort() %>%
       dplyr::filter(method %in% "stereo-DOVs")
 
     dovs <- sf::st_as_sf(x = dovs,
-                         coords = c("longitude", "latitude"),
+                         coords = c("longitude_dd", "latitude_dd"),
                          crs = projcrs)
 
     rovs <- fish_samplingeffort() %>%
       dplyr::filter(method %in% "stereo-ROVs")
 
     rovs <- sf::st_as_sf(x = rovs,
-                         coords = c("longitude", "latitude"),
+                         coords = c("longitude_dd", "latitude_dd"),
                          crs = projcrs)
 
     uvc <- fish_samplingeffort() %>%
       dplyr::filter(method %in% "UVC")
 
     uvc <- sf::st_as_sf(x = uvc,
-                        coords = c("longitude", "latitude"),
+                        coords = c("longitude_dd", "latitude_dd"),
                         crs = projcrs)
 
     map <- leaflet_basemap(fish_samplingeffort()) %>%
       fitBounds(
-        ~ min(longitude),
-        ~ min(latitude),
-        ~ max(longitude),
-        ~ max(latitude)
+        ~ min(longitude_dd),
+        ~ min(latitude_dd),
+        ~ max(longitude_dd),
+        ~ max(latitude_dd)
       ) %>%
 
       addGlPolygons(
-        data =  mpa_data$state.mp,
-        color = ~ mpa_data$state.pal(zone),
-        popup =  mpa_data$state.mp$COMMENTS,
+        data =  mpa_data$state_mp,
+        color = ~ mpa_data$state_pal(zone),
+        popup =  mpa_data$state_mp$COMMENTS,
         group = "Marine Parks"
       ) %>%
 
       addLegend(
-        pal = mpa_data$state.pal,
-        values = mpa_data$state.mp$zone,
+        pal = mpa_data$state_pal,
+        values = mpa_data$state_mp$zone,
         opacity = 1,
         title = "Zones",
         position = "bottomright",
@@ -640,18 +640,18 @@ app_server <- function(input, output, session) {
   fish_samplingeffort <- reactive({
     req(mpa_data) # , input$fish.state.method.dropdown
 
-    mpa_data$sampling.effort %>%
-      # dplyr::filter(marine.park %in% c(input$fish.state.park.dropdown)) %>%
+    mpa_data$sampling_effort %>%
+      # dplyr::filter(marine_park %in% c(input$fish.state.park.dropdown)) %>%
       # dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
       dplyr::mutate(content = paste(
         sep = " ",
         "<b>Method:", method, "</b>", "<br/>",
         "<b>Sample:", sample, "</b>", "<br/>",
         "<b>Status:</b>", status, "<br/>",
-        "<b>Depth:</b>", depth, "m", "<br/>",
+        "<b>Depth:</b>", depth_m, "m", "<br/>",
         "<b>Site:</b>", site, "<br/>",
         "<b>Location:</b>", location, "<br/>",
-        "<b>Number of times sampled:</b>", number.of.times.sampled, "<br/>"
+        "<b>Number of times sampled:</b>", number_of_times_sampled, "<br/>"
       ))
   })
 
@@ -672,15 +672,15 @@ app_server <- function(input, output, session) {
 
     # Create the basemap with marine parks and legend
     map <- leaflet_basemap(dat) %>%
-      fitBounds(~ min(longitude), ~ min(latitude), ~ max(longitude), ~ max(latitude)) %>%
+      fitBounds(~ min(longitude_dd), ~ min(latitude_dd), ~ max(longitude_dd), ~ max(latitude_dd)) %>%
     addGlPolygons(
-      data =  mpa_data$state.mp,
-      color = ~ mpa_data$state.pal(zone),
-      popup =  mpa_data$state.mp$COMMENTS,
+      data =  mpa_data$state_mp,
+      color = ~ mpa_data$state_pal(zone),
+      popup =  mpa_data$state_mp$COMMENTS,
       group = "Marine Parks"
     ) %>%
       addLegend(
-        pal = mpa_data$state.pal, values = mpa_data$state.mp$zone, opacity = 1,
+        pal = mpa_data$state_pal, values = mpa_data$state_mp$zone, opacity = 1,
         title = "Zones",
         position = "bottomleft", group = "Marine Parks"
       ) %>%
@@ -689,8 +689,8 @@ app_server <- function(input, output, session) {
         options = layersControlOptions(collapsed = FALSE)
       )%>%
       leaflet::addAwesomeMarkers(data = dat,
-                                 lng = ~longitude,
-                                 lat = ~latitude,
+                                 lng = ~longitude_dd,
+                                 lat = ~latitude_dd,
                                  icon = leaflet::awesomeIcons(
                                    icon = 'surf',
                                    iconColor = 'white',
@@ -722,15 +722,15 @@ app_server <- function(input, output, session) {
   #   max.sr <- max(overzero.sr$value)
   #
   #   map <- leaflet_basemap(dat) %>%
-  #     fitBounds(~ min(longitude), ~ min(latitude), ~ max(longitude), ~ max(latitude)) %>%
+  #     fitBounds(~ min(longitude_dd), ~ min(latitude_dd), ~ max(longitude_dd), ~ max(latitude_dd)) %>%
   #     addGlPolygons(
-  #       data =  mpa_data$state.mp,
-  #       color = ~ mpa_data$state.pal(zone),
-  #       popup =  mpa_data$state.mp$COMMENTS,
+  #       data =  mpa_data$state_mp,
+  #       color = ~ mpa_data$state_pal(zone),
+  #       popup =  mpa_data$state_mp$COMMENTS,
   #       group = "Marine Parks"
   #     ) %>%
   #     addLegend(
-  #       pal = mpa_data$state.pal, values = mpa_data$state.mp$zone, opacity = 1,
+  #       pal = mpa_data$state_pal, values = mpa_data$state_mp$zone, opacity = 1,
   #       title = "Zones",
   #       position = "bottomleft", group = "Marine Parks"
   #     ) %>%
@@ -754,7 +754,7 @@ app_server <- function(input, output, session) {
   #   if (nrow(overzero.ta)) {
   #     map <- map %>%
   #       addCircleMarkers(
-  #         data = overzero.ta, lat = ~latitude, lng = ~longitude,
+  #         data = overzero.ta, lat = ~latitude_dd, lng = ~longitude_dd,
   #         radius = ~ (((value / max(value)) * 20)), fillOpacity = 0.5, stroke = FALSE,
   #         label = ~ as.character(value), group = "Total abundance", color = "yellow"
   #       )
@@ -763,7 +763,7 @@ app_server <- function(input, output, session) {
   #   if (nrow(equalzero.ta)) {
   #     map <- map %>%
   #       addCircleMarkers(
-  #         data = equalzero.ta, lat = ~latitude, lng = ~longitude,
+  #         data = equalzero.ta, lat = ~latitude_dd, lng = ~longitude_dd,
   #         radius = 2, fillOpacity = 0.5, color = "black", stroke = FALSE,
   #         label = ~ as.character(value), group = "Total abundance"
   #       )
@@ -772,7 +772,7 @@ app_server <- function(input, output, session) {
   #   if (nrow(overzero.sr)) {
   #     map <- map %>%
   #       addCircleMarkers(
-  #         data = overzero.sr, lat = ~latitude, lng = ~longitude,
+  #         data = overzero.sr, lat = ~latitude_dd, lng = ~longitude_dd,
   #         radius = ~ ((value / max(value)) * 20), fillOpacity = 0.5, stroke = FALSE,
   #         label = ~ as.character(value), group = "Species richness", color = "green"
   #       )
@@ -781,7 +781,7 @@ app_server <- function(input, output, session) {
   #   if (nrow(equalzero.sr)) {
   #     map <- map %>%
   #       addCircleMarkers(
-  #         data = equalzero.sr, lat = ~latitude, lng = ~longitude,
+  #         data = equalzero.sr, lat = ~latitude_dd, lng = ~longitude_dd,
   #         radius = 2, fillOpacity = 0.5, color = "black", stroke = FALSE,
   #         label = ~ as.character(value), group = "Species richness"
   #       )
@@ -836,10 +836,11 @@ app_server <- function(input, output, session) {
 
 # TODO move to the generate data function
   pal <- c("Sanctuary" = "#C0D435",
+           "SP Scientific Reference" = "#CAC3D5",
            "Recreation" = "#F8EE75",
            "General Use" = "#BBE3EF",
            "SP Benthic Protection" = "#CAC3D5",
-           "Outside Park" = "pink",
+           "Outside Park" = "#bebebe",
            "Conservation Area" = "#C0B134",
            "Marine Management Area" = "#b7cfe1",
            "SP Seagrass Protection" = "#AB9ECC",
@@ -976,13 +977,13 @@ app_server <- function(input, output, session) {
       # req(fish_park_fishedcompletelength())
       #
       # more.than.20 <- fish_park_fishedcompletelength() %>%
-      #   dplyr::group_by(marine.park, method, campaignid, status, scientific) %>%
+      #   dplyr::group_by(marine_park, method, campaignid, status, scientific_name_name) %>%
       #   dplyr::summarise(number = sum(number)) %>%
       #   dplyr::filter(number > 20) %>%
       #   dplyr::ungroup() %>%
-      #   dplyr::distinct(marine.park, method, campaignid, status, scientific)
+      #   dplyr::distinct(marine_park, method, campaignid, status, scientific_name_name)
       #
-      # dat <- fish_park_fishedcompletelength()[scientific %in% c(input$fish.park.fished.species.dropdown)]
+      # dat <- fish_park_fishedcompletelength()[scientific_name %in% c(input$fish.park.fished.species.dropdown)]
       # dat <- dat[length > 0]
       # dat <- dat[!is.na(length)]
       # dat <- dat[complete %in% c("Consistently sampled")]
@@ -1007,13 +1008,13 @@ app_server <- function(input, output, session) {
   #   req(fish_park_fishedcompletelength())
   #
   #   more.than.20 <- fish_park_fishedcompletelength() %>%
-  #     dplyr::group_by(marine.park, method, campaignid, status, scientific) %>%
+  #     dplyr::group_by(marine_park, method, campaignid, status, scientific_name) %>%
   #     dplyr::summarise(number = sum(number)) %>%
   #     dplyr::filter(number > 20) %>%
   #     dplyr::ungroup() %>%
-  #     dplyr::distinct(marine.park, method, campaignid, status, scientific)
+  #     dplyr::distinct(marine_park, method, campaignid, status, scientific_name)
   #
-  #   dat <- fish_park_fishedcompletelength()[scientific %in% c(input$fish.park.fished.species.dropdown)]
+  #   dat <- fish_park_fishedcompletelength()[scientific_name %in% c(input$fish.park.fished.species.dropdown)]
   #   dat <- dat[length > 0]
   #   dat <- dat[!is.na(length)]
   #   dat <- dat[complete %in% c("Consistently sampled")]
@@ -1047,13 +1048,13 @@ app_server <- function(input, output, session) {
 
   # output$ui.fish.park.fished.species.kde.plot <- renderUI({
   #   more.than.20 <- fish_park_fishedcompletelength() %>%
-  #     dplyr::group_by(marine.park, method, campaignid, status, scientific) %>%
+  #     dplyr::group_by(marine_park, method, campaignid, status, scientific_name) %>%
   #     dplyr::summarise(number = sum(number)) %>%
   #     dplyr::filter(number > 20) %>%
   #     dplyr::ungroup() %>%
-  #     dplyr::distinct(marine.park, method, campaignid, status, scientific)
+  #     dplyr::distinct(marine_park, method, campaignid, status, scientific_name)
   #
-  #   dat <- fish_park_fishedcompletelength()[scientific %in% c(input$fish.park.fished.species.dropdown)]
+  #   dat <- fish_park_fishedcompletelength()[scientific_name %in% c(input$fish.park.fished.species.dropdown)]
   #   dat <- dat[length > 0]
   #   dat <- dat[!is.na(length)]
   #   dat <- dat[complete %in% c("Consistently sampled")]
@@ -1076,13 +1077,13 @@ app_server <- function(input, output, session) {
   #   req(fish_park_fishedcompletelength())
   #
   #   more.than.20 <- fish_park_fishedcompletelength() %>%
-  #     dplyr::group_by(marine.park, method, campaignid, status, scientific, dbca_sanctuary) %>%
+  #     dplyr::group_by(marine_park, method, campaignid, status, scientific_name, dbca_sanctuary) %>%
   #     dplyr::summarise(number = sum(number)) %>%
   #     dplyr::filter(number > 20) %>%
   #     dplyr::ungroup() %>%
-  #     dplyr::distinct(marine.park, method, campaignid, status, scientific, dbca_sanctuary)
+  #     dplyr::distinct(marine_park, method, campaignid, status, scientific_name, dbca_sanctuary)
   #
-  #   dat <- fish_park_fishedcompletelength()[scientific %in% c(input$fish.park.fished.species.dropdown)]
+  #   dat <- fish_park_fishedcompletelength()[scientific_name %in% c(input$fish.park.fished.species.dropdown)]
   #   dat <- dat[length > 0]
   #   dat <- dat[!is.na(length)]
   #   dat <- dat[complete %in% c("Consistently sampled")]
@@ -1117,13 +1118,13 @@ app_server <- function(input, output, session) {
   #
   # output$ui.fish.park.fished.species.kde.sanctuary.plot <- renderUI({
   #   more.than.20 <- fish_park_fishedcompletelength() %>%
-  #     dplyr::group_by(marine.park, method, campaignid, status, scientific, dbca_sanctuary) %>%
+  #     dplyr::group_by(marine_park, method, campaignid, status, scientific_name, dbca_sanctuary) %>%
   #     dplyr::summarise(number = sum(number)) %>%
   #     dplyr::filter(number > 20) %>%
   #     dplyr::ungroup() %>%
-  #     dplyr::distinct(marine.park, method, campaignid, status, scientific, dbca_sanctuary)
+  #     dplyr::distinct(marine_park, method, campaignid, status, scientific_name, dbca_sanctuary)
   #
-  #   dat <- fish_park_fishedcompletelength()[scientific %in% c(input$fish.park.fished.species.dropdown)]
+  #   dat <- fish_park_fishedcompletelength()[scientific_name %in% c(input$fish.park.fished.species.dropdown)]
   #   dat <- dat[length > 0]
   #   dat <- dat[!is.na(length)]
   #   dat <- dat[complete %in% c("Consistently sampled")]
@@ -1231,7 +1232,7 @@ app_server <- function(input, output, session) {
     dat <- dplyr::full_join(dat, fish_park_metadata_leaflet()) %>%
       tidyr::replace_na(list(maxn = 0))
 
-    print(unique(dat$scientific))
+    print(unique(dat$scientific_name))
 
     # TODO I don't think this is the complete data?!?!?!?
 
@@ -1245,15 +1246,15 @@ app_server <- function(input, output, session) {
 
 
     map <- leaflet_basemap(dat) %>%
-      fitBounds(~ min(longitude), ~ min(latitude), ~ max(longitude), ~ max(latitude)) %>%
+      fitBounds(~ min(longitude_dd), ~ min(latitude_dd), ~ max(longitude_dd), ~ max(latitude_dd)) %>%
       addGlPolygons(
-        data =  mpa_data$state.mp,
-        color = ~ mpa_data$state.pal(zone),
-        popup =  mpa_data$state.mp$COMMENTS,
+        data =  mpa_data$state_mp,
+        color = ~ mpa_data$state_pal(zone),
+        popup =  mpa_data$state_mp$COMMENTS,
         group = "Marine Parks"
       ) %>%
       addLegend(
-        pal = mpa_data$state.pal, values = mpa_data$state.mp$zone, opacity = 1,
+        pal = mpa_data$state_pal, values = mpa_data$state_mp$zone, opacity = 1,
         title = "Zones",
         position = "bottomleft", group = "Marine Parks"
       ) %>%
@@ -1271,7 +1272,7 @@ app_server <- function(input, output, session) {
     if (nrow(overzero.ta)) {
       map <- map %>%
         addCircleMarkers(
-          data = overzero.ta, lat = ~latitude, lng = ~longitude,
+          data = overzero.ta, lat = ~latitude_dd, lng = ~longitude_dd,
           radius = ~ scales::rescale(maxn, c(5, 25)), #((((maxn / max(maxn))) * 20)),
           fillOpacity = 0.5, stroke = FALSE,
           label = ~ as.character(maxn), group = "Abundance", color = "blue"
@@ -1281,7 +1282,7 @@ app_server <- function(input, output, session) {
     if (nrow(equalzero.ta)) {
       map <- map %>%
         addCircleMarkers(
-          data = equalzero.ta, lat = ~latitude, lng = ~longitude,
+          data = equalzero.ta, lat = ~latitude_dd, lng = ~longitude_dd,
           radius = 3, fillOpacity = 0.5, color = "black", stroke = FALSE,
           label = ~ as.character(maxn), group = "Abundance"
         )
@@ -1317,7 +1318,7 @@ app_server <- function(input, output, session) {
   ####### ►  State All species ----
   output$fish.state.all.species.iframe <- renderUI({
 
-    dat <- mpa_data$foa.codes[scientific %in% c(input$fish.state.all.species.dropdown)] %>%
+    dat <- mpa_data$foa.codes[scientific_name %in% c(input$fish.state.all.species.dropdown)] %>%
       dplyr::distinct(url) %>%
       dplyr::pull("url")
 
@@ -1329,7 +1330,7 @@ app_server <- function(input, output, session) {
   ####### ►  State Fished species ----
   output$fish.state.fished.species.iframe <- renderUI({
 
-    dat <- mpa_data$foa.codes[scientific %in% c(input$fish.state.fished.species.dropdown)] %>%
+    dat <- mpa_data$foa.codes[scientific_name %in% c(input$fish.state.fished.species.dropdown)] %>%
       dplyr::distinct(url) %>%
       dplyr::pull("url")
 
@@ -1341,7 +1342,7 @@ app_server <- function(input, output, session) {
   ####### ►  Marine Park All species ----
   output$fish.park.all.species.iframe <- renderUI({
 
-    dat <- mpa_data$foa.codes[scientific %in% c(input$fish.park.all.species.dropdown)] %>%
+    dat <- mpa_data$foa_codes[scientific_name %in% c(input$fish.park.all.species.dropdown)] %>%
       dplyr::distinct(url) %>%
       dplyr::pull("url")
 
@@ -1352,7 +1353,7 @@ app_server <- function(input, output, session) {
   ####### ►  Marine Park Fished species ----
   output$fish.park.fished.species.iframe <- renderUI({
 
-    dat <- mpa_data$foa.codes[scientific %in% c(input$fish.park.fished.species.dropdown)] %>%
+    dat <- mpa_data$foa_codes[scientific_name %in% c(input$fish.park.fished.species.dropdown)] %>%
       dplyr::distinct(url) %>%
       dplyr::pull("url")
 
@@ -1406,7 +1407,7 @@ app_server <- function(input, output, session) {
   ####### ►  Total abundance ----
   output$fish.park.total.trend <- renderUI({
 
-    dat <- fish_park_trends()[metric %in% c("total.abundance")]
+    dat <- fish_park_trends()[metric %in% c("total_abundance")]
 
     if(nrow(dat > 0)){
 
@@ -1449,9 +1450,9 @@ app_server <- function(input, output, session) {
       pickerInput(
         inputId = "benthic.state.park.coralcover.dropdown",
         label = "Choose Marine Parks to include:",
-        choices = c(unique(mpa_data$coral_cover_metadata$marine.park)), #choices,
+        choices = c(unique(mpa_data$coral_cover_metadata$marine_park)), #choices,
         multiple = TRUE,
-        selected = c(unique(mpa_data$coral_cover_metadata$marine.park)), # choices,
+        selected = c(unique(mpa_data$coral_cover_metadata$marine_park)), # choices,
         options = list(`actions-box` = TRUE, `live-search` = TRUE, `dropup-auto` = FALSE)
       )
     })
@@ -1460,9 +1461,9 @@ app_server <- function(input, output, session) {
       pickerInput(
         inputId = "benthic.state.park.coralrecruitment.dropdown",
         label = "Choose Marine Parks to include:",
-        choices = c(unique(mpa_data$rec_3b$marine.park)), #choices,
+        choices = c(unique(mpa_data$rec_3b$marine_park)), #choices,
         multiple = TRUE,
-        selected = c(unique(mpa_data$rec_3b$marine.park)), # choices,
+        selected = c(unique(mpa_data$rec_3b$marine_park)), # choices,
         options = list(`actions-box` = TRUE, `live-search` = TRUE, `dropup-auto` = FALSE)
       )
     })
@@ -1472,8 +1473,8 @@ app_server <- function(input, output, session) {
       req(mpa_data, input$benthic.state.park.coralcover.dropdown)
 
       dat <- mpa_data$coral_cover_transect %>%
-        dplyr::filter(marine.park %in% c(input$benthic.state.park.coralcover.dropdown)) %>%
-        dplyr::group_by(marine.park, method, plot_year) %>%
+        dplyr::filter(marine_park %in% c(input$benthic.state.park.coralcover.dropdown)) %>%
+        dplyr::group_by(marine_park, method, plot_year) %>%
         dplyr::summarise(n    = length(unique(site)),
                          mean = mean(percent_cover),
                          sd   = sd(percent_cover),
@@ -1481,7 +1482,7 @@ app_server <- function(input, output, session) {
 
 
 
-      # plyr::ddply(dat, plyr::.(marine.park, method, plot_year), .inform=TRUE, dplyr::summarise,
+      # plyr::ddply(dat, plyr::.(marine_park, method, plot_year), .inform=TRUE, dplyr::summarise,
       #       n    = length(unique(site)),
       #       mean = mean(percent_cover),
       #       sd   = sd(percent_cover),
@@ -1506,8 +1507,8 @@ app_server <- function(input, output, session) {
         ) +
 
         scale_y_continuous(expand = c(0, 0.1)) +
-        # facet_wrap(marine.park ~ ., scales = "free", ncol = 1) +
-        ggh4x::facet_wrap2(vars(marine.park), axes = "all", ncol = 1) +
+        # facet_wrap(marine_park ~ ., scales = "free", ncol = 1) +
+        ggh4x::facet_wrap2(vars(marine_park), axes = "all", ncol = 1) +
         ggplot_mpatheme()
 
       p
@@ -1518,8 +1519,8 @@ app_server <- function(input, output, session) {
     output$benthic.park.coralcover.dropdown <- renderUI({
 
       options <- mpa_data$coral_cover_metadata %>%
-        dplyr::distinct(marine.park) %>%
-        dplyr::pull("marine.park")
+        dplyr::distinct(marine_park) %>%
+        dplyr::pull("marine_park")
 
       create_dropdown("benthic.park.coralcover.dropdown", options, "Choose a marine park:", FALSE)
 
@@ -1528,7 +1529,7 @@ app_server <- function(input, output, session) {
     ####### ►  Create a site dropdown ----
     output$benthic.park.site.coralcover.dropdown <- renderUI({
       options <- mpa_data$coral_cover_metadata %>%
-        dplyr::filter(marine.park %in% c(input$benthic.park.coralcover.dropdown)) %>%
+        dplyr::filter(marine_park %in% c(input$benthic.park.coralcover.dropdown)) %>%
         dplyr::distinct(site) %>%
         dplyr::arrange() %>%
         dplyr::pull("site")
@@ -1549,9 +1550,9 @@ app_server <- function(input, output, session) {
       req(mpa_data, input$benthic.park.coralcover.dropdown)
 
       dat <- mpa_data$coral_cover_transect %>%
-        dplyr::filter(marine.park %in% c(input$benthic.park.coralcover.dropdown)) %>%
+        dplyr::filter(marine_park %in% c(input$benthic.park.coralcover.dropdown)) %>%
         dplyr::filter(site %in% c(input$benthic.park.site.coralcover.dropdown)) %>%
-        dplyr::group_by(marine.park, method, plot_year) %>%
+        dplyr::group_by(marine_park, method, plot_year) %>%
         dplyr::summarise(n    = length(unique(site)),
                          mean = mean(percent_cover),
                          sd   = sd(percent_cover),
@@ -1586,9 +1587,9 @@ app_server <- function(input, output, session) {
       req(mpa_data, input$benthic.park.coralcover.dropdown)
 
       dat <- mpa_data$coral_cover_transect %>%
-        dplyr::filter(marine.park %in% c(input$benthic.park.coralcover.dropdown))%>%
+        dplyr::filter(marine_park %in% c(input$benthic.park.coralcover.dropdown))%>%
         dplyr::filter(site %in% c(input$benthic.park.site.coralcover.dropdown)) %>%
-        dplyr::group_by(marine.park, method, plot_year, sector, site) %>%
+        dplyr::group_by(marine_park, method, plot_year, sector, site) %>%
         dplyr::summarise(n    = length(unique(site)),
                          mean = mean(percent_cover),
                          sd   = sd(percent_cover),
@@ -1645,7 +1646,7 @@ app_server <- function(input, output, session) {
       req(mpa_data, input$benthic.state.park.coralrecruitment.dropdown)
 
       mpa_data$rec_3c2 %>%
-        dplyr::filter(marine.park %in% c(input$benthic.state.park.coralrecruitment.dropdown))
+        dplyr::filter(marine_park %in% c(input$benthic.state.park.coralrecruitment.dropdown))
     })
 
     output$benthic.state.coralrecruitment.all.plot <- renderPlot({
@@ -1663,8 +1664,8 @@ app_server <- function(input, output, session) {
           expand = expand_scale(mult = c(0, 0.05))
         ) + ggplot_mpatheme() +
         scale_y_continuous(expand = c(0, 0.1)) +
-        # facet_wrap(marine.park ~ ., scales = "free", ncol = 1) +
-        ggh4x::facet_wrap2(vars(marine.park), axes = "all", ncol = 1) +
+        # facet_wrap(marine_park ~ ., scales = "free", ncol = 1) +
+        ggh4x::facet_wrap2(vars(marine_park), axes = "all", ncol = 1) +
         ggplot_mpatheme()
 
       p
@@ -1675,14 +1676,14 @@ app_server <- function(input, output, session) {
       req(mpa_data, input$benthic.state.park.coralcover.dropdown)
 
       mpa_data$coral_cover_metadata %>%
-        dplyr::distinct(marine.park, zone, sector, site, latitude, longitude) %>%
-        dplyr::filter(marine.park %in% c(input$benthic.state.park.coralcover.dropdown)) %>%
+        dplyr::distinct(marine_park, zone, sector, site, latitude_dd, longitude_dd) %>%
+        dplyr::filter(marine_park %in% c(input$benthic.state.park.coralcover.dropdown)) %>%
         dplyr::mutate(content = paste(
           sep = " ",
           "<b>Site:", site, "</b>", "<br/>",
           "<b>Sector:</b>", sector, "<br/>",
           "<b>Zone:</b>", zone, "<br/>"))%>%
-        dplyr::filter(!is.na(latitude))
+        dplyr::filter(!is.na(latitude_dd))
     })
 
     output$benthic.state.sampling.leaflet <- renderLeaflet({
@@ -1690,14 +1691,14 @@ app_server <- function(input, output, session) {
 
       map <- leaflet_basemap(benthic_coralcover_state_samplingeffort()) %>%
         fitBounds(
-          ~ min(longitude),
-          ~ min(latitude),
-          ~ max(longitude),
-          ~ max(latitude)
+          ~ min(longitude_dd),
+          ~ min(latitude_dd),
+          ~ max(longitude_dd),
+          ~ max(latitude_dd)
         ) %>%
 
-        leaflet::addAwesomeMarkers(lng = ~longitude,
-                                   lat = ~latitude,
+        leaflet::addAwesomeMarkers(lng = ~longitude_dd,
+                                   lat = ~latitude_dd,
                                    icon = leaflet::awesomeIcons(
                                      icon = 'surf',
                                      iconColor = 'white',
@@ -1709,21 +1710,21 @@ app_server <- function(input, output, session) {
                                    group = "Sampling locations"
         ) %>%
         # addMarkers(
-        #   lng = ~longitude,
-        #   lat = ~latitude,
+        #   lng = ~longitude_dd,
+        #   lat = ~latitude_dd,
         #   label = ~ as.character(site),
         #   popup = ~content,
         #   group = "Sampling locations"
         # ) %>%
         addGlPolygons(
-          data =  mpa_data$state.mp,
-          color = ~ mpa_data$state.pal(zone),
-          popup =  mpa_data$state.mp$COMMENTS,
+          data =  mpa_data$state_mp,
+          color = ~ mpa_data$state_pal(zone),
+          popup =  mpa_data$state_mp$COMMENTS,
           group = "Marine Parks"
         ) %>%
         addLegend(
-          pal = mpa_data$state.pal,
-          values = mpa_data$state.mp$zone,
+          pal = mpa_data$state_pal,
+          values = mpa_data$state_mp$zone,
           opacity = 1,
           title = "Zones",
           position = "bottomright",
@@ -1745,15 +1746,15 @@ app_server <- function(input, output, session) {
       req(mpa_data, input$benthic.park.coralcover.dropdown)
 
       mpa_data$coral_cover_metadata %>%
-        dplyr::distinct(marine.park, zone, sector, site, latitude, longitude) %>%
-        dplyr::filter(marine.park %in% c(input$benthic.park.coralcover.dropdown)) %>%
+        dplyr::distinct(marine_park, zone, sector, site, latitude_dd, longitude_dd) %>%
+        dplyr::filter(marine_park %in% c(input$benthic.park.coralcover.dropdown)) %>%
         dplyr::filter(site %in% c(input$benthic.park.site.coralcover.dropdown)) %>%
         dplyr::mutate(content = paste(
           sep = " ",
           "<b>Site:", site, "</b>", "<br/>",
           "<b>Sector:</b>", sector, "<br/>",
           "<b>Zone:</b>", zone, "<br/>"))%>%
-        dplyr::filter(!is.na(latitude))
+        dplyr::filter(!is.na(latitude_dd))
     })
 
     output$benthic.park.sampling.leaflet <- renderLeaflet({
@@ -1761,14 +1762,14 @@ app_server <- function(input, output, session) {
 
       map <- leaflet_basemap(benthic_coralcover_park_samplingeffort()) %>%
         fitBounds(
-          ~ min(longitude),
-          ~ min(latitude),
-          ~ max(longitude),
-          ~ max(latitude)
+          ~ min(longitude_dd),
+          ~ min(latitude_dd),
+          ~ max(longitude_dd),
+          ~ max(latitude_dd)
         ) %>%
 
-        leaflet::addAwesomeMarkers(lng = ~longitude,
-                                   lat = ~latitude,
+        leaflet::addAwesomeMarkers(lng = ~longitude_dd,
+                                   lat = ~latitude_dd,
                                    icon = leaflet::awesomeIcons(
                                      icon = 'surf',
                                      iconColor = 'white',
@@ -1780,21 +1781,21 @@ app_server <- function(input, output, session) {
                                    group = "Sampling locations"
         ) %>%
         # addMarkers(
-        #   lng = ~longitude,
-        #   lat = ~latitude,
+        #   lng = ~longitude_dd,
+        #   lat = ~latitude_dd,
         #   label = ~ as.character(site),
         #   popup = ~content,
         #   group = "Sampling locations"
         # ) %>%
         addGlPolygons(
-          data =  mpa_data$state.mp,
-          color = ~ mpa_data$state.pal(zone),
-          popup =  mpa_data$state.mp$COMMENTS,
+          data =  mpa_data$state_mp,
+          color = ~ mpa_data$state_pal(zone),
+          popup =  mpa_data$state_mp$COMMENTS,
           group = "Marine Parks"
         ) %>%
         addLegend(
-          pal = mpa_data$state.pal,
-          values = mpa_data$state.mp$zone,
+          pal = mpa_data$state_pal,
+          values = mpa_data$state_mp$zone,
           opacity = 1,
           title = "Zones",
           position = "bottomright",

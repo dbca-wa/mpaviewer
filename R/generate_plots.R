@@ -17,10 +17,11 @@ generate_plots <- function() {
 
   # PALETTE FOR ZONE PLOTS ----
   pal <- c("Sanctuary" = "#C0D435",
+           "SP Scientific Reference" = "#CAC3D5",
            "Recreation" = "#F8EE75",
            "General Use" = "#BBE3EF",
            "SP Benthic Protection" = "#CAC3D5",
-           "Outside Park" = "pink",
+           "Outside Park" = "#bebebe",
            "Conservation Area" = "#C0B134",
            "Marine Management Area" = "#b7cfe1",
            "SP Seagrass Protection" = "#AB9ECC",
@@ -31,16 +32,19 @@ generate_plots <- function() {
 
   # BEGIN PLOTTING ----
   ## TOTAL ABUNDANCE ----
-  ta <- mpa_data$ta.sr[metric %in% c("Total abundance")]
+  ta <- mpa_data$ta_sr[metric %in% c("Total abundance")]
 
   # Filter to consistently sampled
   dat <- ta[complete %in% c("Consistently sampled")]
 
-  unique(dat$marine.park)
+  unique(dat$marine_park)
+  unique(dat$method)
 
-  for(marinepark in unique(dat$marine.park)){
+  for(marinepark in unique(dat$marine_park)){
 
-    temp <- dat[marine.park %in% c(marinepark)]
+    message(marinepark)
+
+    temp <- dat[marine_park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
 
@@ -57,13 +61,13 @@ generate_plots <- function() {
         ggplot_mpatheme()
 
       gazetted <- unique(temp2$gazetted)
-      re.zoned <- unique(temp2$re.zoned)
-      min.year <- min(temp2$year)
+      re_zoned <- unique(temp2$re_zoned)
+      min_year <- min(temp2$year)
 
       # Add gazettal and rezoned dates if they occured after sampling
       if(!gazetted %in% c("NA", NA, NULL)){
 
-        if(min.year < gazetted) {
+        if(min_year < gazetted) {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
             ggplot2::geom_label(
               x = gazetted,
@@ -76,11 +80,11 @@ generate_plots <- function() {
             )}
       }
 
-      if(!re.zoned %in% c("NA", NA, NULL)){
-        if(min.year < re.zoned) {
-          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re.zoned), linetype = "dashed") +
+      if(!re_zoned %in% c("NA", NA, NULL)){
+        if(min_year < re_zoned) {
+          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
             ggplot2::geom_label(
-              x = re.zoned,
+              x = re_zoned,
               y = +Inf,
               label = "\n\n rezoned",
               size = 5,
@@ -89,6 +93,19 @@ generate_plots <- function() {
               label.size = NA
             )}
       }
+
+      if(methods %in% c("stereo-ROVs+UVC")){
+          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+            ggplot2::geom_label(
+              x = 2021,
+              y = +Inf,
+              label = "\n\n method\nchange",
+              size = 5,
+              fill = "white",
+              check_overlap = TRUE,
+              label.size = NA)
+      }
+
       p
 
       park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
@@ -110,15 +127,15 @@ generate_plots <- function() {
 
 
   #### TOTAL ABUNDANCE - BY SANCTUARY ----
-  ta <- mpa_data$ta.sr.sanctuary[metric %in% c("Total abundance")]
+  ta <- mpa_data$ta_sr_sanctuary[metric %in% c("Total abundance")]
   dat <- ta
   # dat <- sr[complete %in% c("Consistently sampled")]  # Turned off after meeting with Jordan 6th Nov 2023
 
-  unique(dat$marine.park)
+  unique(dat$marine_park)
 
-  for(marinepark in unique(dat$marine.park)){
+  for(marinepark in unique(dat$marine_park)){
 
-    temp <- dat[marine.park %in% c(marinepark)]
+    temp <- dat[marine_park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
 
@@ -137,13 +154,13 @@ generate_plots <- function() {
         ggplot_mpatheme()
 
       gazetted <- unique(temp2$gazetted)
-      re.zoned <- unique(temp2$re.zoned)
-      min.year <- min(temp2$year)
+      re_zoned <- unique(temp2$re_zoned)
+      min_year <- min(temp2$year)
 
       # Add gazettal and rezoned dates if they occured after sampling
       if(!gazetted %in% c("NA", NA, NULL)){
 
-        if(min.year < gazetted) {
+        if(min_year < gazetted) {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
             ggplot2::geom_label(
               x = gazetted,
@@ -156,11 +173,11 @@ generate_plots <- function() {
             )}
       }
 
-      if(!re.zoned %in% c("NA", NA, NULL)){
-        if(min.year < re.zoned) {
-          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re.zoned), linetype = "dashed") +
+      if(!re_zoned %in% c("NA", NA, NULL)){
+        if(min_year < re_zoned) {
+          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
             ggplot2::geom_label(
-              x = re.zoned,
+              x = re_zoned,
               y = +Inf,
               label = "\n\n rezoned",
               size = 5,
@@ -169,6 +186,19 @@ generate_plots <- function() {
               label.size = NA
             )}
       }
+
+      if(methods %in% c("stereo-ROVs+UVC")){
+        p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+          ggplot2::geom_label(
+            x = 2021,
+            y = +Inf,
+            label = "\n\n method\nchange",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA)
+      }
+
       p
 
       park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
@@ -191,17 +221,17 @@ generate_plots <- function() {
   }
 
   #### TOTAL ABUNDANCE - BY SITE ----
-  ta <- mpa_data$ta.sr.site[metric %in% c("Total abundance")]
+  ta <- mpa_data$ta_sr_site[metric %in% c("Total abundance")]
   dat <- ta
   # dat <- sr[complete %in% c("Consistently sampled")]  # Turned off after meeting with Jordan 6th Nov 2023
 
-  unique(dat$marine.park)
+  unique(dat$marine_park)
 
-  for(marinepark in unique(dat$marine.park)){
+  for(marinepark in unique(dat$marine_park)){
 
     print(marinepark)
 
-    temp <- dat[marine.park %in% c(marinepark)]
+    temp <- dat[marine_park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
 
@@ -225,13 +255,13 @@ generate_plots <- function() {
           ggplot_mpatheme()
 
         gazetted <- unique(temp2$gazetted)
-        re.zoned <- unique(temp2$re.zoned)
-        min.year <- min(temp2$year)
+        re_zoned <- unique(temp2$re_zoned)
+        min_year <- min(temp2$year)
 
         # Add gazettal and rezoned dates if they occured after sampling
         if(!gazetted %in% c("NA", NA, NULL)){
 
-          if(min.year < gazetted) {
+          if(min_year < gazetted) {
             p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
               ggplot2::geom_label(
                 x = gazetted,
@@ -244,11 +274,11 @@ generate_plots <- function() {
               )}
         }
 
-        if(!re.zoned %in% c("NA", NA, NULL)){
-          if(min.year < re.zoned) {
-            p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re.zoned), linetype = "dashed") +
+        if(!re_zoned %in% c("NA", NA, NULL)){
+          if(min_year < re_zoned) {
+            p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
               ggplot2::geom_label(
-                x = re.zoned,
+                x = re_zoned,
                 y = +Inf,
                 label = "\n\n rezoned",
                 size = 5,
@@ -257,6 +287,19 @@ generate_plots <- function() {
                 label.size = NA
               )}
         }
+
+        if(methods %in% c("stereo-ROVs+UVC")){
+          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+            ggplot2::geom_label(
+              x = 2021,
+              y = +Inf,
+              label = "\n\n method\nchange",
+              size = 5,
+              fill = "white",
+              check_overlap = TRUE,
+              label.size = NA)
+        }
+
         p
 
         park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
@@ -284,15 +327,15 @@ generate_plots <- function() {
   }
 
   #### TOTAL ABUNDANCE - BY ZONE ----
-  ta <- mpa_data$ta.sr.zone[metric %in% c("Total abundance")]
+  ta <- mpa_data$ta_sr_zone[metric %in% c("Total abundance")]
   dat <- ta
   # dat <- sr[complete %in% c("Consistently sampled")]  # Turned off after meeting with Jordan 6th Nov 2023
 
-  unique(dat$marine.park)
+  unique(dat$marine_park)
 
-  for(marinepark in unique(dat$marine.park)){
+  for(marinepark in unique(dat$marine_park)){
 
-    temp <- dat[marine.park %in% c(marinepark)]
+    temp <- dat[marine_park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
 
@@ -310,13 +353,13 @@ generate_plots <- function() {
         ggplot_mpatheme()
 
       gazetted <- unique(temp2$gazetted)
-      re.zoned <- unique(temp2$re.zoned)
-      min.year <- min(temp2$year)
+      re_zoned <- unique(temp2$re_zoned)
+      min_year <- min(temp2$year)
 
       # Add gazettal and rezoned dates if they occured after sampling
       if(!gazetted %in% c("NA", NA, NULL)){
 
-        if(min.year < gazetted) {
+        if(min_year < gazetted) {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
             ggplot2::geom_label(
               x = gazetted,
@@ -329,11 +372,11 @@ generate_plots <- function() {
             )}
       }
 
-      if(!re.zoned %in% c("NA", NA, NULL)){
-        if(min.year < re.zoned) {
-          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re.zoned), linetype = "dashed") +
+      if(!re_zoned %in% c("NA", NA, NULL)){
+        if(min_year < re_zoned) {
+          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
             ggplot2::geom_label(
-              x = re.zoned,
+              x = re_zoned,
               y = +Inf,
               label = "\n\n rezoned",
               size = 5,
@@ -342,6 +385,19 @@ generate_plots <- function() {
               label.size = NA
             )}
       }
+
+      if(methods %in% c("stereo-ROVs+UVC")){
+        p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+          ggplot2::geom_label(
+            x = 2021,
+            y = +Inf,
+            label = "\n\n method\nchange",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA)
+      }
+
       p
 
       park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
@@ -365,16 +421,16 @@ generate_plots <- function() {
   }
 
   ## SPECIES RICHNESS ----
-  sr <- mpa_data$ta.sr[metric %in% c("Species richness")]
+  sr <- mpa_data$ta_sr[metric %in% c("Species richness")]
 
   # Filter to consistently sampled
   dat <- sr[complete %in% c("Consistently sampled")]
 
-  unique(dat$marine.park)
+  unique(dat$marine_park)
 
-  for(marinepark in unique(dat$marine.park)){
+  for(marinepark in unique(dat$marine_park)){
 
-    temp <- dat[marine.park %in% c(marinepark)]
+    temp <- dat[marine_park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
 
@@ -391,13 +447,13 @@ generate_plots <- function() {
         ggplot_mpatheme()
 
       gazetted <- unique(temp2$gazetted)
-      re.zoned <- unique(temp2$re.zoned)
-      min.year <- min(temp2$year)
+      re_zoned <- unique(temp2$re_zoned)
+      min_year <- min(temp2$year)
 
       # Add gazettal and rezoned dates if they occured after sampling
       if(!gazetted %in% c("NA", NA, NULL)){
 
-        if(min.year < gazetted) {
+        if(min_year < gazetted) {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
             ggplot2::geom_label(
               x = gazetted,
@@ -410,11 +466,11 @@ generate_plots <- function() {
             )}
       }
 
-      if(!re.zoned %in% c("NA", NA, NULL)){
-        if(min.year < re.zoned) {
-          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re.zoned), linetype = "dashed") +
+      if(!re_zoned %in% c("NA", NA, NULL)){
+        if(min_year < re_zoned) {
+          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
             ggplot2::geom_label(
-              x = re.zoned,
+              x = re_zoned,
               y = +Inf,
               label = "\n\n rezoned",
               size = 5,
@@ -423,6 +479,19 @@ generate_plots <- function() {
               label.size = NA
             )}
       }
+
+      if(methods %in% c("stereo-ROVs+UVC")){
+        p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+          ggplot2::geom_label(
+            x = 2021,
+            y = +Inf,
+            label = "\n\n method\nchange",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA)
+      }
+
       p
 
       park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
@@ -443,15 +512,15 @@ generate_plots <- function() {
   }
 
   #### SPECIES RICHNESS - BY SANCTAURY ----
-  sr <- mpa_data$ta.sr.sanctuary[metric %in% c("Species richness")]
+  sr <- mpa_data$ta_sr_sanctuary[metric %in% c("Species richness")]
   dat <- sr
   # dat <- sr[complete %in% c("Consistently sampled")]  # Turned off after meeting with Jordan 6th Nov 2023
 
-  unique(dat$marine.park)
+  unique(dat$marine_park)
 
-  for(marinepark in unique(dat$marine.park)){
+  for(marinepark in unique(dat$marine_park)){
 
-    temp <- dat[marine.park %in% c(marinepark)]
+    temp <- dat[marine_park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
 
@@ -470,13 +539,13 @@ generate_plots <- function() {
         ggplot_mpatheme()
 
       gazetted <- unique(temp2$gazetted)
-      re.zoned <- unique(temp2$re.zoned)
-      min.year <- min(temp2$year)
+      re_zoned <- unique(temp2$re_zoned)
+      min_year <- min(temp2$year)
 
       # Add gazettal and rezoned dates if they occured after sampling
       if(!gazetted %in% c("NA", NA, NULL)){
 
-        if(min.year < gazetted) {
+        if(min_year < gazetted) {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
             ggplot2::geom_label(
               x = gazetted,
@@ -489,11 +558,11 @@ generate_plots <- function() {
             )}
       }
 
-      if(!re.zoned %in% c("NA", NA, NULL)){
-        if(min.year < re.zoned) {
-          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re.zoned), linetype = "dashed") +
+      if(!re_zoned %in% c("NA", NA, NULL)){
+        if(min_year < re_zoned) {
+          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
             ggplot2::geom_label(
-              x = re.zoned,
+              x = re_zoned,
               y = +Inf,
               label = "\n\n rezoned",
               size = 5,
@@ -501,6 +570,18 @@ generate_plots <- function() {
               check_overlap = TRUE,
               label.size = NA
             )}
+      }
+
+      if(methods %in% c("stereo-ROVs+UVC")){
+        p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+          ggplot2::geom_label(
+            x = 2021,
+            y = +Inf,
+            label = "\n\n method\nchange",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA)
       }
       p
 
@@ -524,17 +605,17 @@ generate_plots <- function() {
   }
 
   #### SPECIES RICHNESS - BY SITE ----
-  sr <- mpa_data$ta.sr.site[metric %in% c("Species richness")]
+  sr <- mpa_data$ta_sr_site[metric %in% c("Species richness")]
   dat <- sr
   # dat <- sr[complete %in% c("Consistently sampled")]  # Turned off after meeting with Jordan 6th Nov 2023
 
-  unique(dat$marine.park)
+  unique(dat$marine_park)
 
-  for(marinepark in unique(dat$marine.park)){
+  for(marinepark in unique(dat$marine_park)){
 
     print(marinepark)
 
-    temp <- dat[marine.park %in% c(marinepark)]
+    temp <- dat[marine_park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
 
@@ -558,13 +639,13 @@ generate_plots <- function() {
         ggplot_mpatheme()
 
       gazetted <- unique(temp2$gazetted)
-      re.zoned <- unique(temp2$re.zoned)
-      min.year <- min(temp2$year)
+      re_zoned <- unique(temp2$re_zoned)
+      min_year <- min(temp2$year)
 
       # Add gazettal and rezoned dates if they occured after sampling
       if(!gazetted %in% c("NA", NA, NULL)){
 
-        if(min.year < gazetted) {
+        if(min_year < gazetted) {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
             ggplot2::geom_label(
               x = gazetted,
@@ -577,11 +658,11 @@ generate_plots <- function() {
             )}
       }
 
-      if(!re.zoned %in% c("NA", NA, NULL)){
-        if(min.year < re.zoned) {
-          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re.zoned), linetype = "dashed") +
+      if(!re_zoned %in% c("NA", NA, NULL)){
+        if(min_year < re_zoned) {
+          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
             ggplot2::geom_label(
-              x = re.zoned,
+              x = re_zoned,
               y = +Inf,
               label = "\n\n rezoned",
               size = 5,
@@ -589,6 +670,18 @@ generate_plots <- function() {
               check_overlap = TRUE,
               label.size = NA
             )}
+      }
+
+      if(methods %in% c("stereo-ROVs+UVC")){
+        p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+          ggplot2::geom_label(
+            x = 2021,
+            y = +Inf,
+            label = "\n\n method\nchange",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA)
       }
       p
 
@@ -617,15 +710,15 @@ generate_plots <- function() {
   }
 
   #### SPECIES RICHNESS - BY ZONE ----
-  sr <- mpa_data$ta.sr.zone[metric %in% c("Species richness")]
+  sr <- mpa_data$ta_sr_zone[metric %in% c("Species richness")]
   dat <- sr
   # dat <- sr[complete %in% c("Consistently sampled")]  # Turned off after meeting with Jordan 6th Nov 2023
 
-  unique(dat$marine.park)
+  unique(dat$marine_park)
 
-  for(marinepark in unique(dat$marine.park)){
+  for(marinepark in unique(dat$marine_park)){
 
-    temp <- dat[marine.park %in% c(marinepark)]
+    temp <- dat[marine_park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
 
@@ -643,13 +736,13 @@ generate_plots <- function() {
         ggplot_mpatheme()
 
       gazetted <- unique(temp2$gazetted)
-      re.zoned <- unique(temp2$re.zoned)
-      min.year <- min(temp2$year)
+      re_zoned <- unique(temp2$re_zoned)
+      min_year <- min(temp2$year)
 
       # Add gazettal and rezoned dates if they occured after sampling
       if(!gazetted %in% c("NA", NA, NULL)){
 
-        if(min.year < gazetted) {
+        if(min_year < gazetted) {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
             ggplot2::geom_label(
               x = gazetted,
@@ -662,11 +755,11 @@ generate_plots <- function() {
             )}
       }
 
-      if(!re.zoned %in% c("NA", NA, NULL)){
-        if(min.year < re.zoned) {
-          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re.zoned), linetype = "dashed") +
+      if(!re_zoned %in% c("NA", NA, NULL)){
+        if(min_year < re_zoned) {
+          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
             ggplot2::geom_label(
-              x = re.zoned,
+              x = re_zoned,
               y = +Inf,
               label = "\n\n rezoned",
               size = 5,
@@ -674,6 +767,18 @@ generate_plots <- function() {
               check_overlap = TRUE,
               label.size = NA
             )}
+      }
+
+      if(methods %in% c("stereo-ROVs+UVC")){
+        p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+          ggplot2::geom_label(
+            x = 2021,
+            y = +Inf,
+            label = "\n\n method\nchange",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA)
       }
       p
 
@@ -700,22 +805,22 @@ generate_plots <- function() {
 
 
   ## STACKED ABUNDANCE PLOT ----
-  dat <- mpa_data$top.ten
+  dat <- mpa_data$top_ten
 
-  unique(dat$marine.park)
+  unique(dat$marine_park)
 
-  for(marinepark in unique(dat$marine.park)){
+  for(marinepark in unique(dat$marine_park)){
 
-    temp <- dat[marine.park %in% c(marinepark)]
+    temp <- dat[marine_park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
 
       temp2 <- temp[method %in% c(methods)]
 
-      maxn.sum <- temp2 %>%
+      maxn_sum <- temp2 %>%
         dplyr::arrange(desc(maxn))
 
-      p <-   ggplot2::ggplot(maxn.sum, ggplot2::aes(x = reorder(scientific, maxn), y = maxn)) +
+      p <-   ggplot2::ggplot(maxn_sum, ggplot2::aes(x = reorder(scientific_name, maxn), y = maxn)) +
         ggplot2::geom_bar(stat = "identity", position = ggplot2::position_dodge()) +
         ggplot2::coord_flip() +
         ggplot2::xlab("Species") +
@@ -740,16 +845,16 @@ generate_plots <- function() {
   }
 
   ## SUM ALL FISHED ABUNDANCE ----
-  dat <- mpa_data$fished.sum
+  dat <- mpa_data$fished_sum
   dat <- dat[complete %in% c("Consistently sampled")]
 
-  unique(dat$marine.park)
+  unique(dat$marine_park)
 
-  for(marinepark in unique(dat$marine.park)){
+  for(marinepark in unique(dat$marine_park)){
 
     message(marinepark)
 
-    temp <- dat[marine.park %in% c(marinepark)]
+    temp <- dat[marine_park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
 
@@ -767,13 +872,13 @@ generate_plots <- function() {
         ggplot_mpatheme()
 
       gazetted <- unique(temp2$gazetted)
-      re.zoned <- unique(temp2$re.zoned)
-      min.year <- min(temp2$year)
+      re_zoned <- unique(temp2$re_zoned)
+      min_year <- min(temp2$year)
 
       # Add gazettal and rezoned dates if they occured after sampling
       if(!gazetted %in% c("NA", NA, NULL)){
 
-        if(min.year < gazetted) {
+        if(min_year < gazetted) {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
             ggplot2::geom_label(
               x = gazetted,
@@ -786,11 +891,11 @@ generate_plots <- function() {
             )}
       }
 
-      if(!re.zoned %in% c("NA", NA, NULL)){
-        if(min.year < re.zoned) {
-          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re.zoned), linetype = "dashed") +
+      if(!re_zoned %in% c("NA", NA, NULL)){
+        if(min_year < re_zoned) {
+          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
             ggplot2::geom_label(
-              x = re.zoned,
+              x = re_zoned,
               y = +Inf,
               label = "\n\n rezoned",
               size = 5,
@@ -798,6 +903,18 @@ generate_plots <- function() {
               check_overlap = TRUE,
               label.size = NA
             )}
+      }
+
+      if(methods %in% c("stereo-ROVs+UVC")){
+        p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+          ggplot2::geom_label(
+            x = 2021,
+            y = +Inf,
+            label = "\n\n method\nchange",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA)
       }
       p
 
@@ -815,16 +932,16 @@ generate_plots <- function() {
   }
 
   ## SUM ALL FISHED ABUNDANCE - BY SANCTAURY ----
-  dat <- mpa_data$fished.sum.sanctuary
+  dat <- mpa_data$fished_sum_sanctuary
   dat <- dat[complete %in% c("Consistently sampled")]
 
-  unique(dat$marine.park)
+  unique(dat$marine_park)
 
-  for(marinepark in unique(dat$marine.park)){
+  for(marinepark in unique(dat$marine_park)){
 
     message(marinepark)
 
-    temp <- dat[marine.park %in% c(marinepark)]
+    temp <- dat[marine_park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
 
@@ -843,13 +960,13 @@ generate_plots <- function() {
         ggplot_mpatheme()
 
       gazetted <- unique(temp2$gazetted)
-      re.zoned <- unique(temp2$re.zoned)
-      min.year <- min(temp2$year)
+      re_zoned <- unique(temp2$re_zoned)
+      min_year <- min(temp2$year)
 
       # Add gazettal and rezoned dates if they occured after sampling
       if(!gazetted %in% c("NA", NA, NULL)){
 
-        if(min.year < gazetted) {
+        if(min_year < gazetted) {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
             ggplot2::geom_label(
               x = gazetted,
@@ -862,11 +979,11 @@ generate_plots <- function() {
             )}
       }
 
-      if(!re.zoned %in% c("NA", NA, NULL)){
-        if(min.year < re.zoned) {
-          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re.zoned), linetype = "dashed") +
+      if(!re_zoned %in% c("NA", NA, NULL)){
+        if(min_year < re_zoned) {
+          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
             ggplot2::geom_label(
-              x = re.zoned,
+              x = re_zoned,
               y = +Inf,
               label = "\n\n rezoned",
               size = 5,
@@ -874,6 +991,18 @@ generate_plots <- function() {
               check_overlap = TRUE,
               label.size = NA
             )}
+      }
+
+      if(methods %in% c("stereo-ROVs+UVC")){
+        p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+          ggplot2::geom_label(
+            x = 2021,
+            y = +Inf,
+            label = "\n\n method\nchange",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA)
       }
       p
 
@@ -898,15 +1027,17 @@ generate_plots <- function() {
 
 
   ### TROPHIC GROUP ----
-  dat <- mpa_data$trophic.sum
+  dat <- mpa_data$trophic_sum
   dat <- dat[complete %in% c("Consistently sampled")]
 
+  dat <- dat[!trophic_group %in% c("Unknown")]
+
   #TODO figure out why trophic has two gazettal (NA and 2018) for Ngari Capes
-  unique(dat$marine.park)
+  unique(dat$marine_park)
 
-  for(marinepark in unique(dat$marine.park)){
+  for(marinepark in unique(dat$marine_park)){
 
-    temp <- dat[marine.park %in% c(marinepark)]
+    temp <- dat[marine_park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
 
@@ -927,13 +1058,13 @@ generate_plots <- function() {
         ggplot_mpatheme()
 
       gazetted <- unique(temp2$gazetted)
-      re.zoned <- unique(temp2$re.zoned)
-      min.year <- min(temp2$year)
+      re_zoned <- unique(temp2$re_zoned)
+      min_year <- min(temp2$year)
 
       # Add gazettal and rezoned dates if they occured after sampling
       if(!gazetted %in% c("NA", NA, NULL)){
 
-        if(min.year < gazetted) {
+        if(min_year < gazetted) {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
             ggplot2::geom_label(
               x = gazetted,
@@ -946,11 +1077,11 @@ generate_plots <- function() {
             )}
       }
 
-      if(!re.zoned %in% c("NA", NA, NULL)){
-        if(min.year < re.zoned) {
-          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re.zoned), linetype = "dashed") +
+      if(!re_zoned %in% c("NA", NA, NULL)){
+        if(min_year < re_zoned) {
+          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
             ggplot2::geom_label(
-              x = re.zoned,
+              x = re_zoned,
               y = +Inf,
               label = "\n\n rezoned",
               size = 5,
@@ -959,18 +1090,25 @@ generate_plots <- function() {
               label.size = NA
             )}
       }
+
+      if(methods %in% c("stereo-ROVs+UVC")){
+        p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+          ggplot2::geom_label(
+            x = 2021,
+            y = +Inf,
+            label = "\n\n method\nchange",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA)
+      }
+
       p <- p +
-        ggh4x::facet_wrap2(ggplot2::vars(trophic.group), axes = "all", ncol = 1, scales = "free_y")
+        ggh4x::facet_wrap2(ggplot2::vars(trophic_group), axes = "all", ncol = 1, scales = "free_y")
 
       park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
 
-      p.height <- 3 * length(unique(temp2$trophic.group))
-
-      # if (length(unique(temp2$trophic.group)) %in% c(1,2,3) ){
-      #   p.height <- 3
-      # } else {
-      #   p.height <- 3 * ceiling(length(unique(temp2$trophic.group))/3)
-      # }
+      p.height <- 3 * length(unique(temp2$trophic_group))
 
       ggplot2::ggsave(
         paste0("inst/app/www/plots/", park.name, "_", methods, "_trophic.png"),
@@ -985,28 +1123,28 @@ generate_plots <- function() {
 
   ## INDIVIDUAL SPECIES ----
   #### ABUNDANCE ----
-  dat <- mpa_data$abundance.sum
+  dat <- mpa_data$abundance_sum
   dat <- dat[complete %in% c("Consistently sampled")]
 
-  unique(dat$marine.park)
+  unique(dat$marine_park)
 
-  for(marinepark in unique(dat$marine.park)){
+  for(marinepark in unique(dat$marine_park)){
 
-    temp <- dat[marine.park %in% c(marinepark)]
+    temp <- dat[marine_park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
 
       temp2 <- temp[method %in% c(methods)]
 
       species_above_zero <- temp2 %>%
-        dplyr::group_by(scientific) %>%
+        dplyr::group_by(scientific_name) %>%
         dplyr::summarise(total = sum(mean)) %>%
         dplyr::filter(total > 0) %>%
         dplyr::ungroup()
 
-      for(species in unique(species_above_zero$scientific)){
+      for(species in unique(species_above_zero$scientific_name)){
 
-        temp3 <- temp2[scientific %in% species]
+        temp3 <- temp2[scientific_name %in% species]
 
         p <- ggplot2::ggplot(temp3, ggplot2::aes(x = year, y = mean, fill = status)) +
           ggplot2::geom_point(shape = 23, size = 6, col = "black", position = ggplot2::position_dodge(width = 0.5)) +
@@ -1018,17 +1156,17 @@ generate_plots <- function() {
                                       expand = ggplot2::expand_scale(mult = c(0, 0.05))) +
           ggplot2::scale_y_continuous(expand = c(0, 0.1)) +
           ggplot2::scale_fill_manual(values = c("Fished" = "#b9e6fb", "No-take" = "#7bbc63")) +
-          ggh4x::facet_wrap2(ggplot2::vars(scientific), axes = "all", ncol = 1) +
+          ggh4x::facet_wrap2(ggplot2::vars(scientific_name), axes = "all", ncol = 1) +
           ggplot_mpatheme()
 
         gazetted <- unique(temp3$gazetted)
-        re.zoned <- unique(temp3$re.zoned)
-        min.year <- min(temp3$year)
+        re_zoned <- unique(temp3$re_zoned)
+        min_year <- min(temp3$year)
 
         # Add gazettal and rezoned dates if they occured after sampling
         if(!gazetted %in% c("NA", NA, NULL)){
 
-          if(min.year < gazetted) {
+          if(min_year < gazetted) {
             p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
               ggplot2::geom_label(
                 x = gazetted,
@@ -1041,11 +1179,11 @@ generate_plots <- function() {
               )}
         }
 
-        if(!re.zoned %in% c("NA", NA, NULL)){
-          if(min.year < re.zoned) {
-            p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re.zoned), linetype = "dashed") +
+        if(!re_zoned %in% c("NA", NA, NULL)){
+          if(min_year < re_zoned) {
+            p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
               ggplot2::geom_label(
-                x = re.zoned,
+                x = re_zoned,
                 y = +Inf,
                 label = "\n\n rezoned",
                 size = 5,
@@ -1054,6 +1192,19 @@ generate_plots <- function() {
                 label.size = NA
               )}
         }
+
+        if(methods %in% c("stereo-ROVs+UVC")){
+          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+            ggplot2::geom_label(
+              x = 2021,
+              y = +Inf,
+              label = "\n\n method\nchange",
+              size = 5,
+              fill = "white",
+              check_overlap = TRUE,
+              label.size = NA)
+        }
+
         p
 
         park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
@@ -1070,28 +1221,28 @@ generate_plots <- function() {
   }
 
   #### ABUNDANCE BY SANCTUARY ----
-  dat <- mpa_data$abundance.sum.sanctuary
+  dat <- mpa_data$abundance_sum_sanctuary
   dat <- dat[complete %in% c("Consistently sampled")]
 
-  unique(dat$marine.park)
+  unique(dat$marine_park)
 
-  for(marinepark in unique(dat$marine.park)){
+  for(marinepark in unique(dat$marine_park)){
 
-    temp <- dat[marine.park %in% c(marinepark)]
+    temp <- dat[marine_park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
 
       temp2 <- temp[method %in% c(methods)]
 
       species_above_zero <- temp2 %>%
-        dplyr::group_by(scientific) %>%
+        dplyr::group_by(scientific_name) %>%
         dplyr::summarise(total = sum(mean)) %>%
         dplyr::filter(total > 0) %>%
         dplyr::ungroup()
 
-      for(species in unique(species_above_zero$scientific)){
+      for(species in unique(species_above_zero$scientific_name)){
 
-        temp3 <- temp2[scientific %in% species]
+        temp3 <- temp2[scientific_name %in% species]
 
         p <- ggplot2::ggplot(temp3, ggplot2::aes(x = year, y = mean, fill = status)) +
           ggplot2::geom_point(shape = 23, size = 6, col = "black", position = ggplot2::position_dodge(width = 0.5)) +
@@ -1107,13 +1258,13 @@ generate_plots <- function() {
           ggplot_mpatheme()
 
         gazetted <- unique(temp3$gazetted)
-        re.zoned <- unique(temp3$re.zoned)
-        min.year <- min(temp3$year)
+        re_zoned <- unique(temp3$re_zoned)
+        min_year <- min(temp3$year)
 
         # Add gazettal and rezoned dates if they occured after sampling
         if(!gazetted %in% c("NA", NA, NULL)){
 
-          if(min.year < gazetted) {
+          if(min_year < gazetted) {
             p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
               ggplot2::geom_label(
                 x = gazetted,
@@ -1126,11 +1277,11 @@ generate_plots <- function() {
               )}
         }
 
-        if(!re.zoned %in% c("NA", NA, NULL)){
-          if(min.year < re.zoned) {
-            p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re.zoned), linetype = "dashed") +
+        if(!re_zoned %in% c("NA", NA, NULL)){
+          if(min_year < re_zoned) {
+            p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
               ggplot2::geom_label(
-                x = re.zoned,
+                x = re_zoned,
                 y = +Inf,
                 label = "\n\n rezoned",
                 size = 5,
@@ -1139,6 +1290,19 @@ generate_plots <- function() {
                 label.size = NA
               )}
         }
+
+        if(methods %in% c("stereo-ROVs+UVC")){
+          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+            ggplot2::geom_label(
+              x = 2021,
+              y = +Inf,
+              label = "\n\n method\nchange",
+              size = 5,
+              fill = "white",
+              check_overlap = TRUE,
+              label.size = NA)
+        }
+
         p
 
         park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
@@ -1164,11 +1328,11 @@ generate_plots <- function() {
   ## KERNEL DENSIY ESTIMATE ----
   dat <- mpa_data$fished.complete.length
 
-  unique(dat$marine.park)
+  unique(dat$marine_park)
 
-  for(marinepark in unique(dat$marine.park)){
+  for(marinepark in unique(dat$marine_park)){
 
-    temp <- dat[marine.park %in% c(marinepark)]
+    temp <- dat[marine_park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
 
@@ -1176,20 +1340,20 @@ generate_plots <- function() {
 
       more_than_20 <- temp2 %>%
         dplyr::mutate(latin = paste(family, genus, species)) %>%
-        dplyr::group_by(marine.park, method, campaignid, status, year, scientific, latin) %>%
+        dplyr::group_by(marine_park, method, campaignid, status, year, scientific_name, latin) %>%
         dplyr::summarise(number = sum(number)) %>%
         dplyr::filter(number > 20) %>%
         dplyr::ungroup() %>%
-        dplyr::distinct(marine.park, method, campaignid, status, year, scientific, latin)
+        dplyr::distinct(marine_park, method, campaignid, status, year, scientific_name, latin)
 
-      to_plot <- c(more_than_20$scientific)
+      to_plot <- c(more_than_20$scientific_name)
 
       for(i in to_plot){
 
-        unique(temp2$scientific)
+        unique(temp2$scientific_name)
         print(i)
 
-        temp_new <- temp2[scientific %in% i]
+        temp_new <- temp2[scientific_name %in% i]
 
         temp3 <- temp_new[length > 0]
         temp3 <- temp3[!is.na(length)]

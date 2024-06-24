@@ -113,7 +113,7 @@ googledrive_download_data <- function() {
     file.rename(code, new.name)
   }
 
-  setwd("C:/GitHub/mpaviewer") # NEED to find a way to fix this
+  setwd("G:/mpaviewer") # NEED to find a way to fix this
 
   # Folder with images
   drive.folder <- "https://drive.google.com/drive/folders/1PeEcdENN0BhXpkzryqsBbq-0kFn_1N7z"
