@@ -9,6 +9,11 @@
 # googlesheets4::gs4_auth()
 # 2
 
+## If CheckEM package has changed
+# remove.packages("CheckEM")
+# renv::install("GlobalArchiveManual/CheckEM")
+# devtools::install_github("GlobalArchiveManual/CheckEM")
+
 # Step 1. Load all functions from package
 pkgload::load_all(export_all = FALSE, helpers = FALSE, attach_testthat = FALSE)
 
