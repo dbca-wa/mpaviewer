@@ -185,7 +185,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   }
 
-  metadata1 <- metadata %>%
+  metadata <- metadata %>%
     dplyr::mutate(latitude_dd = as.numeric(latitude_dd),
                   longitude_dd = as.numeric(longitude_dd)) %>%
     dplyr::left_join(zoning) %>%
