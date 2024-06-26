@@ -14,6 +14,10 @@
 # renv::install("GlobalArchiveManual/CheckEM")
 # devtools::install_github("GlobalArchiveManual/CheckEM")
 
+# remove.packages("GlobalArchive")
+# renv::install("UWAMEGFisheries/GlobalArchive")
+# devtools::install_github("UWAMEGFisheries/GlobalArchive")
+
 # Step 1. Load all functions from package
 pkgload::load_all(export_all = FALSE, helpers = FALSE, attach_testthat = FALSE)
 

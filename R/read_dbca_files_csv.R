@@ -5,10 +5,11 @@
 #'
 #' @return The file contents as tibble
 #' @export
-read_dbca_files_csv <- function(flnm, data_dir = here::here("inst/data/raw")) {
+read_dbca_files_csv <- function(flnm, data_dir) {
   flnm %>%
     readr::read_csv(col_types = readr::cols(.default = "c")) %>%
     dplyr::mutate(folder.structure = stringr::str_replace_all(flnm, paste(data_dir, "/", sep = ""), "")) %>%
     tidyr::separate(folder.structure, into = c("marine_park","indicator", "method", "campaignid"), sep = "/", extra = "drop", fill = "right") %>%
     CheckEM::clean_names()
 }
+#here::here("inst/data/raw")

@@ -18,12 +18,12 @@
 generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds")) {
   message("This function takes a couple minutes to run")
 
-  data_dir <- here::here("inst/data")
+  data_dir <- here::here("G:/mpaviewer_data/raw")
 
   # Benthic data
   # New coral data in dashboard format
   coral_cover <- list.files(path = data_dir, recursive = T, pattern = "_coral.csv", full.names = T) %>%
-    purrr::map_df(~ read_dbca_files_csv(.)) %>%
+    purrr::map_df(~ read_dbca_files_csv(., data_dir = data_dir)) %>%
     dplyr::filter(level2class %in% c("Hard coral", "Octocorals - Hard")) %>%
     dplyr::mutate(year = as.numeric(year),
                   percent_cover = as.numeric(percent_cover),
@@ -32,6 +32,8 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
                   longitude = as.numeric(longitude)) %>%
     dplyr::filter(!marine_park %in% c("archive", "C:")) # get rid of old files
 
+  unique(coral_cover$marine_park)
+
   coral_cover_metadata <- coral_cover %>%
     dplyr::select(zone, sector, site, site_code, latitude, longitude, replicate, survey, year, date, plot_year, analysis, software, marine_park, method) %>%
     dplyr::distinct()
@@ -39,13 +41,13 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   coral_cover_transect <- plyr::ddply(coral_cover, plyr::.(marine_park, method, survey, plot_year, sector, site), plyr::summarize, percent_cover = sum(percent_cover))
 
   rec_3b <- list.files(path = data_dir, recursive = T, pattern = "REC3b.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
-    purrr::map_df(~ read_dbca_files_csv(.)) %>%
+    purrr::map_df(~ read_dbca_files_csv(., data_dir = data_dir)) %>%
     dplyr::filter(!marine_park %in% c("archive", "C:")) %>% # get rid of old files
     dplyr::mutate(year = as.numeric(year),
                   mean = as.numeric(mean))
 
   rec_3c2 <- list.files(path = data_dir, recursive = T, pattern = "REC3c2.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
-    purrr::map_df(~ read_dbca_files_csv(.)) %>%
+    purrr::map_df(~ read_dbca_files_csv(., data_dir = data_dir)) %>%
     dplyr::filter(!marine_park %in% c("archive", "C:")) %>% # get rid of old files
     dplyr::mutate(year = as.numeric(year),
                   mean = as.numeric(mean),
@@ -141,9 +143,9 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   ## ► Metadata (same for every method and data type) ----
 
-  folders <- list.files(path = paste0(data_dir,"/raw"), recursive = T, pattern = "_Metadata.csv", full.names = T) %>%
+  folders <- list.files(path = data_dir, recursive = T, pattern = "_Metadata.csv", full.names = T) %>%
     as.data.frame() %>%
-    dplyr::mutate(folder_structure = stringr::str_replace_all(., paste(data_dir, "/raw/", sep = ""), "")) %>%
+    dplyr::mutate(folder_structure = stringr::str_replace_all(., paste(data_dir, "/", sep = ""), "")) %>%
     tidyr::separate(folder_structure, into = c("marine_park","indicator", "method", "campaignid"), sep = "/", extra = "drop", fill = "right") %>%
     dplyr::mutate(read_method = forcats::fct_recode(method,
                                                     "point" = "BRUVs",
@@ -153,13 +155,18 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
                                                     "transect" = "UVC_ROV")) %>%
     dplyr::distinct(marine_park, indicator, read_method, method)
 
+  unique(folders$marine_park)
+  unique(folders$indicator)
+  unique(folders$read_method)
+  unique(folders$method)
+
   metadata <- data.frame()
 
   for(i in 1:nrow(folders)){
 
 
     folder <- folders[i,]
-    path <- paste(data_dir,"raw", unique(folder$marine_park), unique(folder$indicator), unique(folder$method), sep = "/")
+    path <- paste(data_dir,unique(folder$marine_park), unique(folder$indicator), unique(folder$method), sep = "/")
 
     message(path)
 
@@ -215,48 +222,33 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
                                                            "SP Benthic" = "SP Benthic Protection",
                                                            "SP Benthic Protection Protection" = "SP Benthic Protection",
                                                            "Marine Management Area" = "General Use",
-                                                           "Marine" = ""))) %>%
+                                                           "Marine" = "",
+                                                           "Recreational" = "Recreation"))) %>%
 
     dplyr::select(marine_park, method, campaignid, sample, latitude_dd, longitude_dd, date_time,
                   location, status, site,
                   successful_count, successful_length,
-                  depth_m, observer,
+                  depth_m, observer_count,
                   year,
                   # month, day,
                   gazetted, re_zoned, complete, dbca_zone, dbca_sanctuary) %>% # Trying to remove columns to save space/time to load the app
     dplyr::filter(!campaignid %in% c("2021-05_JurienBay.MP.Monitoring_UVC"))
 
-
-  unique(metadata$dbca_zone)
-
-  names(metadata) %>% sort()
-  unique(metadata$complete)
-
-  unique(metadata$year)
-  unique(metadata$campaignid) %>% sort()
-
-  test <- metadata %>%
-    dplyr::filter(is.na(year))
-
-  unique(metadata$marine_park)
-
-  test_complete <- metadata %>%
-    dplyr::filter(complete %in% "Consistently sampled")
-
-  testing <- metadata %>%
-    dplyr::filter(marine_park %in% "Rottnest Island Marine Reserve")
-
-  unique(testing$status)
+  names(metadata) %>% sort() # All the names of the dataframe
   unique(metadata$marine_park) %>% sort()
   unique(metadata$method) %>% sort()
   unique(metadata$campaignid) %>% sort()
-
-
+  unique(metadata$dbca_zone) # Make sure these all make sense
+  unique(metadata$complete)
+  unique(metadata$year) %>% sort()
   unique(metadata$dbca_sanctuary)
   unique(metadata$status)
 
-  campaign_list <- metadata %>% dplyr::distinct(marine_park, method, campaignid, sample) # Want to create a list of every sample
-  # DOes it have maxn and length associated with it??
+  test <- metadata %>%
+    dplyr::filter(is.na(year)) # finds any missing years
+
+  test_complete <- metadata %>%
+    dplyr::filter(complete %in% "Consistently sampled")
 
   lats <- metadata %>%
     dplyr::group_by(marine_park) %>%
@@ -264,11 +256,6 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::arrange(desc(mean_lat)) # Could make this again on the server side
 
   metadata$marine_park <- forcats::fct_relevel(metadata$marine_park, c(unique(lats$marine_park)))
-
-  # Testing
-  bruv_test <- metadata %>%
-    dplyr::filter(method %in% "stereo-BRUVs") %>%
-    dplyr::filter(marine_park %in% "Ningaloo Marine Park")
 
   ## ► Summarise to find sampling effort, this is used for the leaflet maps ----
   sampling_effort <- metadata %>%
@@ -284,7 +271,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   for(i in 1:nrow(folders)){
 
     folder <- folders[i,]
-    path <- paste(data_dir,"raw", unique(folder$marine_park), unique(folder$indicator), unique(folder$method), sep = "/")
+    path <- paste(data_dir, unique(folder$marine_park), unique(folder$indicator), unique(folder$method), sep = "/")
 
     message(path)
 
@@ -335,7 +322,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   for(i in 1:nrow(folders)){
 
     folder <- folders[i,]
-    path <- paste(data_dir,"raw", unique(folder$marine_park), unique(folder$indicator), unique(folder$method), sep = "/")
+    path <- paste(data_dir, unique(folder$marine_park), unique(folder$indicator), unique(folder$method), sep = "/")
 
     message(path)
 
@@ -381,13 +368,14 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   names(length)
 
   ### ► EventMeasure data ----
-  em_campaigns <- list.files(path = paste(data_dir,"raw", sep = "/"), recursive = T, pattern = "_Lengths.txt|_Lengths.TXT", full.names = T) %>%
-    purrr::map_df(~ read_dbca_files_txt(.)) %>%
+  em_campaigns <- list.files(path = paste(data_dir,"/", sep = ""), recursive = T, pattern = "_Lengths.txt|_Lengths.TXT", full.names = T) %>%
+    purrr::map_df(~ read_dbca_files_txt(., data_dir = data_dir)) %>%
     dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Lengths.txt" = "",
                                                                         "_Lengths.TXT" = ""))) %>%
     dplyr::distinct(campaignid) %>%
     dplyr::filter(!campaignid %in% c("2021-05_JurienBay.MP.Monitoring_UVC")) %>%
-    dplyr::pull("campaignid")
+    dplyr::pull("campaignid") %>%
+    dplyr::glimpse()
 
   # Read in points ----
   points <- data.frame()
@@ -395,7 +383,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   for(i in 1:nrow(folders)){
 
     folder <- folders[i,]
-    path <- paste(data_dir,"raw", unique(folder$marine_park), unique(folder$indicator), unique(folder$method), sep = "/")
+    path <- paste(data_dir, unique(folder$marine_park), unique(folder$indicator), unique(folder$method), sep = "/")
 
     message(path)
 
@@ -445,7 +433,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   for(i in 1:nrow(folders)){
 
     folder <- folders[i,]
-    path <- paste(data_dir,"raw", unique(folder$marine_park), unique(folder$indicator), unique(folder$method), sep = "/")
+    path <- paste(data_dir, unique(folder$marine_park), unique(folder$indicator), unique(folder$method), sep = "/")
 
     message(path)
 
@@ -513,6 +501,12 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   length <- length[rep(row.names(length), length$number), ]
   length_threed_points <- length_threed_points[rep(row.names(length_threed_points), length_threed_points$number), ]
 
+  length <- length %>%
+    dplyr::mutate(number = 1)
+
+  length_threed_points <- length_threed_points %>%
+    dplyr::mutate(number = 1)
+
   complete_length <- length %>%
     dplyr::bind_rows(length_threed_points) %>%
     dplyr::mutate(number = 1) %>%
@@ -549,15 +543,13 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   unique(complete_length$marine_park)
   names(complete_length)
 
-  t <- complete_length %>%
-    dplyr::filter(sample %in% "NCMP_22032022_EBS1-5_BRUV")
-
   ## _______________________________________________________ ----
   ##                  COMPLETE ABUNDANCE DATA                ----
   ## _______________________________________________________ ----
 
   # stereo-DOV abundance from 3D points and lengths
   dov_abundance <- length_threed_points %>%
+    # dplyr::filter(!method %in% c("stereo-BRUVs")) %>%
 
     dplyr::left_join(., synonyms) %>%
     dplyr::mutate(genus = ifelse(!is.na(genus_correct), genus_correct, genus)) %>%
@@ -571,15 +563,26 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(genus = dplyr::if_else(is.na(genus), family, genus)) %>%
     dplyr::mutate(genus = dplyr::if_else(genus %in% "Unknown", family, genus)) %>%
 
+    dplyr::mutate(number = as.numeric(number)) %>%
+
     dplyr::group_by(marine_park, campaignid, method, sample, family, genus, species) %>%
     dplyr::summarise(maxn = sum(number)) %>%
     dplyr::ungroup() %>%
     dplyr::full_join(metadata) %>%
     dplyr::mutate(scientific_name = paste(genus, species, sep = " ")) %>%
     dplyr::filter(!method %in% c("stereo-BRUVs")) %>%
-    dplyr::filter(campaignid %in% c(em_campaigns))
+    dplyr::filter(campaignid %in% c(em_campaigns)) %>%
+    dplyr::as_data_frame()%>%
+    dplyr::glimpse()
 
   unique(dov_abundance$campaignid)
+  # 2017-04_Shoalwater.MP.Monitoring_stereoDOVs
+
+  test <- dov_abundance %>%
+    dplyr::group_by(campaignid) %>%
+    dplyr::summarise(total = sum(maxn))
+
+  sum(dov_abundance$maxn)
 
   # Create a complete total abundance dataset (For generic DOVs)
   count_summary <- count %>%
@@ -1053,8 +1056,13 @@ test <- abundance %>%
     dplyr::distinct(marine_park, method) %>%
     dplyr::mutate(marine_park = as.character(marine_park))
 
+  test <- abundance %>%
+    dplyr::group_by(campaignid) %>%
+    dplyr::summarise(total = sum(maxn))
+
 
   total_number_fish <- sum(abundance$maxn)
+  total_number_fish
 
   total_species_fish <- length(unique(abundance$scientific_name))
 
