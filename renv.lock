@@ -27,22 +27,6 @@
       ],
       "Hash": "065ae649b05f1ff66bb0c793107508f5"
     },
-    "GlobalArchive": {
-      "Package": "GlobalArchive",
-      "Version": "0.1",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "GlobalArchive",
-      "RemoteUsername": "UWAMEGFisheries",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "f3c4315600a0396c7f72382b81d9073d346d431d",
-      "Requirements": [
-        "dplyr",
-        "tidyr"
-      ],
-      "Hash": "4d9c000432fb34dba068a2acb776fd11"
-    },
     "KernSmooth": {
       "Package": "KernSmooth",
       "Version": "2.23-22",
@@ -131,7 +115,7 @@
     },
     "aplot": {
       "Package": "aplot",
-      "Version": "0.2.2",
+      "Version": "0.2.3",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -144,7 +128,7 @@
         "patchwork",
         "utils"
       ],
-      "Hash": "869a35e6d38fe9936eb578e09091842b"
+      "Hash": "d2dcbd0459b23b43cc078e2676bd7b84"
     },
     "askpass": {
       "Package": "askpass",
@@ -346,14 +330,14 @@
     },
     "cli": {
       "Package": "cli",
-      "Version": "3.6.2",
+      "Version": "3.6.3",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
         "R",
         "utils"
       ],
-      "Hash": "1216ac65ac55ec0058a6f75d7ca0fd52"
+      "Hash": "b21916dd77a27642b447374a5d30ecf3"
     },
     "clipr": {
       "Package": "clipr",
@@ -425,15 +409,15 @@
     },
     "crayon": {
       "Package": "crayon",
-      "Version": "1.5.2",
+      "Version": "1.5.3",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "RSPM",
       "Requirements": [
         "grDevices",
         "methods",
         "utils"
       ],
-      "Hash": "e8a1e41acf02548751f45c718d55aa6a"
+      "Hash": "859d96e65ef198fd43e82b9628d593ef"
     },
     "credentials": {
       "Package": "credentials",
@@ -590,14 +574,14 @@
     },
     "digest": {
       "Package": "digest",
-      "Version": "0.6.35",
+      "Version": "0.6.36",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
         "R",
         "utils"
       ],
-      "Hash": "698ece7ba5a4fa4559e3d537e7ec3d31"
+      "Hash": "fd6824ad91ede64151e93af67df6376b"
     },
     "downlit": {
       "Package": "downlit",
@@ -915,18 +899,19 @@
     },
     "ggfun": {
       "Package": "ggfun",
-      "Version": "0.1.4",
+      "Version": "0.1.5",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
         "R",
         "cli",
+        "dplyr",
         "ggplot2",
         "grid",
         "rlang",
         "utils"
       ],
-      "Hash": "91780e07f1d631a1152835b4e25c66b9"
+      "Hash": "4fca342cc17bb91af2a279146bc57fef"
     },
     "ggh4x": {
       "Package": "ggh4x",
@@ -2714,7 +2699,7 @@
     },
     "xfun": {
       "Package": "xfun",
-      "Version": "0.44",
+      "Version": "0.45",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -2722,7 +2707,7 @@
         "stats",
         "tools"
       ],
-      "Hash": "317a0538d32f4a009658bcedb7923f4b"
+      "Hash": "ca59c87fe305b16a9141a5874c3a7889"
     },
     "xml2": {
       "Package": "xml2",

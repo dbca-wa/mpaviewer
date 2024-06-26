@@ -23,7 +23,7 @@ googledrive_download_data <- function() {
   googlesheets4::gs4_auth()
   2
 
-  main.dir <- "inst/data/raw"
+  main.dir <- "G:/mpaviewer_data"
   popup.dir <- "inst/app/www/popups"
 
   # Main folder with all marine parks

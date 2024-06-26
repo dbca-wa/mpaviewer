@@ -21,7 +21,6 @@ Imports:
     ggbreak,
     ggh4x,
     ggplot2 (>= 3.4.2),
-    GlobalArchive (>= 0.1),
     glue (>= 1.6.2),
     golem (>= 0.3.1),
     googledrive,
