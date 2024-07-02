@@ -459,6 +459,10 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   }
 
+  test <- length_threed_points %>%
+    dplyr::group_by(campaignid) %>%
+    dplyr::summarise(sum = sum(number))
+
   length_threed_points <- length_threed_points %>%
     dplyr::mutate(method = forcats::fct_recode(method,
                                                "stereo-BRUVs" = "BRUVs",
@@ -467,6 +471,10 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
                                                "stereo-ROVs" = "ROVs",
                                                "stereo-ROVs+UVC" = "UVC_ROV")) %>%
     dplyr::mutate(sample = stringr::str_replace_all(.$sample, "SIMP_20200323_PP_DOV_3.", "SIMP_20200323_PP_DOV_3"))%>% dplyr::filter(!campaignid %in% c("2021-05_JurienBay.MP.Monitoring_UVC")) # to fix mistake
+
+  test <- length_threed_points %>%
+    dplyr::group_by(campaignid) %>%
+    dplyr::summarise(sum = sum(number))
 
   ## _______________________________________________________ ----
   ##                   QUICK DATA CHECKS                     ----
@@ -500,6 +508,10 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
   # Replicate rows where n is >1 for length dataframes
   length <- length[rep(row.names(length), length$number), ]
   length_threed_points <- length_threed_points[rep(row.names(length_threed_points), length_threed_points$number), ]
+
+  test <- length_threed_points %>%
+    dplyr::group_by(campaignid) %>%
+    dplyr::summarise(sum = sum(number))
 
   length <- length %>%
     dplyr::mutate(number = 1)
@@ -568,7 +580,7 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::group_by(marine_park, campaignid, method, sample, family, genus, species) %>%
     dplyr::summarise(maxn = sum(number)) %>%
     dplyr::ungroup() %>%
-    dplyr::full_join(metadata) %>%
+    dplyr::left_join(., metadata) %>%
     dplyr::mutate(scientific_name = paste(genus, species, sep = " ")) %>%
     dplyr::filter(!method %in% c("stereo-BRUVs")) %>%
     dplyr::filter(campaignid %in% c(em_campaigns)) %>%
@@ -652,21 +664,13 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     tidyr::replace_na(list(maxn = 0)) %>%
     dplyr::mutate(id = paste(campaignid, sample, method, sep = "_")) %>% # These are just for checking the number of rows
     dplyr::mutate(species_key = paste0(family, genus, species)) %>% # These are just for checking the number of rows
-    dplyr::full_join(metadata)
-
-  test1 <- abundance %>%
-    dplyr::group_by(marine_park, campaignid, method, sample, family, genus, species) %>%
-    dplyr::summarise(n = dplyr::n())
-
-test <- abundance %>%
-  dplyr::filter(genus == family) %>%
-  dplyr::distinct(family, genus)
+    dplyr::full_join(metadata) %>%
+    dplyr::filter(!species_key %in% "NANANA")
 
   length(unique(abundance$id)) # 9902
-  length(unique(abundance$species_key)) # 1197 species
-  #
-  # 1197 * 9902 # = 11,852,694 (correct number of rows)
-  #
+  length(unique(abundance$species_key)) # 1196 species
+  # 1196 * 9902 # = 11,842,792 (correct number of rows)
+
   test <- abundance %>%
     dplyr::group_by(id, species_key) %>%
     dplyr::summarise(n = dplyr::n()) %>%
