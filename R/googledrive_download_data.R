@@ -13,38 +13,48 @@
 #'
 #' @return None.
 #' @export
-googledrive_download_data <- function() {
+googledrive_download_data <- function(raw_dir, project_dir) {
 
-  library(dplyr)
+  # Show message
+  message("downloading content from GoogleDrive, this function takes ~ 15 minutes to complete")
 
-  options(gargle_oauth_cache = ".secrets")
-  # check the value of the option, if you like
-  gargle::gargle_oauth_cache()
-  googlesheets4::gs4_auth()
-  2
+  # # Authenticate GoogleDrive ----
+  # options(gargle_oauth_cache = ".secrets")
+  # gargle::gargle_oauth_cache()
+  # googlesheets4::gs4_auth()
+  # 2 # this line will choose an account that you have already authenticated
 
-  main.dir <- "G:/mpaviewer_data"
-  popup.dir <- "inst/app/www/popups"
+  # Set directories ----
+  # main_dir <- "G:/mpaviewer_data" # use this line if you need to run this code line by line
+  main_dir <- raw_dir
 
-  # Main folder with all marine parks
+  # project_dir <- "G:/mpaviewer" # use this line if you need to run this code line by line
+  project_dir <- project_dir
+
+  popup_dir <- "inst/app/www/popups"
+
+  # Remove any existing files in the main directories raw folder ----
+  unlink(paste0(main_dir), recursive = TRUE) # have temporarily moved this: ,"/raw"
+
+  # # Create a raw folder in the data directory ----
+  # dir.create(file.path(main_dir, "raw"))
+
+  # Main folder in GoogleDrive with all marine parks
   drive.folder <- "https://drive.google.com/drive/folders/1GDcemLHxOvAjyecWfv83hhH-ZZh1hqfT"
   folder.id <- googledrive::drive_get(googledrive::as_id(drive.folder))
-2
+  2 # sometimes googledrive needed an extra authentication here
+
   # find all folders in marine park folder
   files <- googledrive::drive_ls(folder.id, type = "folder")
-
-  # files <- files %>% filter(name %in% "NMP")
 
   # loop through folders and create a directory
   for (parent in seq_along(files$name)) {
 
-    # parent <- "NMP"
-
-    # Print the current directory
-    print(files$name[parent])
+    # # Print the current directory
+    # print(files$name[parent])
 
     # Make directory
-    dir.create(file.path(main.dir, files$name[parent]), recursive = TRUE)
+    dir.create(file.path(main_dir, files$name[parent]), recursive = TRUE)
 
     # Find all children folders in the current folder
     current.folder <- files$id[parent]
@@ -52,29 +62,29 @@ googledrive_download_data <- function() {
 
     for (child in seq_along(children.folders$name)) {
 
-      # Print the current directory
-      print(children.folders$name[child])
+      # # Print the current directory
+      # print(children.folders$name[child])
 
       # Make directory
-      dir.create(paste(main.dir, files$name[parent], children.folders$name[child], sep = "/"))
+      dir.create(paste(main_dir, files$name[parent], children.folders$name[child], sep = "/"))
 
       if(nrow(children.folders) > 0){
 
         # Find all children folders in the current folder
         current.child.folder <- children.folders$id[child]
 
-        print("view baby names")
+        # print("view baby names")
 
-        baby.folders <- googledrive::drive_ls(current.child.folder, type = "folder") %>%
-          dplyr::glimpse()
+        baby.folders <- googledrive::drive_ls(current.child.folder, type = "folder") #%>%
+          #dplyr::glimpse()
 
         for (baby in seq_along(baby.folders$name)) {
 
-          # Print the current directory
-          print(baby.folders$name[baby])
+          # # Print the current directory
+          # print(baby.folders$name[baby])
 
           # Make directory
-          dir.create(paste(main.dir, files$name[parent], children.folders$name[child], baby.folders$name[baby], sep = "/"))
+          dir.create(paste(main_dir, files$name[parent], children.folders$name[child], baby.folders$name[baby], sep = "/"))
 
           # list files
           i_dir <- googledrive::drive_ls(baby.folders[baby, ])
@@ -84,12 +94,12 @@ googledrive_download_data <- function() {
             #fails if already exists
             try({
 
-              print(i_dir$name[file_i])
+              # print(i_dir$name[file_i])
 
               # print(getwd())
 
               googledrive::drive_download(googledrive::as_id(i_dir$id[file_i]),
-                                          path = stringr::str_c(main.dir, files$name[parent], children.folders$name[child], baby.folders$name[baby], i_dir$name[file_i], sep = "/"))
+                                          path = stringr::str_c(main_dir, files$name[parent], children.folders$name[child], baby.folders$name[baby], i_dir$name[file_i], sep = "/"))
             })
           }
         }
@@ -102,18 +112,18 @@ googledrive_download_data <- function() {
   codes <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1OuOt80TvJBCMPLR6oy7YhfoSD4VjC73cuKovGobxiyI/edit?usp=sharing",
                                      sheet = "park_codes")
 
-  setwd(main.dir)
+  setwd(main_dir)
 
   for(i in unique(codes$code)){
     code <- i
     new.name <- unique((codes %>% dplyr::filter(code %in% i))$full.name)
 
-    print(new.name)
+    # print(new.name)
 
     file.rename(code, new.name)
   }
 
-  setwd("G:/mpaviewer_2024") # NEED to find a way to fix this
+  setwd(project_dir)
 
   # Folder with images
   drive.folder <- "https://drive.google.com/drive/folders/1PeEcdENN0BhXpkzryqsBbq-0kFn_1N7z"

@@ -15,10 +15,11 @@
 #' x <- generate_data(save = FALSE) # only returns data
 #' x <- generate_data() # returns data and saves data to local file
 #' }
-generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds")) {
-  message("This function takes a couple minutes to run")
+generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa_data.rds")) {
+  message("This function takes ~ 10 minutes to run")
 
-  data_dir <- here::here("G:/mpaviewer_data/raw")
+  # data_dir <- here::here("G:/mpaviewer_data")
+  data_dir <- raw_dir
 
   # Benthic data
   # New coral data in dashboard format
@@ -65,17 +66,16 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
 
   dbca_googlesheet_url <- "https://docs.google.com/spreadsheets/d/1OuOt80TvJBCMPLR6oy7YhfoSD4VjC73cuKovGobxiyI/edit?usp=sharing"
 
-  life_history <- googlesheets4::read_sheet(dbca_googlesheet_url, sheet = "life_history") %>%
-    CheckEM::clean_names() %>%
-    dplyr::rename(code = region_code)
-
-  2
+  # Old life hsitory sheet
+  # life_history <- googlesheets4::read_sheet(dbca_googlesheet_url, sheet = "life_history") %>%
+  #   CheckEM::clean_names() %>%
+  #   dplyr::rename(code = region_code)
 
   life_history <- googlesheets4::read_sheet(dbca_googlesheet_url, sheet = "functional_traits") %>%
     CheckEM::clean_names() %>%
     dplyr::select(!complex_functional_group) %>%
-    dplyr::rename(trophic_group = simple_functional_group) %>%
-    dplyr::glimpse()
+    dplyr::rename(trophic_group = simple_functional_group) #%>%
+    #dplyr::glimpse()
 
   # unique(life_history$trophic_group)
 
@@ -374,8 +374,8 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
                                                                         "_Lengths.TXT" = ""))) %>%
     dplyr::distinct(campaignid) %>%
     dplyr::filter(!campaignid %in% c("2021-05_JurienBay.MP.Monitoring_UVC")) %>%
-    dplyr::pull("campaignid") %>%
-    dplyr::glimpse()
+    dplyr::pull("campaignid") #%>%
+    #dplyr::glimpse()
 
   # Read in points ----
   points <- data.frame()
@@ -584,10 +584,10 @@ generate_data <- function(save = TRUE, dest = here::here("inst/data/mpa_data.rds
     dplyr::mutate(scientific_name = paste(genus, species, sep = " ")) %>%
     dplyr::filter(!method %in% c("stereo-BRUVs")) %>%
     dplyr::filter(campaignid %in% c(em_campaigns)) %>%
-    dplyr::as_data_frame()%>%
-    dplyr::glimpse()
+    dplyr::as_data_frame()#%>%
+    #dplyr::glimpse()
 
-  unique(dov_abundance$campaignid)
+  #unique(dov_abundance$campaignid)
   # 2017-04_Shoalwater.MP.Monitoring_stereoDOVs
 
   test <- dov_abundance %>%
