@@ -1,87 +1,31 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/404.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/articles/mpaviewer.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/index.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/news/index.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/reference/add_legend_sr.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/reference/add_legend_ta.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/reference/download_data.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/reference/download_source_data.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/reference/generate_data.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/reference/generate_plots.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/reference/ggplot_mpatheme.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/reference/googledrive_download_data.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/reference/leaflet_basemap.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/reference/make_docker.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/reference/mpaviewer-package.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/reference/pipe.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/reference/print.mpa_data.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/reference/read_dbca_files_csv.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/reference/read_dbca_files_txt.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/reference/run_app.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/reference/se.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/reference/se.max.html</loc>
-  </url>
-  <url>
-    <loc>https://dbca-wa.github.io/mpaviewer/reference/se.min.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://dbca-wa.github.io/mpaviewer/404.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/LICENSE-text.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/LICENSE.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/articles/index.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/articles/mpaviewer.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/authors.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/index.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/news/index.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/reference/add_legend_sr.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/reference/add_legend_ta.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/reference/download_data.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/reference/download_source_data.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/reference/generate_data.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/reference/generate_plots.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/reference/ggplot_mpatheme.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/reference/googledrive_download_data.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/reference/index.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/reference/leaflet_basemap.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/reference/make_docker.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/reference/mpaviewer-package.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/reference/pipe.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/reference/print.mpa_data.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/reference/read_dbca_files_csv.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/reference/read_dbca_files_txt.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/reference/run_app.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/reference/se.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/reference/se.max.html</loc></url>
+<url><loc>https://dbca-wa.github.io/mpaviewer/reference/se.min.html</loc></url>
 </urlset>
+
