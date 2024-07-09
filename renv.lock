@@ -16,6 +16,17 @@
       "Repository": "RSPM",
       "Hash": "a8235afbcd6316e6e91433ea47661013"
     },
+    "CheckEM": {
+      "Package": "CheckEM",
+      "Version": "1.0",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "GlobalArchiveManual",
+      "RemoteRepo": "CheckEM",
+      "RemoteRef": "main",
+      "RemoteSha": "ec883382d59e2deddee10f35194cb541fa3ee46d"
+    },
     "DBI": {
       "Package": "DBI",
       "Version": "1.2.3",
@@ -1987,9 +1998,9 @@
     },
     "roxygen2": {
       "Package": "roxygen2",
-      "Version": "7.3.1",
+      "Version": "7.3.2",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "R",
         "R6",
@@ -2009,7 +2020,7 @@
         "withr",
         "xml2"
       ],
-      "Hash": "c25fe7b2d8cba73d1b63c947bf7afdb9"
+      "Hash": "6ee25f9054a70f44d615300ed531ba8d"
     },
     "rprojroot": {
       "Package": "rprojroot",
