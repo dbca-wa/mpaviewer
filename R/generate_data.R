@@ -120,9 +120,9 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
   # There are a few duplicate trophic groups that will cause errors
   # TODO Use the region matching for trophic and fish!!!
 
-  park_popups <- here::here("inst/data/parks.popups.csv") |> # BG TO DO -  CHANGE THIS
-    read.csv(na.strings = c("NA", "NaN", " ", "", NA)) |>
-    CheckEM::clean_names()
+  # park_popups <- here::here("inst/data/parks.popups.csv") |> # BG TO DO -  CHANGE THIS
+  #   read.csv(na.strings = c("NA", "NaN", " ", "", NA)) |>
+  #   CheckEM::clean_names()
 
   zoning <- googlesheets4::read_sheet(dbca_googlesheet_url, sheet = "park_gazettal") %>%
     CheckEM::clean_names()
@@ -1034,7 +1034,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
   metadata <- data.table::data.table(metadata)
   sampling_effort <- data.table::data.table(sampling_effort)
   lats <- data.table::data.table(lats)
-  park_popups <- data.table::data.table(park_popups)
+  # park_popups <- data.table::data.table(park_popups)
   foa_codes <- data.table::data.table(foa_codes)
   interpretation_trends <- data.table::data.table(interpretation_trends)
   fished_complete_length <- data.table::data.table(fished_complete_length) # cant summrise because I need lengths
@@ -1124,7 +1124,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
   # data.table::setkey(fished_summed)
   data.table::setkey(metadata)
   data.table::setkey(sampling_effort)
-  data.table::setkey(park_popups)
+  # data.table::setkey(park_popups)
   data.table::setkey(coral_cover_transect)
   data.table::setkey(coral_cover_metadata)
   data.table::setkey(rec_3b)
@@ -1164,7 +1164,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
       sampling_effort = sampling_effort,
       state_mp = state_mp,
       state_pal = state_pal,
-      park_popups = park_popups,
+      # park_popups = park_popups,
       coral_cover_transect = coral_cover_transect,
       coral_cover_metadata = coral_cover_metadata,
       rec_3b = rec_3b,
@@ -1210,8 +1210,8 @@ print.mpa_data <- function(mpa_data, ...) {
       "  metadata:    {nrow(mpa_data$metadata)}\n",
       "  sampling_effort:    {nrow(mpa_data$sampling_effort)}\n",
       "  state_mp:    {nrow(mpa_data$state_mp)}\n",
-      "  state_pal:    {nrow(mpa_data$state_pal)}\n",
-      "  park_popups:    {nrow(mpa_data$park_popups)}\n"
+      "  state_pal:    {nrow(mpa_data$state_pal)}\n"#,
+      # "  park_popups:    {nrow(mpa_data$park_popups)}\n"
     )
   )
   invisible(mpa_data)
