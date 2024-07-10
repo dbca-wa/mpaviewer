@@ -232,7 +232,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
                   year,
                   # month, day,
                   gazetted, re_zoned, complete, dbca_zone, dbca_sanctuary) %>% # Trying to remove columns to save space/time to load the app
-    dplyr::filter(!campaignid %in% c("2021-05_JurienBay.MP.Monitoring_UVC"))
+    dplyr::filter(!campaignid %in% c("2021-05_JurienBay.MP.Monitoring_UVC")) # removed due to double up with 2021 ROVs
 
   names(metadata) %>% sort() # All the names of the dataframe
   unique(metadata$marine_park) %>% sort()
@@ -814,6 +814,8 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
   wampa$waname <- gsub(" [1-4]", "", wampa$waname)
   # ab_mpa$waname[ab_mpa$ZONE_TYPE == unique(ab_mpa$ZONE_TYPE)[14]] <-
   #   c("Special Purpose Zone\n(Habitat Protection)")
+
+  # TODO add Rottnest
 
   wampa$waname[wampa$NAME == "Hamelin Pool"]     <- "Marine Nature Reserve"
   wampa$waname[wampa$NAME == "Abrolhos Islands"] <- "Fish Habitat Protection Area"

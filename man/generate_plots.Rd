@@ -2,7 +2,7 @@
 % Please edit documentation in R/generate_plots.R
 \name{generate_plots}
 \alias{generate_plots}
-\title{Generate one data object to use in server.R}
+\title{Generate plots to display in the dashboard}
 \usage{
 generate_plots()
 }
@@ -10,7 +10,7 @@ generate_plots()
 All plots
 }
 \description{
-Generate one data object to use in server.R
+Generate plots to display in the dashboard
 }
 \examples{
 \dontrun{

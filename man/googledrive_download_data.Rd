@@ -4,7 +4,7 @@
 \alias{googledrive_download_data}
 \title{Download the application data file mpa_data.rds from CKAN}
 \usage{
-googledrive_download_data()
+googledrive_download_data(raw_dir, project_dir)
 }
 \arguments{
 \item{ckan_url}{The data catalogue URL,

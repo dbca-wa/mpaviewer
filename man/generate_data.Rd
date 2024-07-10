@@ -4,7 +4,11 @@
 \alias{generate_data}
 \title{Generate one data object to use in server.R}
 \usage{
-generate_data(save = TRUE, dest = here::here("inst/data/mpa_data.rds"))
+generate_data(
+  raw_dir,
+  save = TRUE,
+  dest = here::here("inst/data/mpa_data.rds")
+)
 }
 \arguments{
 \item{save}{Boolean whether to save data to rds}

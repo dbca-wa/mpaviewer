@@ -1,4 +1,4 @@
-#' Generate one data object to use in server.R
+#' Generate plots to display in the dashboard
 #'
 #'
 #' @return All plots
@@ -1136,10 +1136,12 @@ generate_plots <- function() {
 
       temp2 <- temp[method %in% c(methods)]
 
+      # TODO think about changing the cut off
+
       species_above_zero <- temp2 %>%
         dplyr::group_by(scientific_name) %>%
         dplyr::summarise(total = sum(mean)) %>%
-        dplyr::filter(total > 0) %>%
+        dplyr::filter(total > 3) %>%
         dplyr::ungroup()
 
       for(species in unique(species_above_zero$scientific_name)){
@@ -1234,10 +1236,12 @@ generate_plots <- function() {
 
       temp2 <- temp[method %in% c(methods)]
 
+      # TODO think about changing the cut off
+
       species_above_zero <- temp2 %>%
         dplyr::group_by(scientific_name) %>%
         dplyr::summarise(total = sum(mean)) %>%
-        dplyr::filter(total > 0) %>%
+        dplyr::filter(total > 3) %>%
         dplyr::ungroup()
 
       for(species in unique(species_above_zero$scientific_name)){
