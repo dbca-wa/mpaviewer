@@ -1,0 +1,150 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-mpaviewer-data-prod
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: azurefile-csi-retain-zrs
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mpaviewer-prod
+spec:
+  selector:
+    matchLabels:
+      app: mpaviewer
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mpaviewer
+    spec:
+      containers:
+      - name: mpaviewer-prod
+        image: ghcr.io/dbca-wa/mpaviewer:v0.1.0
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: TZ
+            value: Australia/Perth
+        command:
+            - R
+            - '-e'
+            - options('shiny.port'=8080,shiny.host='0.0.0.0');mpaviewer::run_app()
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "5m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          privileged: false
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          readOnlyRootFilesystem: true
+        volumeMounts:
+          - mountPath: /app/inst/data
+            name: mpaviewer-data
+          - mountPath: /tmp
+            name: tmpfs-ram
+      volumes:
+        - name: mpaviewer-data
+          persistentVolumeClaim:
+            claimName: pvc-mpaviewer-data-prod
+        - name: tmpfs-ram
+          emptyDir:
+            medium: "Memory"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mpaviewer-clusterip-prod
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: mpaviewer
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mpaviewer-ingress-prod
+spec:
+  rules:
+    - host: mpaviewer.dbca.wa.gov.au
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: mpaviewer-clusterip-prod
+              port:
+                number: 8080
+    - host: marinedashboard.dbca.wa.gov.au
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: mpaviewer-clusterip-prod
+              port:
+                number: 8080
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mpaviewer-cronjob-prod
+spec:
+  schedule: 1 * * * *  # 1 minute past the hour
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - image: ghcr.io/dbca-wa/mpaviewer:v0.1.0
+              imagePullPolicy: IfNotPresent
+              name: mpa-cronjob
+              env:
+                - name: TZ
+                  value: Australia/Perth
+              resources:
+                limits:
+                  cpu: "500m"
+                  memory: "1Gi"
+              command:
+                - /usr/local/bin/Rscript
+                - /app/inst/cron/job.R
+              securityContext:
+                runAsNonRoot: true
+                runAsUser: 1000
+                privileged: false
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+              volumeMounts:
+                - mountPath: /app/inst/data
+                  name: mpaviewer-data
+          volumes:
+            - name: mpaviewer-data
+              persistentVolumeClaim:
+                claimName: pvc-mpaviewer-data-prod
+          restartPolicy: Never
