@@ -31,45 +31,7 @@ app_ui <- function(request) {
         tags$li(actionButton("access", "Accessibility", class = "btn-btn-lg")
           # a(href = "https://www.dbca.wa.gov.au/", target = "_blank", "Accessibility")
           , class = "dropdown"
-          )#,
-
-        # shinydashboardPlus::dropdownBlock(
-        #   id = "dropdown",
-        #   title = "DBCA Marine Monitoring Dashboard",
-        #   # icon = "sliders-h",
-        #
-        #   tagList(a("Accessibility", href="https://www.google.com/")),
-        #   tagList(a("About", href="https://www.google.com/")),
-        #   tagList(a("Contact", href="https://www.google.com/"))
-
-          # tags$li(a(href = "https://www.dbca.wa.gov.au/", target = "_blank", "Accessibility"), class = "dropdown")
-        # )#,
-
-
-        # tags$li(a(
-        #   href = "https://www.dbca.wa.gov.au/", target = "_blank",
-        #   img(
-        #     src = "www/DBCA_logo1_reversed_BCS.png",
-        #     title = "DBCA",
-        #     height = "67px",
-        #     style = "margin-top:-15px; padding-top:-50px; margin-bottom:-15px; padding-bottom:-50px;"
-        #   )
-        # ), class = "dropdown")
-        # tags$li(a(
-        #   href = "https://www.dbca.wa.gov.au/", target = "_blank",
-        #   img(
-        #     src = "www/DBCA_BCS_white.png",
-        #     title = "DBCA",
-        #     height = "67px",
-        #     style = "margin-top:-15px; padding-top:-50px; margin-bottom:-15px; padding-bottom:-50px;"
-        #   )
-        # ), class = "dropdown")
-        # tags$li(a(href = 'https://marineecology.io/', target="_blank",
-        #           img(src = 'https://github.com/UWAMEGFisheries/UWAMEGFisheries.github.io/blob/master/images/MEG-white.png?raw=true',
-        #               title = "Marine Ecology Group",
-        #               height = "40px")
-        # ), class = "dropdown"
-        # )
+          )
       ),
       shinydashboardPlus::dashboardSidebar(
 
@@ -84,8 +46,8 @@ app_ui <- function(request) {
 
           menuItem(tags$div(tags$img(src = "www/coral.png", width="20px"),
             # tags$i(icon("pagelines")),
-            tags$span("Benthic")),
-                   tabName = "benthictab"),
+            tags$span("Coral")),
+                   tabName = "coraltab"),
 
           menuItem(tags$div(tags$i(icon("info")), tags$span("Info")),
                    tabName = "info")#, icon = icon("pagelines")
@@ -194,8 +156,9 @@ app_ui <- function(request) {
         $("header").find("nav").append(\'<span class="myClass" margin-top: 10px;> <b>DBCA Marine Monitoring Dashboard </b> </span>\');
       })
      ')),
+
+    # FISH TABS CONTENT ----
         tabItems(
-          # First tab content
           tabItem(
             tabName = "fishtab",
             fluidRow(
@@ -218,61 +181,14 @@ app_ui <- function(request) {
                          # h4("State summary:"),
                          valueBoxOutput("box.total.number.fish", width = 6),
                          valueBoxOutput("box.total.species.fish", width = 6),
-
                          h4("Marine Parks Surveyed:"),
                          uiOutput("statewide_plots"),
-                         # htmlOutput("fish.state.method.dropdown", multiple = FALSE)#,
-                         # selectInput(
-                         #   width = "100%",
-                         #   "fishstatemetric",
-                         #   "Choose a group of metrics to plot:",
-                         #   choices = c("Whole assemblage", "Individual species", "Target species", "Life history traits"),
-                         #   multiple = FALSE,
-                         #   selectize = TRUE
-                         # ),
-                         # conditionalPanel(
-                         #   'input.fishstatemetric == "Whole assemblage"',
-                         #
-                         #   h4("Species richness  ", actionButton("state.sr", label = " ", icon = icon("info"), icon.library = "font awesome", style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
-                         #   withSpinner(uiOutput("ui.fish.state.rich.plot")), # ui.
-                         #
-                         #   h4("Total abundance  ", actionButton("state.ta", label = " ", icon = icon("info"), icon.library = "font awesome", style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
-                         #   withSpinner(uiOutput("ui.fish.state.total.plot")), # ui.
-                         #
-                         #   h4("Spatial"),
-                         #   withSpinner(leafletOutput(width = "100%", "fish.state.metric.leaflet", height = 500))
-                         #
-                         #   # plotOutput("fish.state.stack.plot", height = 500)
-                         # ),
-                         # conditionalPanel(
-                         #   'input.fishstatemetric == "Target species"',
-                         #   htmlOutput("fish.state.fished.species.dropdown"),
-                         #   withSpinner(uiOutput("ui.fish.state.fished.species.abundance.plot")),
-                         #   withSpinner(plotOutput("fish.state.fished.species.kde.plot", height = 500)), #TODO make this a better height
-                         #   htmlOutput("fish.state.fished.species.iframe")
-                         # ),
-                         # conditionalPanel(
-                         #   'input.fishstatemetric == "Individual species"',
-                         #   htmlOutput("fish.state.all.species.dropdown"),
-                         #   withSpinner(plotOutput("fish.state.all.species.abundance.plot", height = 600)),
-                         #
-                         #   h4("Spatial"),
-                         #   withSpinner(leafletOutput(width = "100%", "fish.state.all.species.leaflet", height = 500)),
-                         #
-                         #   br(),
-                         #
-                         #   htmlOutput("fish.state.all.species.iframe")
-                         # ),
-                         # conditionalPanel(
-                         #   'input.fishstatemetric == "Life history traits"',
-                         #   htmlOutput("fish.state.trophic.dropdown"),
-                         #   withSpinner(uiOutput("ui.fish.state.trophic.plot"))
-                         # )
                 ),
-                # )
 
+                ### End of State
 
                 ## MARINE PARK ----
+
                 tabPanel(
                   "Marine park",
                   style = "overflow: auto",
@@ -280,14 +196,8 @@ app_ui <- function(request) {
                   column(
                     width = 6,
                     htmlOutput("fish.park.dropdown"),
-                    uiOutput("fish.park.method.dropdown")
-                    # selectizeInput("fish.park.method.dropdown", "Choose a method:", multiple = FALSE, choices = character(0))
-
-                    # selectizeInput("fish.park.method.dropdown", "Choose a method:",
-                    #                selected = "stereo-BRUVs", multiple = FALSE,
-                    #                choices = c("stereo-BRUVs", "stereo-DOVs", "stereo-ROVs"))
-                    #,
-                    # htmlOutput("fish.park.site.dropdown")
+                    uiOutput("fish.park.method.dropdown"),
+                    htmlOutput("acknowledgement")
                   ),
                   column(
                     width = 6,
@@ -308,7 +218,6 @@ app_ui <- function(request) {
                     )
                   ),
 
-
                   # box(width = 12, title = "Plot data", #solidHeader = TRUE, #status = "warning",
                   selectInput(
                     width = "100%",
@@ -322,24 +231,12 @@ app_ui <- function(request) {
                   conditionalPanel(
                     'input.fishparkmetric == "Whole assemblage"',
 
+                    h3("Community temperature index (CTI):", actionButton("park.cti", label = " ",
+                                                        icon = icon("info"),
+                                                        icon.library = "font awesome",
+                                                        style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
 
-                    h3("Species richness:", actionButton("park.sr", label = " ",
-                                                          icon = icon("info"),
-                                                          icon.library = "font awesome",
-                                                          style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
-                    withSpinner(uiOutput("fish.park.rich.plot", height = 350)),
-
-                    uiOutput("fish.park.rich.trend"),
-
-                    h4("Species richness by sanctuary:"),
-                    withSpinner(uiOutput("fish.park.rich.sanctuary.plot")),
-
-                    h4("Species richness by zone:"),
-                    withSpinner(uiOutput("fish.park.rich.zone.plot")),
-                    # withSpinner(plotOutput("fish.park.rich.zone.plot", height = 250)),
-
-                    ## Only show site plots if stereo-DOVs
-                    withSpinner(uiOutput("fish.park.rich.site.plot")),
+                    withSpinner(uiOutput("fish.park.cti")),
 
                     h3("Total abundance:", actionButton("park.ta", label = " ",
                                                         icon = icon("info"),
@@ -364,28 +261,58 @@ app_ui <- function(request) {
                     withSpinner(uiOutput("fish.park.total.site.plot")),
 
 
-                    h4("Spatial"),
-                    withSpinner(leafletOutput(width = "100%", "fish.park.metric.leaflet", height = 300))
+                    h3("Species richness:", actionButton("park.sr", label = " ",
+                                                          icon = icon("info"),
+                                                          icon.library = "font awesome",
+                                                          style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
+                    withSpinner(uiOutput("fish.park.rich.plot", height = 350)),
+
+                    uiOutput("fish.park.rich.trend"),
+
+                    h4("Species richness by sanctuary:"),
+                    withSpinner(uiOutput("fish.park.rich.sanctuary.plot")),
+
+                    h4("Species richness by zone:"),
+                    withSpinner(uiOutput("fish.park.rich.zone.plot")),
+                    # withSpinner(plotOutput("fish.park.rich.zone.plot", height = 250)),
+
+                    ## Only show site plots if stereo-DOVs
+                    withSpinner(uiOutput("fish.park.rich.site.plot"))
+
+
+                    #h4("Spatial"),
+                    #withSpinner(leafletOutput(width = "100%", "fish.park.metric.leaflet", height = 300))
                   ),
                   conditionalPanel(
                     'input.fishparkmetric == "Target species"',
 
-                    h4("Total abundance of targeted species:"),
+                    h4("Total abundance of top 5 highly targeted species:"),
                     withSpinner(uiOutput("fish.park.fished.sum.plot")),
 
-                    h4("Total abundance of targeted species by sanctuary:"),
+                    h4("Total abundance of all targeted species:"),
+                    withSpinner(uiOutput("fish.park.fished.all.sum.plot")),
+
+                    h4("Total abundance of top 5 highly targeted species by sanctuary:"),
                     withSpinner(uiOutput("fish.park.fished.sum.sanctuary.plot")),
+
+                    h4("Total abundance of all targeted species by sanctuary:"),
+                    withSpinner(uiOutput("fish.park.fished.all.sum.sanctuary.plot")),
 
                     htmlOutput("fish.park.fished.species.dropdown"),
                     withSpinner(uiOutput("fish.park.fished.species.abundance.plot")),
                     withSpinner(uiOutput("fish.park.fished.species.abundance.sanctuary.plot")),
 
-                    # withSpinner(plotOutput("fish.park.fished.species.kde.plot", height = 500)),
-                    h4("KDE:"),
-                    withSpinner(uiOutput("fish.park.fished.species.kde.plot")),
+                    htmlOutput("fish.park.fished.species.dropdown"),
+                    withSpinner(uiOutput("fish.park.fished.species.abundance.plot")),
+                    withSpinner(uiOutput("fish.park.fished.species.abundance.sanctuary.plot")),
 
-                    # withSpinner(uiOutput("ui.fish.park.fished.species.kde.sanctuary.plot")),
-                    htmlOutput("fish.park.fished.species.iframe")
+
+                    # withSpinner(plotOutput("fish.park.fished.species.kde.plot", height = 500)),
+                    # h4("KDE:"),
+                    # withSpinner(uiOutput("fish.park.fished.species.kde.plot")),
+                    #
+                    # # withSpinner(uiOutput("ui.fish.park.fished.species.kde.sanctuary.plot")),
+                    # htmlOutput("fish.park.fished.species.iframe")
                   ),
                   conditionalPanel(
                     'input.fishparkmetric == "Individual species"',
@@ -408,14 +335,15 @@ app_ui <- function(request) {
                   ),
                   conditionalPanel(
                     'input.fishparkmetric == "Life history traits"',
-                    # htmlOutput("fish.park.trophic.dropdown"),
                     withSpinner(uiOutput("fish.park.trophic.plot"))
                   )
-                )#, # End tab panel for marine park
+                )
 
               ),
 
-              # box(solidHeader = TRUE, "test box"),
+              ### End of marine park plots
+
+              ### Leaflet box ----
 
               fluidRow(
                 div(column(
@@ -423,7 +351,7 @@ app_ui <- function(request) {
                   box(
                     width = 12, title = "Sampling locations",
                     conditionalPanel(
-                      'input.tabset1 == "State-wide summary"',
+                      'input.tabset1 !== "Marine park"',
                       withSpinner(leafletOutput(width = "100%", "fish.state.sampling.leaflet", height = "78vh")),
                       style="z-index:1002;"
                     ),
@@ -434,148 +362,161 @@ app_ui <- function(request) {
 
                     # h4("Sampling locations"),
                     # leafletOutput(width = "100%", "fish.state.sampling.leaflet", height = "78vh")
-                  ), # end of box
+                  ),
+
                   style = "position:fixed; right: 0;"
                 ))
               )
             )
           ),
 
-          # Second tab content - enable when content is ready
+          # CORAL TABS CONTENT ----
+
           tabItem(
-            tabName = "benthictab",
+            tabName = "coraltab",
             fluidRow(
+
+
+              # valueBoxOutput("box.total.fish"),
+
               tabBox(
                 title = "Choose a spatial scale to plot",
                 width = 8,
                 # width = "55%", # was 95%
                 id = "tabset2", height = "78vh",
+
+
+                ## STATE ----
                 tabPanel("State-wide summary",
-                         style = "overflow: visible",
-                         # column(width = 5,
+                         style = "overflow: auto",
+                         valueBoxOutput("box.total.number.coral", width = 6),
+                         valueBoxOutput("box.total.species.coral", width = 6),
+                         h4("Marine Parks Surveyed:"),
+                          column(width = 11,
+                             img(src = "www/plots/Coral_All_Parks_coral_cover.png", align="centre", width = "100%"))
+                ),
 
-                         selectInput(
-                           width = "100%",
-                           "benthicstatemethoddropdown",
-                           "Choose a metric to plot:",
-                           choices = c("Coral cover", "Coral recruitment"),
-                           multiple = FALSE,
-                           selectize = TRUE
-                         )
-                         ,
+          # Old dynamic coral tab, delete later
 
-                         conditionalPanel('input.benthicstatemethoddropdown == "Coral cover"',
-                           htmlOutput("benthic.state.park.coralcover.dropdown"),
-                           withSpinner(plotOutput("benthic.state.coralcover.plot", height = 500))
-                           ),
+          # tabItem(
+          #   tabName = "coraltab",
+          #   fluidRow(
+          #     tabBox(
+          #       title = "Choose a spatial scale to plot",
+          #       width = 8,
+          #       # width = "55%", # was 95%
+          #       id = "tabset2", height = "78vh",
+          #       tabPanel("State-wide summary",
+          #                style = "overflow: visible",
+          #                # column(width = 5,
+          #
+          #                selectInput(
+          #                  width = "100%",
+          #                  "benthicstatemethoddropdown",
+          #                  "Choose a metric to plot:",
+          #                  choices = c("Coral cover", "Coral recruitment"),
+          #                  multiple = FALSE,
+          #                  selectize = TRUE
+          #                )
+          #                ,
+          #
+          #                conditionalPanel('input.benthicstatemethoddropdown == "Coral cover"',
+          #                  htmlOutput("benthic.state.park.coralcover.dropdown"),
+          #                  withSpinner(plotOutput("benthic.state.coralcover.plot", height = 500))
+          #                  ),
+          #
+          #                conditionalPanel(
+          #                  'input.benthicstatemethoddropdown == "Coral recruitment"',
+          #
+          #                  htmlOutput("benthic.state.park.coralrecruitment.dropdown"),
+          #
+          #                  selectInput(
+          #                    width = "100%",
+          #                    "benthicstatecoralrecruitmentmetric",
+          #                    "Plot by:",
+          #                    choices = c("All park", "Taxa"),
+          #                    multiple = FALSE,
+          #                    selectize = TRUE
+          #                  )
+          #                ),
+          #
+          #                  conditionalPanel(
+          #                    'input.benthicstatemethoddropdown == "Coral recruitment" && input.benthicstatecoralrecruitmentmetric == "All park"',
+          #                    withSpinner(plotOutput("benthic.state.coralrecruitment.all.plot", height = 500))
+          #                  ),
+          #
+          #                  conditionalPanel(
+          #                    'input.benthicstatemethoddropdown == "Coral recruitment" && input.benthicstatecoralrecruitmentmetric == "Taxa"',
+          #                    htmlOutput("benthic.state.coralrecruitment.taxa.dropdown"),
+          #                    withSpinner(plotOutput("benthic.state.coralrecruitment.taxa.plot", height = 500))
+          #                  )
+          #       ), # end tab panel
 
-                         conditionalPanel(
-                           'input.benthicstatemethoddropdown == "Coral recruitment"',
 
-                           htmlOutput("benthic.state.park.coralrecruitment.dropdown"),
-
-                           selectInput(
-                             width = "100%",
-                             "benthicstatecoralrecruitmentmetric",
-                             "Plot by:",
-                             choices = c("All park", "Taxa"),
-                             multiple = FALSE,
-                             selectize = TRUE
-                           )
-                         ),
-
-                           conditionalPanel(
-                             'input.benthicstatemethoddropdown == "Coral recruitment" && input.benthicstatecoralrecruitmentmetric == "All park"',
-                             withSpinner(plotOutput("benthic.state.coralrecruitment.all.plot", height = 500))
-                           ),
-
-                           conditionalPanel(
-                             'input.benthicstatemethoddropdown == "Coral recruitment" && input.benthicstatecoralrecruitmentmetric == "Taxa"',
-                             htmlOutput("benthic.state.coralrecruitment.taxa.dropdown"),
-                             withSpinner(plotOutput("benthic.state.coralrecruitment.taxa.plot", height = 500))
-                           )
-                ), # end tab panel
-
-
-                tabPanel("Marine park",
-                         style = "overflow: visible",
-
-                         column(
-                           width = 6,
-
-                         selectInput(
+          ## MARINE PARK ----
+          tabPanel(
+            "Marine park",
+            style = "overflow: auto",
+            # box(width = 12, title = "Filter data", solidHeader = TRUE, #status = "warning",
+            column(
+              width = 6,
+              htmlOutput("benthic.park.coralcover.dropdown"),
+              selectInput(
                            width = "100%",
                            "benthicparkmethoddropdown",
                            "Choose a metric to plot:",
                            choices = c("Coral cover", "Coral recruitment"),
                            multiple = FALSE,
                            selectize = TRUE
-                         )
-                         ,
-
-                         conditionalPanel('input.benthicparkmethoddropdown == "Coral cover"', #width = 6,
-                                          htmlOutput("benthic.park.coralcover.dropdown"),
-                                          htmlOutput("benthic.park.site.coralcover.dropdown"),
-
-                                             )
-                                          )
-
-                         ,
-
-                         column(
-                           width = 6,
-                           column(
-                             width = 11,
-                             uiOutput("ui.benthic.park.image")
-                           ),
-                           column(
-                             width = 1,
-                             # actionBttn(
-                             #   inputId = "alert.benthic.marinepark",
-                             #   label = NULL,
-                             #   style = "material-circle",
-                             #   color = "primary",
-                             #   icon = icon("info")
-                             # )
-
-                             actionButton("alert.benthic.marinepark",
-                                          label = " ",
-                                          icon = icon("info"),
-                                          icon.library = "font awesome",
-                                          style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px"
-                                          )
-
-
-
-                           )
                          ),
+            ),
+            column(
+              width = 6,
+              column(
+                width = 11,
+                uiOutput("ui.benthic.park.image")
+              ),
+              column(
+                width = 1,
+                actionButton("alert.marinepark",
+                             label = " ",
+                             icon = icon("info"),
+                             icon.library = "font awesome",
+                             style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px"
+                )
 
-
-
-                    # column(width = 12,
-                           conditionalPanel('input.benthicparkmethoddropdown == "Coral cover"',
-                                     htmlOutput("benthic.park.sites.coralcover.dropdown"),
-                                     h4("Whole park:"),
-                                     withSpinner(plotOutput("benthic.park.coralcover.plot", height = 500)),
-
-                                     h4("By sector:"),
-                                     withSpinner(plotOutput("benthic.sector.coralcover.plot", height = 500)),
-
-                                     h4("By site:"),
-                                     withSpinner(plotOutput("benthic.site.coralcover.plot", height = 1000))
-                    # )
-                    ),
-
-
-                    htmlOutput("benthic.park.dropdown"),
-                    htmlOutput("benthic.park.method.dropdown"),
-                    htmlOutput("benthic.park.site.dropdown")
-
-
-                  )
 
               )
-, # end tab box
+            ),
+
+            conditionalPanel(
+              'input.benthicparkmethoddropdown == "Coral cover"',
+
+              h3("Total abundance:", actionButton("park.ta", label = " ",
+                                                  icon = icon("info"),
+                                                  icon.library = "font awesome",
+                                                  style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
+
+              withSpinner(uiOutput("benthic.park.coralcover.plot")),
+
+              h4("Most abundant species:"),
+              withSpinner(uiOutput("benthic.park.top5.coralcover.plot")),
+
+              h4("By reef zone:"),
+              withSpinner(uiOutput("benthic.park.reefzone.coralcover.plot")),
+
+              htmlOutput("benthic.park.site.coralcover.dropdown"),
+
+              h4("By site:"),
+              # withSpinner(uiOutput("ui.fish.park.total.zone.plot")),
+              withSpinner(uiOutput("benthic.site.coralcover.plot"))
+            )
+
+          )
+
+              ),
+
+              # end tab box
               fluidRow(
                 div(column(
                   width = 4,
@@ -599,7 +540,6 @@ app_ui <- function(request) {
 
           tabItem(
             tabName = "info",
-
             fluidRow(
             tabBox(
               title = "Info",
@@ -611,6 +551,26 @@ app_ui <- function(request) {
               #          # column(width = 5,
               #          htmltools::includeMarkdown("inst/app/www/accessibility.md")
               # ),
+              tabPanel("Methodology",
+                       style = "overflow: auto",
+              fluidRow(
+                box(width = 12,
+                column(width = 7, style = "padding:15px",
+                       includeHTML("inst/app/www/images/text/stereo-BRUVs.html")),
+                column(width = 4,
+                       img (src = "www/images/method_bruv.png", align="right")))),
+              fluidRow(
+                box(width = 12,
+                column(width = 7, style = "padding:15px",
+                       includeHTML("inst/app/www/images/text/stereo-DOVs.html")),
+                column(width = 4,
+                       img (src = "www/images/method_dov.png", align="right")))),
+              fluidRow(
+                box(width = 12,
+                    column(width = 7, style = "padding:15px",
+                           includeHTML("inst/app/www/images/text/stereo-ROV.html")),
+                    column(width = 4,
+                           img (src = "www/images/method_rov.png", align="right"))))),
               tabPanel("Contact",
                        style = "overflow: visible"#,
                        # column(width = 5,
@@ -618,10 +578,6 @@ app_ui <- function(request) {
               )
 
               ))
-
-
-
-
           )
         )
       )

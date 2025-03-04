@@ -31,6 +31,7 @@ generate_plots <- function() {
            "SP Wildlife Conservation" = "#7C7CB8")
 
   # BEGIN PLOTTING ----
+  # FISH PLOTS ----
   ## TOTAL ABUNDANCE ----
   ta <- mpa_data$ta_sr[metric %in% c("Total abundance")]
 
@@ -73,7 +74,7 @@ generate_plots <- function() {
               x = gazetted,
               y = +Inf,
               label = "\n\n gazetted",
-              size = 5,
+              size = 4,
               fill = "white",
               check_overlap = TRUE,
               label.size = NA
@@ -424,7 +425,10 @@ generate_plots <- function() {
   sr <- mpa_data$ta_sr[metric %in% c("Species richness")]
 
   # Filter to consistently sampled
-  dat <- sr[complete %in% c("Consistently sampled")]
+
+  # dat <- sr[complete %in% c("Consistently sampled")] # Turned off after meeting with Jordan 6th Nov 2023
+
+  dat <- sr
 
   unique(dat$marine_park)
 
@@ -931,6 +935,93 @@ generate_plots <- function() {
     }
   }
 
+  ## SUM ALL FISHED ABUNDANCE PLUS ----
+  dat <- mpa_data$fished_all_sum
+  dat <- dat[complete %in% c("Consistently sampled")]
+
+  unique(dat$marine_park)
+
+  for(marinepark in unique(dat$marine_park)){
+
+    message(marinepark)
+
+    temp <- dat[marine_park %in% c(marinepark)]
+
+    for(methods in unique(temp$method)){
+
+      temp2 <- temp[method %in% c(methods)]
+
+      p <- ggplot2::ggplot(temp2, ggplot2::aes(x = year, y = mean, fill = status)) +
+        ggplot2::geom_point(shape = 23, size = 6, col = "black", position = ggplot2::position_dodge(width = 0.5)) +
+        ggplot2::geom_errorbar(ggplot2::aes(ymin = mean - se, ymax = mean + se), width=.2, position = ggplot2::position_dodge(.5)) +
+        ggplot2::xlab("Year") +
+        ggplot2::ylab("Average abundance\nof target species\nper sample (+/- SE)") +
+        ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+        ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+                                    expand = ggplot2::expansion(mult = c(0, 0.05))) +
+        ggplot2::scale_fill_manual(values = c("Fished" = "#b9e6fb", "No-take" = "#7bbc63")) +
+        ggplot_mpatheme()
+
+      gazetted <- unique(temp2$gazetted)
+      re_zoned <- unique(temp2$re_zoned)
+      min_year <- min(temp2$year)
+
+      # Add gazettal and rezoned dates if they occured after sampling
+      if(!gazetted %in% c("NA", NA, NULL)){
+
+        if(min_year < gazetted) {
+          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
+            ggplot2::geom_label(
+              x = gazetted,
+              y = +Inf,
+              label = "\n\n gazetted",
+              size = 5,
+              fill = "white",
+              check_overlap = TRUE,
+              label.size = NA
+            )}
+      }
+
+      if(!re_zoned %in% c("NA", NA, NULL)){
+        if(min_year < re_zoned) {
+          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
+            ggplot2::geom_label(
+              x = re_zoned,
+              y = +Inf,
+              label = "\n\n rezoned",
+              size = 5,
+              fill = "white",
+              check_overlap = TRUE,
+              label.size = NA
+            )}
+      }
+
+      if(methods %in% c("stereo-ROVs+UVC")){
+        p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+          ggplot2::geom_label(
+            x = 2021,
+            y = +Inf,
+            label = "\n\n method\nchange",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA)
+      }
+      p
+
+      park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
+
+      ggplot2::ggsave(
+        paste0("inst/app/www/plots/", park.name, "_", methods, "_sum_all_targets.png"),
+        p,
+        width = 10,
+        height = 3,
+        dpi = 300
+      )
+
+    }
+  }
+
   ## SUM ALL FISHED ABUNDANCE - BY SANCTAURY ----
   dat <- mpa_data$fished_sum_sanctuary
   dat <- dat[complete %in% c("Consistently sampled")]
@@ -1024,6 +1115,101 @@ generate_plots <- function() {
 
     }
   }
+
+  ## SUM ALL FISHED ABUNDANCE PLUS - BY SANCTAURY ----
+  dat <- mpa_data$fished_all_sum_sanctuary
+  dat <- dat[complete %in% c("Consistently sampled")]
+
+  unique(dat$marine_park)
+
+  for(marinepark in unique(dat$marine_park)){
+
+    message(marinepark)
+
+    temp <- dat[marine_park %in% c(marinepark)]
+
+    for(methods in unique(temp$method)){
+
+      temp2 <- temp[method %in% c(methods)]
+
+      p <- ggplot2::ggplot(temp2, ggplot2::aes(x = year, y = mean, fill = status)) +
+        ggplot2::geom_point(shape = 23, size = 6, col = "black", position = ggplot2::position_dodge(width = 0.5)) +
+        ggplot2::geom_errorbar(ggplot2::aes(ymin = mean - se, ymax = mean + se), width=.2, position = ggplot2::position_dodge(.5)) +
+        ggplot2::xlab("Year") +
+        ggplot2::ylab("Average abundance\nof target species\nper sample (+/- SE)") +
+        ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+        ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+                                    expand = ggplot2::expansion(mult = c(0, 0.05))) +
+        ggplot2::scale_fill_manual(values = c("Fished" = "#b9e6fb", "No-take" = "#7bbc63")) +
+        ggh4x::facet_wrap2(ggplot2::vars(dbca_sanctuary), axes = "all", ncol = 3) +
+        ggplot_mpatheme()
+
+      gazetted <- unique(temp2$gazetted)
+      re_zoned <- unique(temp2$re_zoned)
+      min_year <- min(temp2$year)
+
+      # Add gazettal and rezoned dates if they occured after sampling
+      if(!gazetted %in% c("NA", NA, NULL)){
+
+        if(min_year < gazetted) {
+          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
+            ggplot2::geom_label(
+              x = gazetted,
+              y = +Inf,
+              label = "\n\n gazetted",
+              size = 5,
+              fill = "white",
+              check_overlap = TRUE,
+              label.size = NA
+            )}
+      }
+
+      if(!re_zoned %in% c("NA", NA, NULL)){
+        if(min_year < re_zoned) {
+          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
+            ggplot2::geom_label(
+              x = re_zoned,
+              y = +Inf,
+              label = "\n\n rezoned",
+              size = 5,
+              fill = "white",
+              check_overlap = TRUE,
+              label.size = NA
+            )}
+      }
+
+      if(methods %in% c("stereo-ROVs+UVC")){
+        p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+          ggplot2::geom_label(
+            x = 2021,
+            y = +Inf,
+            label = "\n\n method\nchange",
+            size = 5,
+            fill = "white",
+            check_overlap = TRUE,
+            label.size = NA)
+      }
+      p
+
+      park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
+
+      if (length(unique(temp2$dbca_sanctuary)) %in% c(1,2,3) ){
+        p.height <- 3
+      } else {
+        p.height <- 3 * ceiling(length(unique(temp2$dbca_sanctuary))/3)
+      }
+
+      ggplot2::ggsave(
+        paste0("inst/app/www/plots/", park.name, "_", methods, "_sum_all_targets_sanctuary.png"),
+        p,
+        width = 10,
+        height = p.height,
+        dpi = 300
+      )
+
+    }
+  }
+
 
 
   ### TROPHIC GROUP ----
@@ -1140,8 +1326,8 @@ generate_plots <- function() {
 
       species_above_zero <- temp2 %>%
         dplyr::group_by(scientific_name) %>%
-        dplyr::summarise(total = sum(mean)) %>%
-        dplyr::filter(total > 3) %>%
+        #dplyr::summarise(total = sum(mean)) %>%
+        dplyr::filter(total > 20) %>%
         dplyr::ungroup()
 
       for(species in unique(species_above_zero$scientific_name)){
@@ -1240,8 +1426,8 @@ generate_plots <- function() {
 
       species_above_zero <- temp2 %>%
         dplyr::group_by(scientific_name) %>%
-        dplyr::summarise(total = sum(mean)) %>%
-        dplyr::filter(total > 3) %>%
+        #dplyr::summarise(total = sum(mean)) %>%
+        dplyr::filter(total > 10) %>%
         dplyr::ungroup()
 
       for(species in unique(species_above_zero$scientific_name)){
@@ -1330,80 +1516,460 @@ generate_plots <- function() {
   }
 
   ## KERNEL DENSIY ESTIMATE ----
-  dat <- mpa_data$fished.complete.length
+  #
+  # dat <- mpa_data$fished_complete_length
+  #
+  # unique(dat$marine_park)
+  #
+  # for(marinepark in unique(dat$marine_park)){
+  #
+  #   temp <- dat[marine_park %in% c(marinepark)]
+  #
+  #   for(methods in unique(temp$method)){
+  #
+  #     temp2 <- temp[method %in% c(methods)] #%>% dplyr::glimpse()
+  #
+  #     more_than_20 <- temp2 %>%
+  #       dplyr::mutate(latin = paste(family, genus, species)) %>%
+  #       dplyr::group_by(marine_park, method, campaignid, status, year, scientific_name, latin) %>%
+  #       dplyr::summarise(number = sum(number)) %>%
+  #       dplyr::filter(number > 20) %>%
+  #       dplyr::ungroup() %>%
+  #       dplyr::distinct(marine_park, method, campaignid, status, year, scientific_name, latin)
+  #
+  #     to_plot <- c(more_than_20$scientific_name)
+  #
+  #     for(i in to_plot){
+  #
+  #       unique(temp2$scientific_name)
+  #       print(i)
+  #
+  #       temp_new <- temp2[scientific_name %in% i]
+  #
+  #       temp3 <- temp_new[length > 0]
+  #       temp3 <- temp3[!is.na(length)]
+  #       temp3 <- temp3[complete %in% c("Consistently sampled")]
+  #
+  #       temp3 <- temp3 %>% dplyr::semi_join(more_than_20)
+  #
+  #       p <- ggplot2::ggplot(temp3, ggplot2::aes(x = length, fill = status)) +
+  #         ggplot2::geom_density(ggplot2::aes(y = ..density.. * 1000), alpha = 0.5, size = 0.7) +
+  #         ggplot2::theme(legend.position = ("bottom")) +
+  #         ggplot2::theme(
+  #           strip.text.y = ggplot2::element_text(size = 12, angle = 270),
+  #           strip.background = ggplot2::element_blank(),
+  #           axis.title = ggplot2::element_text(face = "bold"),
+  #           plot.title = ggplot2::element_text(face = "italic", hjust = 0.5),
+  #           strip.text.x = ggplot2::element_text(size = 14),
+  #           panel.grid.major = ggplot2::element_blank(),
+  #           panel.grid.minor = ggplot2::element_blank()
+  #         ) +
+  #         ggplot2::scale_y_continuous(expand = c(0, 0.1)) +
+  #         ggplot2::scale_fill_manual(values = c("Fished" = "#b9e6fb", "No-take" = "#7bbc63")) +
+  #         ggplot2::ylab("Weighted KDE (*1000)") +
+  #         ggplot2::xlab("Total Length (mm)") +
+  #         ggplot_mpatheme()
+  #         #ggplot2::facet_grid(rows = ggplot2::vars(year))
+  #
+  #       park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
+  #
+  #       # p.height <- 3 * length(unique(temp3$year))
+  #
+  #       ggplot2::ggsave(
+  #         paste0("inst/app/www/plots/species/", park.name, "_", methods, "_", i, "_KDE.png"),
+  #         p,
+  #         width = 10,
+  #         height = 3,
+  #         dpi = 300
+  #       )
+  #     }
+  #   }
+  # }
 
-  unique(dat$marine_park)
+
+ ## CTI Plots ----
+
+  library(ggimage)
+
+  dat <- mpa_data$cti_park %>%
+    dplyr::mutate(year = as.numeric(year),
+                  legend = "All sites")
 
   for(marinepark in unique(dat$marine_park)){
+
+    message(marinepark)
 
     temp <- dat[marine_park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
 
-      temp2 <- temp[method %in% c(methods)] #%>% dplyr::glimpse()
+      temp2 <- temp[method %in% c(methods)]
 
-      more_than_20 <- temp2 %>%
-        dplyr::mutate(latin = paste(family, genus, species)) %>%
-        dplyr::group_by(marine_park, method, campaignid, status, year, scientific_name, latin) %>%
-        dplyr::summarise(number = sum(number)) %>%
-        dplyr::filter(number > 20) %>%
-        dplyr::ungroup() %>%
-        dplyr::distinct(marine_park, method, campaignid, status, year, scientific_name, latin)
+      p <- ggplot2::ggplot(temp2, ggplot2::aes(x = year, y = cti, fill = legend)) +
+        ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black", fill ="darkslategrey", alpha = 0.3) +
+        ggplot2::geom_point(shape = 23, size = 4, col = "black", position = ggplot2::position_dodge(width = 0.5)) +
+        ggplot2::scale_fill_manual(values = c("cadetblue"))+
+        ggplot2::geom_errorbar(ggplot2::aes(ymin = cti - se, ymax = cti + se), width=.2, position = ggplot2::position_dodge(.5)) + ggplot2::xlab("Year") +
+        ggplot2::ylab("Average CTI (°C)\nper sample (+/- SE)") +
+        ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+                                    expand = ggplot2::expansion(mult = c(0, 0.05))) +
+        ggplot_mpatheme()
 
-      to_plot <- c(more_than_20$scientific_name)
+      min_year <- min(temp2$year)
+      heatwave <- 2011
 
-      for(i in to_plot){
+      # Add 2011 heatwave if they occured after sampling
+      if(!heatwave %in% c("NA", NA, NULL)){
 
-        unique(temp2$scientific_name)
-        print(i)
-
-        temp_new <- temp2[scientific_name %in% i]
-
-        temp3 <- temp_new[length > 0]
-        temp3 <- temp3[!is.na(length)]
-        temp3 <- temp3[complete %in% c("Consistently sampled")]
-
-        temp3 <- temp3 %>% dplyr::semi_join(more_than_20)
-
-        p <- ggplot2::ggplot(temp3, ggplot2::aes(x = length, fill = status)) +
-          ggplot2::geom_density(ggplot2::aes(y = ..density.. * 1000), alpha = 0.5, size = 0.7) +
-          ggplot2::theme(legend.position = ("bottom")) +
-          ggplot2::theme(
-            strip.text.y = ggplot2::element_text(size = 12, angle = 270),
-            strip.background = ggplot2::element_blank(),
-            axis.title = ggplot2::element_text(face = "bold"),
-            plot.title = ggplot2::element_text(face = "italic", hjust = 0.5),
-            strip.text.x = ggplot2::element_text(size = 14),
-            panel.grid.major = ggplot2::element_blank(),
-            panel.grid.minor = ggplot2::element_blank()
-          ) +
-          ggplot2::scale_y_continuous(expand = c(0, 0.1)) +
-          ggplot2::scale_fill_manual(values = c("Fished" = "#b9e6fb", "No-take" = "#7bbc63")) +
-          ggplot2::ylab("Weighted KDE (*1000)") +
-          ggplot2::xlab("Total Length (mm)") +
-          ggplot_mpatheme() +
-          ggplot2::facet_grid(rows = ggplot2::vars(year))
-
-        p
-
-        park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
-
-        p.height <- 3 * length(unique(temp3$year))
-
-        ggplot2::ggsave(
-          paste0("inst/app/www/plots/species/", park.name, "_", methods, "_", i, "_KDE.png"),
-          p,
-          width = 10,
-          height = p.height,
-          dpi = 300
-        )
+        if(min_year < heatwave) {
+          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = heatwave), linetype = "dashed", colour = "red") +
+            ggplot2::geom_label(
+              x = heatwave,
+              y = +Inf,
+              label = "\n\n Marine heat wave",
+              size = 3,
+              fill = "white",
+              check_overlap = TRUE,
+              label.size = NA
+            )}
       }
+
+      p
+
+      park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
+
+      ggplot2::ggsave(
+        paste0("inst/app/www/plots/", park.name, "_", methods, "_cti.png"),
+        p,
+        width = 10,
+        height = 3,
+        dpi = 300
+      )
+
     }
   }
 
 
+# CORAL PLOTS ----
+## PERCENT COVER ----
+
+  library(dplyr)
+  library(plotrix)
+  install.packages("fishualize")
+  library(fishualize)
+  library(paletteer)
+
+  #### ALL PARKS BY YEAR Faceted ----
+
+  dat <- mpa_data$coral_cover_transect %>%
+    mutate(year = plot_year) %>%
+    group_by(marine_park, year) %>%
+    summarise(coral_cover = mean(percent_cover), se = plotrix::std.error(percent_cover), sd = sd(percent_cover)) %>%
+    ungroup()
+
+    p <- ggplot2::ggplot(dat, ggplot2::aes(x = year, y = coral_cover)) +
+      ggplot2::geom_point(shape = 23, size = 4, col = "black", position = ggplot2::position_dodge(width = 0.5)) +
+      ggplot2::geom_errorbar(ggplot2::aes(ymin = coral_cover - se, ymax = coral_cover + se), width=.2, position = ggplot2::position_dodge(.5)) + ggplot2::xlab("Year") +
+      ggplot2::ylab("Percent Coral Cover (+/- SE)") +
+      ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black", fill = "lightblue") +
+      ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+                                  expand = ggplot2::expansion(mult = c(0, 0.05))) +
+      ggplot2::scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
+      ggh4x::facet_wrap2(ggplot2::vars(marine_park), axes = "all", ncol = 1) +
+      ggplot_mpatheme()
+
+    p
+
+    park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
+
+    parknum <- dat %>% distinct(marine_park) %>% summarise(n=n())
+
+    ggplot2::ggsave(
+      paste0("inst/app/www/plots/", "Coral_All_Parks_coral_cover.png"),
+      p,
+      width = 10,
+      height = 3*parknum$n,
+      dpi = 300)
 
 
+  ### ALL PARKS - BY YEAR ----
 
-}
+
+  dat <- mpa_data$coral_cover_transect %>%
+    mutate(year = plot_year) %>%
+    group_by(marine_park, year) %>%
+    summarise(coral_cover = mean(percent_cover), se = plotrix::std.error(percent_cover), sd = sd(percent_cover)) %>%
+    ungroup()
+
+  unique(dat$marine_park)
+
+  for(marinepark in unique(dat$marine_park)){
+
+    message(marinepark)
+
+    temp <- dat %>% filter(marine_park == marinepark)
+
+      p <- ggplot2::ggplot(temp, ggplot2::aes(x = year, y = coral_cover)) +
+        ggplot2::geom_point(shape = 23, size = 4, col = "black", position = ggplot2::position_dodge(width = 0.5)) +
+        ggplot2::geom_errorbar(ggplot2::aes(ymin = coral_cover - se, ymax = coral_cover + se), width=.2, position = ggplot2::position_dodge(.5)) + ggplot2::xlab("Year") +
+        ggplot2::ylab("Percent Coral Cover (+/- SE)") +
+        ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black", fill = "lightblue") +
+        ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+                                    expand = ggplot2::expansion(mult = c(0, 0.05))) +
+        ggplot2::scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
+        ggplot_mpatheme()
+
+      p
+
+      park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
+
+      ggplot2::ggsave(
+        paste0("inst/app/www/plots/", "Coral_",park.name,"_coral_cover.png"),
+        p,
+        width = 10,
+        height = 3,
+        dpi = 300
+      )
+
+  }
+
+  ### ALL PARKS - BY SITE & YEAR ----
+
+  dat <- mpa_data$coral_cover_transect %>%
+    mutate(year = plot_year) %>%
+    group_by(marine_park, site, year) %>%
+    summarise(coral_cover = mean(percent_cover), se = plotrix::std.error(percent_cover), sd = sd(percent_cover)) %>%
+    ungroup() %>%
+    filter(!(is.na(se)))
+
+  unique(dat$marine_park)
+
+  for(marinepark in unique(dat$marine_park)){
+
+    message(marinepark)
+
+    temp <- dat %>% filter(marine_park == marinepark)
+
+    # for(sites in unique(temp$site)){
+    #
+    #   temp2 <- temp %>% filter(site == sites)
+
+    p <- ggplot2::ggplot(temp, ggplot2::aes(x = year, y = coral_cover)) +
+      ggplot2::geom_point(shape = 23, size = 4, col = "black", position = ggplot2::position_dodge(width = 0.5)) +
+      ggplot2::geom_errorbar(ggplot2::aes(ymin = coral_cover - sd, ymax = coral_cover + sd), width=.2, position = ggplot2::position_dodge(.5)) + ggplot2::xlab("Year") +
+      ggplot2::ylab("Percent Coral Cover (+/- SD)") +
+      ggplot2::expand_limits(y=c(0, NA)) +
+      ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black", fill = "lightblue") +
+      ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+                                  expand = ggplot2::expansion(mult = c(0, 0.05))) +
+      #ggplot2::scale_y_continuous(limits = c(0, NA))+
+      ggplot2::scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
+      ggh4x::facet_wrap2(ggplot2::vars(site), axes = "all", ncol = 2) +
+      ggplot_mpatheme()
+
+    p
+
+    park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
+
+    sitenum <- temp %>% distinct(site) %>% summarise(n=n())
+
+    ggplot2::ggsave(
+      paste0("inst/app/www/plots/", "Coral_",park.name,"_site_coral_cover.png"),
+      p,
+      width = 20,
+      height = (3*sitenum$n)/2,
+      dpi = 300
+    )
+
+  }
+
+  ### Reef Zone - Per Park/Per Year ----
+
+  dat <- coral_cover_reefzone
+
+  unique(dat$marine_park)
+
+  for(marinepark in unique(dat$marine_park)){
+
+    message(marinepark)
+
+    temp <- dat %>% filter(marine_park == marinepark)
+
+    # for(sites in unique(temp$site)){
+    #
+    #   temp2 <- temp %>% filter(site == sites)
+
+    p <- ggplot2::ggplot(temp, ggplot2::aes(x = plot_year, y = percent_cover)) +
+      ggplot2::geom_point(shape = 23, size = 4, col = "black", position = ggplot2::position_dodge(width = 0.5)) +
+      ggplot2::geom_errorbar(ggplot2::aes(ymin = percent_cover - se, ymax = percent_cover + se), width=.2, position = ggplot2::position_dodge(.5)) + ggplot2::xlab("Year") +
+      ggplot2::ylab("Percent Coral Cover (+/- SE)") +
+      ggplot2::expand_limits(y=c(0, NA)) +
+      ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black", fill = "lightblue") +
+      ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+                                  expand = ggplot2::expansion(mult = c(0, 0.05))) +
+      ggplot2::coord_cartesian(ylim = c(0, NA))+
+      ggplot2::scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
+      ggh4x::facet_wrap2(ggplot2::vars(reef_zone), axes = "all", ncol = 2) +
+      ggplot_mpatheme()
+
+    p
+
+    park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
+
+    sitenum <- temp %>% distinct(reef_zone) %>% summarise(n=n())
+
+    ggplot2::ggsave(
+      paste0("inst/app/www/plots/", "Coral_",park.name,"_reefzone_coral_cover.png"),
+      p,
+      width = 20,
+      height = ceiling(sitenum$n/2)*4,
+      dpi = 300
+    )
+
+  }
+
+  # STACKED BAR PLOTS ----
+  ### ALL PARKS - PER YEAR ----
+
+  dat <- mpa_data$coral_cover_species %>%
+    dplyr::rename(genus = level3class) %>%
+    dplyr::filter(!(genus == "Hard coral")) %>%
+    dplyr::group_by(marine_park, year, genus) %>%
+    dplyr::summarise(percent_cover = mean(cover)) %>%
+    dplyr::filter(min_rank(desc(percent_cover)) <= 4) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(park_genus = paste(marine_park, genus, sep="_"))
+
+  other <- mpa_data$coral_cover_transect %>%
+    #dplyr::rename(genus = level3class) %>%
+    #dplyr::filter(!(genus == "Hard coral")) %>%
+    dplyr::group_by(marine_park, plot_year) %>%
+    dplyr::summarise(percent_cover = mean(percent_cover)) %>%
+    dplyr::ungroup()
+
+  top5 <- dat %>%
+    #dplyr::mutate(park_genus = paste(marine_park, genus, sep="_")) %>%
+    dplyr::group_by(marine_park, genus) %>%
+    dplyr::summarize(cover = mean(percent_cover)) %>%
+    dplyr::filter(min_rank(desc(cover)) <= 4) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(park_genus = paste(marine_park, genus, sep="_")) %>%
+    dplyr::select(park_genus)
+
+  dat <- dplyr::semi_join(dat, top5, by = "park_genus")
+
+  unique(dat$marine_park)
+
+  for(marinepark in unique(dat$marine_park)){
+
+    message(marinepark)
+
+    temp <- dat %>% dplyr::filter(marine_park == marinepark)
+
+    p <- ggplot2::ggplot(temp, ggplot2::aes(x = year, y = percent_cover, fill = genus)) +
+      ggplot2::geom_bar(position="stack", stat="identity") +
+      ggplot2::ylab("Mean Coral Cover (%)") +
+      ggplot2::xlab("Year")+
+      ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+                                  expand = ggplot2::expansion(mult = c(0, 0.05))) +
+      paletteer::scale_fill_paletteer_d("fishualize::Acanthurus_olivaceus") +
+      #ggh4x::facet_wrap2(ggplot2::vars(site), axes = "all", ncol = 2) +
+      ggplot_mpatheme()
+
+    p
+
+    park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
+
+    ggplot2::ggsave(
+      paste0("inst/app/www/plots/", "Coral_", park.name,"_species_coral_cover.png"),
+      p,
+      width = 10,
+      height = 4,
+      dpi = 300)
+
+  }
+
+  ### ALL PARKS - PER SITE ----
+  dat <- mpa_data$coral_cover_species %>%
+    #dplyr::filter(!(level3class == "Hard coral")) %>%
+    dplyr::group_by(marine_park, year, site, level3class) %>%
+    dplyr::summarise(percent_cover = mean(cover)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(park_family = paste(marine_park, site, level3class, sep="_"),
+                  park_site_year = paste(marine_park, site, year, sep="_"))
+
+  top4 <- mpa_data$coral_cover_species %>%
+    dplyr::group_by(marine_park, site, level3class) %>%
+    dplyr::summarize(percent_cover = mean(cover)) %>%
+    dplyr::filter(min_rank(desc(percent_cover)) <= 4) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(park_family = paste(marine_park, site, level3class, sep="_")) %>%
+    dplyr::select(park_family)
+
+  all <- dplyr::anti_join(dat, top4, by="park_family") %>%
+    dplyr::group_by(marine_park, site) %>%
+    dplyr::summarise(total_cover = sum(percent_cover)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(park_site_year = paste(marine_park, site, sep="_")) %>%
+    dplyr::rename(percent_cover = total_cover) %>%
+    dplyr::mutate(level3class = "Other Hard Coral",
+                  park_family = paste(site, level3class, sep="_"),
+                  percent_cover = round(percent_cover, digits = 2)) %>%
+    dplyr::select(!c(park_site_year)) %>%
+    dplyr::bind_rows(top4)
+
+  unique(dat$marine_park)
+
+  for(marinepark in unique(dat$marine_park)){
+
+    temp <- all %>% dplyr::filter(marine_park == marinepark)
+
+    message(marinepark)
+
+    for(sites in unique(temp$site)){
+
+      years <- temp %>%
+        dplyr::select(year) %>%
+        dplyr::distinct() %>%
+        dplyr::mutate(marine_park = marinepark, site = sites, percent_cover = 0, level3class = "")
+
+      temp2 <- temp %>% dplyr::filter(site == sites) #%>%
+
+      p <- ggplot2::ggplot(temp2, ggplot2::aes(x = year, y = percent_cover, fill = level3class)) +
+        ggplot2::geom_bar(position="stack", stat="identity") +
+        ggplot2::ylab("Mean Coral Cover (%)") +
+        ggplot2::xlab("Year")+
+        #ggplot2::ylim(min(temp$percent_cover), max(temp$percent_cover))+
+        #paletteer::scale_fill_paletteer_d("fishualize::Acanthurus_olivaceus") +
+        ggplot2::scale_x_continuous(breaks=seq(min(years$year), max(years$year), 1)) +
+        #ggplot2::coord_cartesian(xlim = c(min(years$year), max(years$year))) +
+        ggplot2::geom_col(width = 0.5) +
+        ggplot2::theme_minimal() +
+        ggplot2::theme(axis.text = ggplot2::element_blank(),
+                       axis.title = ggplot2::element_blank(),
+                       axis.text.y = ggplot2::element_blank()) +
+        ggplot_mpatheme() +
+        ggplot2::ggtitle(paste0(sites))
+
+      p
+
+        # ggplot2::geom_text(data = labs2, mapping = ggplot2::aes(x=id,y=cover, label=site ,hjust=hjust), size=4, angle=labs2$angle,inherit.aes = FALSE)
+        # p <- p + ggplot2::coord_polar(start=0)
+
+      park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
+
+      # sitenum <- temp %>% distinct(year) %>% summarise(n=n())
+
+      ggplot2::ggsave(
+        paste0("inst/app/www/plots/", "Coral_", park.name, "_site_", sites, "_species_coral_cover.png"),
+        p,
+        width = 10,
+        height = 4,
+        dpi = 300)
+
+      message(sites)
+    }
+  }
+
+  }
 

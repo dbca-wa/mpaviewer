@@ -55,8 +55,7 @@ app_server <- function(input, output, session) {
           tagList(
             HTML(paste0('<center>')),
             h4(marine_park),
-            HTML(paste0('</center>')),
-
+            HTML(paste0('</left>')),
                valueBox(HTML(paste0('<p style = "color:#ffffff";><font size="+3">',
                                     prettyNum(ind,  big.mark = ","),
                                     '</font></p>')),
@@ -70,7 +69,7 @@ app_server <- function(input, output, session) {
                         "Fish species indentified",
                         icon = icon("fish"),
                         color = "yellow", width = 4),
-            valueBox(HTML(paste0('<p style = "color:#ffffff";><font size="+3">',
+              valueBox(HTML(paste0('<p style = "color:#ffffff";><font size="+3">',
                                  prettyNum(round(mins/60),  big.mark = ","),
                                  '</font></p>')),
                      "Total hours of video watched ",
@@ -120,7 +119,7 @@ app_server <- function(input, output, session) {
   output$fish.park.dropdown <- renderUI({
 
     lats <- mpa_data$lats %>%
-      dplyr::arrange(desc(mean_lat)) # removed desc for marine park workshop
+      dplyr::arrange(mean_lat) # removed desc for marine park workshop
 
     pickerInput(
       inputId = "fish.park.dropdown",
@@ -155,6 +154,7 @@ app_server <- function(input, output, session) {
                                          method %in% c(input$fish.park.method.dropdown)]
     choices <- dat %>%
       dplyr::arrange(desc(total)) %>%
+      dplyr::filter(total > 0) %>%
       dplyr::distinct(scientific_name) %>%
       dplyr::pull("scientific_name")
 
@@ -586,6 +586,17 @@ app_server <- function(input, output, session) {
         group = "Marine Parks"
       ) %>%
 
+      addLabelOnlyMarkers(
+        data = mpa_data$park_labels,
+        ~longitude_dd, ~latitude_dd,
+        label = ~marine_park,
+        labelOptions = labelOptions(noHide = TRUE,
+                                    textOnly = TRUE,
+                                    textsize="15px",
+                                    offset = c(3,-8),
+                                    style=list(color ="white"))
+      ) %>%
+
       # UVC
       addGlPoints(data = uvc,
                   popup = ~content,
@@ -671,14 +682,26 @@ app_server <- function(input, output, session) {
     dat <- fish_park_samplingeffort()
 
     # Create the basemap with marine parks and legend
+    pal <- data.frame(marker_col = c("#F1652C", "yellow", "#2ECFE2","#2ECFE2", "#739AF8"), method = c("stereo-DOVs", "stereo-BRUVs", "stereo-ROVs","stereo-ROVs+UVC", "UVC"))
+    dat <- dplyr::left_join(dat, pal, by = "method")
+
     map <- leaflet_basemap(dat) %>%
       fitBounds(~ min(longitude_dd), ~ min(latitude_dd), ~ max(longitude_dd), ~ max(latitude_dd)) %>%
-    addGlPolygons(
-      data =  mpa_data$state_mp,
-      color = ~ mpa_data$state_pal(zone),
-      popup =  mpa_data$state_mp$COMMENTS,
-      group = "Marine Parks"
-    ) %>%
+      leaflet::addCircleMarkers(data = dat,
+                                lng = ~longitude_dd,
+                                lat = ~latitude_dd,
+                                popup = ~content,
+                                label = ~as.character(sample),
+                                color = "grey", weight = 2,
+                                fillColor = ~marker_col,
+                                opacity = 1, radius = 8,
+                                group = "Sampling locations") %>%
+      addGlPolygons(
+        data =  mpa_data$state_mp,
+        color = ~ mpa_data$state_pal(zone),
+        popup =  mpa_data$state_mp$COMMENTS,
+        group = "Marine Parks"
+      ) %>%
       addLegend(
         pal = mpa_data$state_pal, values = mpa_data$state_mp$zone, opacity = 1,
         title = "Zones",
@@ -687,111 +710,124 @@ app_server <- function(input, output, session) {
       addLayersControl(
         overlayGroups = c("Sampling locations", "Marine Parks"),
         options = layersControlOptions(collapsed = FALSE)
-      )%>%
-      leaflet::addAwesomeMarkers(data = dat,
-                                 lng = ~longitude_dd,
-                                 lat = ~latitude_dd,
-                                 icon = leaflet::awesomeIcons(
-                                   icon = 'surf',
-                                   iconColor = 'white',
-                                   library = 'fa',
-                                   markerColor = 'green' #Possible values are "red", "darkred", "lightred", "orange", "beige", "green", "darkgreen", "lightgreen", "blue", "darkblue", "lightblue", "purple", "darkpurple", "pink", "cadetblue", "white", "gray", "lightgray", "black"
-                                 ),
-                                 popup = ~content,
-                                 label = ~as.character(sample),
-                                 group = "Sampling locations"
       )
 
     map
   })
-  #
-  # ####### ►  Leaflet - Total abundance and species richness ----
-  # output$fish.park.metric.leaflet <- renderLeaflet({
-  #
-  #   ta <- fish_park_ta()
-  #   sr <- fish_park_sr()
-  #
-  #   dat <- fish_park_samplingeffort()
-  #
-  #   overzero.ta <- filter(ta, value > 0)
-  #   equalzero.ta <- filter(ta, value == 0)
-  #   max.ta <- max(overzero.ta$value)
-  #
-  #   overzero.sr <- filter(sr, value > 0)
-  #   equalzero.sr <- filter(sr, value == 0)
-  #   max.sr <- max(overzero.sr$value)
-  #
-  #   map <- leaflet_basemap(dat) %>%
-  #     fitBounds(~ min(longitude_dd), ~ min(latitude_dd), ~ max(longitude_dd), ~ max(latitude_dd)) %>%
-  #     addGlPolygons(
-  #       data =  mpa_data$state_mp,
-  #       color = ~ mpa_data$state_pal(zone),
-  #       popup =  mpa_data$state_mp$COMMENTS,
-  #       group = "Marine Parks"
-  #     ) %>%
-  #     addLegend(
-  #       pal = mpa_data$state_pal, values = mpa_data$state_mp$zone, opacity = 1,
-  #       title = "Zones",
-  #       position = "bottomleft", group = "Marine Parks"
-  #     ) %>%
-  #     addLayersControl(
-  #       overlayGroups = c("Marine Parks",
-  #                         "Total abundance",
-  #                         "Species richness"),
-  #       options = layersControlOptions(collapsed = FALSE)
-  #     ) %>%
-  #     add_legend_ta(
-  #       colors = c("black", "yellow", "yellow"),
-  #       labels = c(0, round(max.ta / 2), max.ta),
-  #       sizes = c(5, 20, 40), group = "Total abundance"
-  #     ) %>%
-  #     add_legend_sr(
-  #       colors = c("black", "green", "green"),
-  #       labels = c(0, round(max.sr / 2), max.sr),
-  #       sizes = c(5, 20, 40), group = "Species richness"
-  #     )
-  #
-  #   if (nrow(overzero.ta)) {
-  #     map <- map %>%
-  #       addCircleMarkers(
-  #         data = overzero.ta, lat = ~latitude_dd, lng = ~longitude_dd,
-  #         radius = ~ (((value / max(value)) * 20)), fillOpacity = 0.5, stroke = FALSE,
-  #         label = ~ as.character(value), group = "Total abundance", color = "yellow"
-  #       )
-  #   }
-  #
-  #   if (nrow(equalzero.ta)) {
-  #     map <- map %>%
-  #       addCircleMarkers(
-  #         data = equalzero.ta, lat = ~latitude_dd, lng = ~longitude_dd,
-  #         radius = 2, fillOpacity = 0.5, color = "black", stroke = FALSE,
-  #         label = ~ as.character(value), group = "Total abundance"
-  #       )
-  #   }
-  #
-  #   if (nrow(overzero.sr)) {
-  #     map <- map %>%
-  #       addCircleMarkers(
-  #         data = overzero.sr, lat = ~latitude_dd, lng = ~longitude_dd,
-  #         radius = ~ ((value / max(value)) * 20), fillOpacity = 0.5, stroke = FALSE,
-  #         label = ~ as.character(value), group = "Species richness", color = "green"
-  #       )
-  #   }
-  #
-  #   if (nrow(equalzero.sr)) {
-  #     map <- map %>%
-  #       addCircleMarkers(
-  #         data = equalzero.sr, lat = ~latitude_dd, lng = ~longitude_dd,
-  #         radius = 2, fillOpacity = 0.5, color = "black", stroke = FALSE,
-  #         label = ~ as.character(value), group = "Species richness"
-  #       )
-  #   }
-  #
-  #   map %>%
-  #     hideGroup("Species richness")
-  # })
+
+
+   ####### ►  Leaflet - Total abundance and species richness ----
+  output$fish.park.metric.leaflet <- renderLeaflet({
+
+     ta <- fish_park_ta()
+     sr <- fish_park_sr()
+
+     dat <- fish_park_samplingeffort()
+
+     overzero.ta <- filter(ta, value > 0)
+     equalzero.ta <- filter(ta, value == 0)
+     max.ta <- max(overzero.ta$value)
+
+     overzero.sr <- filter(sr, value > 0)
+     equalzero.sr <- filter(sr, value == 0)
+     max.sr <- max(overzero.sr$value)
+
+     map <- leaflet_basemap(dat) %>%
+       fitBounds(~ min(longitude_dd), ~ min(latitude_dd), ~ max(longitude_dd), ~ max(latitude_dd)) %>%
+       addGlPolygons(
+         data =  mpa_data$state_mp,
+         color = ~ mpa_data$state_pal(zone),
+         popup =  mpa_data$state_mp$COMMENTS,
+         group = "Marine Parks"
+       ) %>%
+       addLegend(
+         pal = mpa_data$state_pal, values = mpa_data$state_mp$zone, opacity = 1,
+         title = "Zones",
+         position = "bottomleft", group = "Marine Parks"
+       ) %>%
+       addLayersControl(
+         overlayGroups = c("Marine Parks",
+                           "Total abundance",
+                           "Species richness"),
+         options = layersControlOptions(collapsed = FALSE)
+       ) %>%
+       add_legend_ta(
+         colors = c("black", "yellow", "yellow"),
+         labels = c(0, round(max.ta / 2), max.ta),
+         sizes = c(5, 20, 40), group = "Total abundance"
+       ) %>%
+       add_legend_sr(
+         colors = c("black", "green", "green"),
+         labels = c(0, round(max.sr / 2), max.sr),
+         sizes = c(5, 20, 40), group = "Species richness"
+       )
+
+     if (nrow(overzero.ta)) {
+       map <- map %>%
+         addCircleMarkers(
+           data = overzero.ta, lat = ~latitude_dd, lng = ~longitude_dd,
+           radius = ~ (((value / max(value)) * 20)), fillOpacity = 0.5, stroke = FALSE,
+           label = ~ as.character(value), group = "Total abundance", color = "yellow"
+         )
+     }
+
+     if (nrow(equalzero.ta)) {
+       map <- map %>%
+         addCircleMarkers(
+           data = equalzero.ta, lat = ~latitude_dd, lng = ~longitude_dd,
+           radius = 2, fillOpacity = 0.5, color = "black", stroke = FALSE,
+           label = ~ as.character(value), group = "Total abundance"
+         )
+     }
+
+     if (nrow(overzero.sr)) {
+       map <- map %>%
+         addCircleMarkers(
+           data = overzero.sr, lat = ~latitude_dd, lng = ~longitude_dd,
+           radius = ~ ((value / max(value)) * 20), fillOpacity = 0.5, stroke = FALSE,
+           label = ~ as.character(value), group = "Species richness", color = "green"
+         )
+     }
+
+     if (nrow(equalzero.sr)) {
+       map <- map %>%
+         addCircleMarkers(
+           data = equalzero.sr, lat = ~latitude_dd, lng = ~longitude_dd,
+           radius = 2, fillOpacity = 0.5, color = "black", stroke = FALSE,
+           label = ~ as.character(value), group = "Species richness"
+         )
+     }
+
+     map %>%
+       hideGroup("Species richness")
+   })
+
+  ####### ►  Acknowledgements  ----
+
+  observeEvent(input$fish.park.dropdown, {
+    output$acknowledgement <- renderText({
+      #req(input$fish.park.dropdown)
+      HTML(ack <- if_else(mpa_data$acknowledgements$park == input$fish.park.dropdown, mpa_data$acknowledgements$acknowledgement, " "))
+      #HTML(ack <- paste("hello", "Line two", sep = "<br/>"))
+    })
+  })
+
+  ####### ► CTI Metric ----
+
+  observeEvent(input$fish.park.method.dropdown, {
+    output$fish.park.cti <- renderUI({
+      req(input$fish.park.dropdown, input$fish.park.method.dropdown)
+      park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
+      method <- input$fish.park.method.dropdown
+
+      img(src = paste0("www/plots/", park, "_", method, "_cti.png"), align = "left", width = "100%")
+    })
+  })
+
+
 
   ####### ►  Total abundance ----
+
   observeEvent(input$fish.park.method.dropdown, {
     output$fish.park.total.plot <- renderUI({
       req(input$fish.park.dropdown, input$fish.park.method.dropdown)
@@ -1071,7 +1107,7 @@ app_server <- function(input, output, session) {
   #   plotOutput("fish.park.fished.species.kde.plot", height = p.height)
   # })
 
-  # ####### ►  KDE plot by sanctuary ----
+  ####### ►  KDE plot by sanctuary ----
   # # 20 individuals min to plot a line (KDE). Depends on scale. If zones in one year then you need 20 in the zone for that year.
   # output$fish.park.fished.species.kde.sanctuary.plot <- renderPlot({
   #   req(fish_park_fishedcompletelength())
@@ -1164,6 +1200,28 @@ app_server <- function(input, output, session) {
     })
   })
 
+  ####### ►  Summed All Fished Species ----
+  observeEvent(input$fish.park.method.dropdown, {
+    output$fish.park.fished.all.sum.plot <- renderUI({
+      req(input$fish.park.dropdown, input$fish.park.method.dropdown)
+      park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
+      method <- input$fish.park.method.dropdown
+
+      img(src = paste0("www/plots/", park, "_", method, "_sum_all_targets.png"), align = "left", width = "100%")
+    })
+  })
+
+  ####### ►  Summed All Fished Species by Sanctuary ----
+  observeEvent(input$fish.park.method.dropdown, {
+    output$fish.park.fished.all.sum.sanctuary.plot <- renderUI({
+      req(input$fish.park.dropdown, input$fish.park.method.dropdown)
+      park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
+      method <- input$fish.park.method.dropdown
+
+      img(src = paste0("www/plots/", park, "_", method, "_sum_all_targets_sanctuary.png"), align = "left", width = "100%")
+    })
+  })
+
   ####### ►  Individual Fished species abundance ----
   # Only includes consistently sampled sites
   observeEvent(input$fish.park.method.dropdown, {
@@ -1171,8 +1229,7 @@ app_server <- function(input, output, session) {
       req(input$fish.park.dropdown, input$fish.park.method.dropdown, input$fish.park.fished.species.dropdown)
       park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
       method <- input$fish.park.method.dropdown
-      species <- input$fish.park.fished.species.dropdown
-
+      species <- stringr::str_replace_all(input$fish.park.fished.species.dropdown, c(" Targeted" = "", " Highly retained" = ""), "")
 
       tagList(h4(paste0("Total abundance of ", species, ":")),
               img(src = paste0("www/plots/species/", park, "_", method, "_", species, ".png"), align = "left", width = "100%"))
@@ -1189,7 +1246,7 @@ app_server <- function(input, output, session) {
 
       park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
       method <- input$fish.park.method.dropdown
-      species <- input$fish.park.fished.species.dropdown %>% glimpse()
+      species <- stringr::str_replace_all(input$fish.park.fished.species.dropdown, c(" Targeted" = "", " Highly retained" = ""), "")
 
       tagList(h4(paste0("Total abundance of ", species, " by sanctuary:")),
               img(src = paste0("www/plots/species/", park, "_", method, "_", species, "_sanctuary.png"), align = "left", width = "100%"))
@@ -1222,7 +1279,7 @@ app_server <- function(input, output, session) {
     })
   })
 
-  ###### ►  Leaflet - All species abundance ----
+  ####### ►  Leaflet - All species abundance ----
   output$fish.park.all.species.leaflet <- renderLeaflet({
 
     req(fish_park_abundance_species_leaflet())
@@ -1362,20 +1419,12 @@ app_server <- function(input, output, session) {
 
   })
 
-  # ####### ►  Info buttons ----
-  # observeEvent(input$state.ta,
-  #              showModal(modalDialog(
-  #                title = "How do we measure total abundance?",
-  #                htmltools::includeMarkdown(paste0("inst/app/www/popups/total.abundance.md"))))
-  # )
-  #
-  # observeEvent(input$state.sr,
-  #              showModal(modalDialog(
-  #                title = "How do we measure species richness?",
-  #                htmltools::includeMarkdown(paste0("inst/app/www/popups/species.richness.md"))))
-  # )
-  #
-  #
+  observeEvent(input$park.cti,
+               showModal(modalDialog(
+                 title = "What is community temperature index (CTI)?",
+                 includeHTML("inst/app/www/popups/fish.cti.html")))
+  )
+
   observeEvent(input$park.ta,
                showModal(modalDialog(
                  title = "How do we measure total abundance?",
@@ -1442,9 +1491,23 @@ app_server <- function(input, output, session) {
   })
 
 
-
-    # BENTHIC ----
+    # CORAL ----
     # State data ----
+
+  output$box.total.number.coral <- renderValueBox({
+    valueBox(HTML(paste0('<p style = "color:#ffffff";><font size="+3">', prettyNum(mpa_data$total_number_coral,  big.mark = ","), '</font></p>')),
+             "Images Analysed",
+             icon = tags$i(class = "fa-solid fa-camera", style="font-size: 50px"),
+             color = "yellow") # have changed CSS colours
+  })
+
+  output$box.total.species.coral <- renderValueBox({
+    valueBox(HTML(paste0('<p style = "color:#ffffff";><font size="+3">', prettyNum(mpa_data$total_species_coral,  big.mark = ","), '</font></p>')),
+             "Total Genera Indentified",
+             icon = tags$i(img(src = "www/coral.png", width="50px")),
+             color = "yellow") # have changed CSS colours
+
+  })
     ####### ►  Create a marine park dropdown ----
     output$benthic.state.park.coralcover.dropdown <- renderUI({
       pickerInput(
@@ -1534,15 +1597,17 @@ app_server <- function(input, output, session) {
         dplyr::arrange() %>%
         dplyr::pull("site")
 
-      pickerInput(
-        inputId = "benthic.park.site.coralcover.dropdown",
-        label = "Choose sites to include:",
-        choices = sort(options),
-        multiple = TRUE,
-        selected = options,
-        options = list(`actions-box` = TRUE, `live-search` = TRUE, `dropup-auto` = FALSE),
-        width = "100%"
-      )
+      create_dropdown("benthic.park.site.coralcover.dropdown", options, "Choose a site:", FALSE)
+
+      # pickerInput(
+      #   inputId = "benthic.park.site.coralcover.dropdown",
+      #   label = "Choose sites to include:",
+      #   choices = sort(options),
+      #   multiple = TRUE,
+      #   selected = options,
+      #   options = list(`actions-box` = TRUE, `live-search` = TRUE, `dropup-auto` = FALSE),
+      #   width = "100%"
+      # )
     })
 
     ####### ►  Create marine park specific data
@@ -1558,29 +1623,67 @@ app_server <- function(input, output, session) {
                          sd   = sd(percent_cover),
                          se   = sd(percent_cover) / sqrt(length(unique(site))))
 
-      # plyr::ddply(dat, plyr::.(plot_year), .inform = TRUE, summarise,
-      #       n    = length(unique(site)),
-      #       mean = mean(percent_cover),
-      #       sd   = sd(percent_cover),
-      #       se   = sd(percent_cover) / sqrt(length(unique(site))))
-
     })
 
-    ####### ►  Create plot for coral cover for one marine park
-    output$benthic.park.coralcover.plot <- renderPlot({
-      req(benthic_park_coral_cover())
+    ####### ►  Create plot for coral cover for one marine park ----
 
-      p <- ggplot(data = subset(benthic_park_coral_cover(), !plot_year %in% c("1999")), aes(x = plot_year, y = mean)) +
-        geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = .025) +
-        # stat_smooth(method = "gam", formula = y ~ s(x, k = 5), se = TRUE, size = 1, col = "black", linetype = "solid") +
-        geom_point(size = 2) +
-        xlab("") +
-        ylab("% Coral Cover (mean ± SE)") +
-        ggplot_mpatheme() +
-        scale_y_continuous(expand = c(0, 0.1))
+    observeEvent(input$benthic.park.coralcover.dropdown, {
 
-      p
+      output$benthic.park.coralcover.plot <- renderUI({
+        req(input$benthic.park.coralcover.dropdown)
+        park <- stringr::str_replace_all(tolower(input$benthic.park.coralcover.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
+        img(src = paste0("www/plots/", "Coral_", park, "_coral_cover.png"), align = "left", width = "100%")
+      })
     })
+
+    ####### ► Coral Reefzone plot ----
+    observeEvent(input$benthic.park.coralcover.dropdown, {
+      output$benthic.park.reefzone.coralcover.plot <- renderUI({
+        req(input$benthic.park.coralcover.dropdown)
+
+        park <- stringr::str_replace_all(tolower(input$benthic.park.coralcover.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
+
+        img(src = paste0("www/plots/", "Coral_", park, "_reefzone_coral_cover.png"), align = "left", width = "100%")
+      })
+    })
+    ####### ► Coral Top 5 plot ----
+    observeEvent(input$benthic.park.coralcover.dropdown, {
+      output$benthic.park.top5.coralcover.plot <- renderUI({
+        req(input$benthic.park.coralcover.dropdown)
+
+        park <- stringr::str_replace_all(tolower(input$benthic.park.coralcover.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
+
+        img(src = paste0("www/plots/", "Coral_", park, "_species_coral_cover.png"), align = "left", width = "100%")
+      })
+    })
+
+    ####### ► Coral per site plot ----
+    observeEvent(input$benthic.park.site.coralcover.dropdown, {
+      output$benthic.site.coralcover.plot <- renderUI({
+        req(input$benthic.park.coralcover.dropdown, input$benthic.park.site.coralcover.dropdown)
+
+        park <- stringr::str_replace_all(tolower(input$benthic.park.coralcover.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
+        site <- input$benthic.park.site.coralcover.dropdown
+
+        img(src = paste0("www/plots/", "Coral_", park, "_", site, "_species_coral_cover.png"), align = "left", width = "100%")
+      })
+    })
+
+
+    # output$benthic.park.coralcover.plot <- renderPlot({
+    #   req(benthic_park_coral_cover())
+    #
+    #   # p <- ggplot(data = subset(benthic_park_coral_cover(), !plot_year %in% c("1999")), aes(x = plot_year, y = mean)) +
+    #   #   geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = .025) +
+    #   #   # stat_smooth(method = "gam", formula = y ~ s(x, k = 5), se = TRUE, size = 1, col = "black", linetype = "solid") +
+    #   #   geom_point(size = 2) +
+    #   #   xlab("") +
+    #   #   ylab("% Coral Cover (mean ± SE)") +
+    #   #   ggplot_mpatheme() +
+    #   #   scale_y_continuous(expand = c(0, 0.1))
+    #   #
+    #   # p
+    # })
 
     ####### ►  Create marine park specific data for sector/site
     benthic_park_coral_cover_sector <- reactive({
@@ -1594,12 +1697,6 @@ app_server <- function(input, output, session) {
                          mean = mean(percent_cover),
                          sd   = sd(percent_cover),
                          se   = sd(percent_cover) / sqrt(length(unique(site))))
-
-      # plyr::ddply(dat, plyr::.(plot_year, sector, site), .inform = TRUE, summarise,
-      #             n    = length(unique(site)),
-      #             mean = mean(percent_cover),
-      #             sd   = sd(percent_cover),
-      #             se   = sd(percent_cover) / sqrt(length(unique(site))))
 
     })
 
@@ -1673,23 +1770,34 @@ app_server <- function(input, output, session) {
 
 
     benthic_coralcover_state_samplingeffort <- reactive({
-      req(mpa_data, input$benthic.state.park.coralcover.dropdown)
+      req(mpa_data)
 
-      mpa_data$coral_cover_metadata %>%
-        dplyr::distinct(marine_park, zone, sector, site, latitude_dd, longitude_dd) %>%
-        dplyr::filter(marine_park %in% c(input$benthic.state.park.coralcover.dropdown)) %>%
+      mpa_data$coral_sampling_effort %>%
+        dplyr::distinct(marine_park, status, site, latitude_dd, longitude_dd) %>%
+        #dplyr::filter(marine_park %in% c(input$benthic.state.park.coralcover.dropdown)) %>%
         dplyr::mutate(content = paste(
           sep = " ",
+          "<b>Marine Park:</b>", marine_park, "<br/>",
           "<b>Site:", site, "</b>", "<br/>",
-          "<b>Sector:</b>", sector, "<br/>",
-          "<b>Zone:</b>", zone, "<br/>"))%>%
+          "<b>Zone:</b>", status, "<br/>"))%>%
         dplyr::filter(!is.na(latitude_dd))
     })
 
     output$benthic.state.sampling.leaflet <- renderLeaflet({
       #req(input$fish.state.park.dropdown, input$fish.state.method.dropdown)
+      dat <-  mpa_data$coral_sampling_effort %>%
+        dplyr::distinct(marine_park, site, latitude_dd, longitude_dd) %>%
+        #dplyr::filter(marine_park %in% c(input$benthic.state.park.coralcover.dropdown)) %>%
+        dplyr::mutate(content = paste(
+          sep = " ",
+          "<b>Marine Park:</b>", marine_park, "<br/>",
+          "<b>Site:", site, "</b>", "<br/>")) %>%
+        dplyr::filter(!is.na(latitude_dd))
 
-      map <- leaflet_basemap(benthic_coralcover_state_samplingeffort()) %>%
+      pal <- data.frame(marker_col = c("#F1652C", "yellow", "#2ECFE2","#739AF8"), marine_park = c("Shark Bay Marine Park", "Ningaloo Marine Park", "Montebello Islands Marine Park","Rowley Shoals Marine Park"))
+      dat <- dplyr::left_join(dat, pal, by="marine_park")
+
+      map <- leaflet_basemap(dat) %>%
         fitBounds(
           ~ min(longitude_dd),
           ~ min(latitude_dd),
@@ -1697,18 +1805,28 @@ app_server <- function(input, output, session) {
           ~ max(latitude_dd)
         ) %>%
 
-        leaflet::addAwesomeMarkers(lng = ~longitude_dd,
-                                   lat = ~latitude_dd,
-                                   icon = leaflet::awesomeIcons(
-                                     icon = 'surf',
-                                     iconColor = 'white',
-                                     library = 'fa',
-                                     markerColor = 'green'
-                                   ),
-                                   popup = ~content,
-                                   label = ~as.character(site),
-                                   group = "Sampling locations"
-        ) %>%
+        leaflet::addCircleMarkers(data = dat,
+                                  lng = ~longitude_dd,
+                                  lat = ~latitude_dd,
+                                  popup = ~content,
+                                  label = ~as.character(site),
+                                  color = "black", weight = 2,
+                                  fillColor = ~marker_col,
+                                  opacity = 1, radius = 8) %>%
+                                  # group = "Sampling locations") %>%
+
+
+        # leaflet::addAwesomeMarkers(lng = ~longitude_dd,
+        #                            lat = ~latitude_dd,
+        #                            icon = leaflet::awesomeIcons(
+        #                              icon = 'surf',
+        #                              iconColor = 'white',
+        #                              library = 'fa',
+        #                              markerColor = ~marker_col
+        #                            ),
+        #                            popup = ~content,
+        #                            label = ~as.character(site)
+        #                            #group = "Sampling locations"
         # addMarkers(
         #   lng = ~longitude_dd,
         #   lat = ~latitude_dd,
@@ -1737,24 +1855,24 @@ app_server <- function(input, output, session) {
           options = layersControlOptions(collapsed = FALSE)
         )
 
-
-
       map
+
     })
 
     benthic_coralcover_park_samplingeffort <- reactive({
-      req(mpa_data, input$benthic.park.coralcover.dropdown)
+      req(input$benthic.park.coralcover.dropdown)
 
-      mpa_data$coral_cover_metadata %>%
-        dplyr::distinct(marine_park, zone, sector, site, latitude_dd, longitude_dd) %>%
-        dplyr::filter(marine_park %in% c(input$benthic.park.coralcover.dropdown)) %>%
-        dplyr::filter(site %in% c(input$benthic.park.site.coralcover.dropdown)) %>%
+      dat <- mpa_data$coral_sampling_effort[marine_park %in% c(input$benthic.park.coralcover.dropdown)]
+
+      dat %>%
         dplyr::mutate(content = paste(
           sep = " ",
-          "<b>Site:", site, "</b>", "<br/>",
           "<b>Sector:</b>", sector, "<br/>",
-          "<b>Zone:</b>", zone, "<br/>"))%>%
-        dplyr::filter(!is.na(latitude_dd))
+          "<b>Site:", site, "</b>", "<br/>",
+          "<b>Status:</b>", status, "<br/>",
+          "<b>Depth:</b>", depth_m, "m", "<br/>",
+          "<b>Reef Zone:</b>", reef_zone, "<br/>"))
+
     })
 
     output$benthic.park.sampling.leaflet <- renderLeaflet({
@@ -1774,7 +1892,7 @@ app_server <- function(input, output, session) {
                                      icon = 'surf',
                                      iconColor = 'white',
                                      library = 'fa',
-                                     markerColor = 'green'
+                                     markerColor = 'pink'
                                    ),
                                    popup = ~content,
                                    label = ~as.character(site),
@@ -1812,5 +1930,5 @@ app_server <- function(input, output, session) {
 
       map
     })
-
 }
+

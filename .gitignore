@@ -38,3 +38,4 @@ rsconnect
 .secrets
 /doc/
 inst/app/www/plots
+.quarto
