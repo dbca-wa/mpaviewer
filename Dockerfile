@@ -55,6 +55,6 @@ FROM rlibs
 RUN mkdir /app
 ADD . /app
 WORKDIR /app
-RUN R -e 'remotes::install_local(upgrade="never")'
+RUN Rscript -e 'remotes::install_local(upgrade="never")'
 EXPOSE 80
 CMD R -e "options('shiny.port'=80,shiny.host='0.0.0.0');mpaviewer::run_app()"
