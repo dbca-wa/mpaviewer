@@ -532,35 +532,39 @@ app_server <- function(input, output, session) {
   output$fish.state.sampling.leaflet <- renderLeaflet({
     # req(input$fish.state.method.dropdown)
 
+    dat <- fish_samplingeffort()
+    pal <- data.frame(marker_col = c("#F1652C", "yellow", "#2ECFE2","#2ECFE2", "#739AF8"), method = c("stereo-DOVs", "stereo-BRUVs", "stereo-ROVs","stereo-ROVs+UVC", "UVC"))
+    dat <- dplyr::left_join(dat, pal, by = "method")
+
     projcrs <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
-
-    bruvs <- fish_samplingeffort() %>%
-      dplyr::filter(method %in% "stereo-BRUVs")
-
-    bruvs <- sf::st_as_sf(x = bruvs,
-                          coords = c("longitude_dd", "latitude_dd"),
-                          crs = projcrs)
-
-    dovs <- fish_samplingeffort() %>%
-      dplyr::filter(method %in% "stereo-DOVs")
-
-    dovs <- sf::st_as_sf(x = dovs,
-                         coords = c("longitude_dd", "latitude_dd"),
-                         crs = projcrs)
-
-    rovs <- fish_samplingeffort() %>%
-      dplyr::filter(method %in% "stereo-ROVs")
-
-    rovs <- sf::st_as_sf(x = rovs,
-                         coords = c("longitude_dd", "latitude_dd"),
-                         crs = projcrs)
-
-    uvc <- fish_samplingeffort() %>%
-      dplyr::filter(method %in% "UVC")
-
-    uvc <- sf::st_as_sf(x = uvc,
-                        coords = c("longitude_dd", "latitude_dd"),
-                        crs = projcrs)
+#
+#     bruvs <- fish_samplingeffort() %>%
+#       dplyr::filter(method %in% "stereo-BRUVs")
+#
+#     bruvs <- sf::st_as_sf(x = bruvs,
+#                           coords = c("longitude_dd", "latitude_dd"),
+#                           crs = projcrs)
+#
+#     dovs <- fish_samplingeffort() %>%
+#       dplyr::filter(method %in% "stereo-DOVs")
+#
+#     dovs <- sf::st_as_sf(x = dovs,
+#                          coords = c("longitude_dd", "latitude_dd"),
+#                          crs = projcrs)
+#
+#     rovs <- fish_samplingeffort() %>%
+#       dplyr::filter(method %in% "stereo-ROVs")
+#
+#     rovs <- sf::st_as_sf(x = rovs,
+#                          coords = c("longitude_dd", "latitude_dd"),
+#                          crs = projcrs)
+#
+#     uvc <- fish_samplingeffort() %>%
+#       dplyr::filter(method %in% "UVC")
+#
+#     uvc <- sf::st_as_sf(x = uvc,
+#                         coords = c("longitude_dd", "latitude_dd"),
+#                         crs = projcrs)
 
     map <- leaflet_basemap(fish_samplingeffort()) %>%
       fitBounds(
@@ -570,11 +574,13 @@ app_server <- function(input, output, session) {
         ~ max(latitude_dd)
       ) %>%
 
-      addGlPolygons(
+      addPolygons(
         data =  mpa_data$state_mp,
         color = ~ mpa_data$state_pal(zone),
         popup =  mpa_data$state_mp$COMMENTS,
-        group = "Marine Parks"
+        group = "Marine Parks",
+        fillOpacity = 0.9,
+        stroke = FALSE
       ) %>%
 
       addLegend(
@@ -597,52 +603,62 @@ app_server <- function(input, output, session) {
                                     style=list(color ="white"))
       ) %>%
 
-      # UVC
-      addGlPoints(data = uvc,
-                  popup = ~content,
-                  color = "black",
-                  fillColor = "#6383db",
-                  opacity = 1, radius = 20,
-                  group = "UVC") %>%
+      addCircleMarkers(data = dat,
+                       lng = ~longitude_dd,
+                       lat = ~latitude_dd,
+                       popup = ~content,
+                       label = ~as.character(sample),
+                       color = "black", weight = 0.5,
+                       fillColor = ~marker_col,
+                       opacity = 1, radius = 7) %>%
 
-      # ROVs
-      addGlPoints(data = rovs,
-                  popup = ~content,
-                  color = "black",
-                  fillColor = "#0CA2B0",
-                  opacity = 1, radius = 20,
-                  group = "stereo-ROVs") %>%
-
-      # BRUVS
-      addGlPoints(data = bruvs,
-                  popup = ~content,
-                  color = "black",
-                  fillColor = "#FEC52E",
-                  opacity = 1, radius = 20,
-                  group = "stereo-BRUVs") %>%
-
-      # DOVS
-      addGlPoints(data = dovs,
-                  popup = ~content,
-                  color = "black",
-                  fillColor = "#d14210",
-                  opacity = 1, radius = 20,
-                  group = "stereo-DOVs") %>%
+      # # UVC
+      # addCircleMarkers(data = uvc,
+      #             popup = ~content,
+      #             color = "black",
+      #             fillColor = "#6383db",
+      #             opacity = 1, radius = 7,
+      #             group = "UVC") %>%
+      #
+      # # ROVs
+      # addCircleMarkers(data = rovs,
+      #             popup = ~content,
+      #             color = "black",
+      #             fillColor = "#0CA2B0",
+      #             opacity = 1, radius = 7, stroke = FALSE,
+      #             group = "stereo-ROVs") %>%
+      #
+      # # BRUVS
+      # addCircleMarkers(data = bruvs,
+      #             popup = ~content,
+      #             color = "black",
+      #             fillColor = "#FEC52E",
+      #             opacity = 1, radius = 7, stroke = FALSE,
+      #             group = "stereo-BRUVs") %>%
+      #
+      # # DOVS
+      # addCircleMarkers(data = dovs,
+      #             popup = ~content,
+      #             color = "black",
+      #             fillColor = "#d14210",
+      #             opacity = 1, radius = 7, stroke = FALSE,
+      #             group = "stereo-DOVs") %>%
 
 
       addLayersControl(
         overlayGroups = c(
+          "Marine Parks",
           "stereo-BRUVs",
           "stereo-DOVs",
           "stereo-ROVs",
-          "UVC",
-          "Marine Parks"
+          "UVC"
+
         ),
         options = layersControlOptions(collapsed = FALSE)
       )%>%
       addLegend("bottomright",
-                colors = c("#F1652C", "#FFEC58", "#2ECFE2", "#739AF8"),
-                labels = c("stereo-DOVs", "stereo-BRUVs", "stereo-ROVs", "UVC"),
+                colors = c("#F1652C", "#FFEC58", "#2ECFE2","#2ECFE2", "#739AF8"),
+                labels = c("stereo-DOVs", "stereo-BRUVs", "stereo-ROVs", "stereo-ROVs+UVC", "UVC"),
                 title = "Sampling locations",
                 opacity = 1)
   })
@@ -687,21 +703,21 @@ app_server <- function(input, output, session) {
 
     map <- leaflet_basemap(dat) %>%
       fitBounds(~ min(longitude_dd), ~ min(latitude_dd), ~ max(longitude_dd), ~ max(latitude_dd)) %>%
-      leaflet::addCircleMarkers(data = dat,
-                                lng = ~longitude_dd,
-                                lat = ~latitude_dd,
-                                popup = ~content,
-                                label = ~as.character(sample),
-                                color = "grey", weight = 2,
-                                fillColor = ~marker_col,
-                                opacity = 1, radius = 8,
-                                group = "Sampling locations") %>%
-      addGlPolygons(
+      leaflet:: addPolygons(
         data =  mpa_data$state_mp,
         color = ~ mpa_data$state_pal(zone),
         popup =  mpa_data$state_mp$COMMENTS,
         group = "Marine Parks"
       ) %>%
+      leaflet::addCircleMarkers(data = dat,
+                                lng = ~longitude_dd,
+                                lat = ~latitude_dd,
+                                popup = ~content,
+                                label = ~as.character(sample),
+                                color = "grey", weight = 1,
+                                fillColor = ~marker_col,
+                                opacity = 1, radius = 8,
+                                group = "Sampling locations") %>%
       addLegend(
         pal = mpa_data$state_pal, values = mpa_data$state_mp$zone, opacity = 1,
         title = "Zones",
@@ -734,7 +750,7 @@ app_server <- function(input, output, session) {
 
      map <- leaflet_basemap(dat) %>%
        fitBounds(~ min(longitude_dd), ~ min(latitude_dd), ~ max(longitude_dd), ~ max(latitude_dd)) %>%
-       addGlPolygons(
+       addPolygons(
          data =  mpa_data$state_mp,
          color = ~ mpa_data$state_pal(zone),
          popup =  mpa_data$state_mp$COMMENTS,

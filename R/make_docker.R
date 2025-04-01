@@ -8,8 +8,8 @@ make_docker <- function() {
   message("Building current package...")
   devtools::build(path = ".")
 
-  # dn <- "dbcawa/mpaviewer"
-  dn <- "florianmayer/mpaviewer"
+  dn <- "dbcawa/mpaviewer"
+  # dn <- "dddamonnn/mpaviewer"
   dv <- utils::packageVersion("mpaviewer")
   gp <- Sys.getenv("GITHUB_PAT")
   message(glue::glue("Building and pushing {dn}:{dv}..."))
