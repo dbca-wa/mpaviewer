@@ -1830,33 +1830,31 @@ generate_plots <- function() {
 
   # STACKED BAR PLOTS ----
   ### ALL PARKS - PER YEAR ----
+  pal <- c("darkblue", "dodgerblue3", "darkturquoise", "purple", "gold", "coral","darkgreen", "#1fab89")
 
   dat <- mpa_data$coral_cover_species %>%
-    dplyr::rename(genus = level3class) %>%
-    dplyr::filter(!(genus == "Hard coral")) %>%
-    dplyr::group_by(marine_park, year, genus) %>%
-    dplyr::summarise(percent_cover = mean(cover)) %>%
-    dplyr::filter(min_rank(desc(percent_cover)) <= 4) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(park_genus = paste(marine_park, genus, sep="_"))
-
-  other <- mpa_data$coral_cover_transect %>%
     #dplyr::rename(genus = level3class) %>%
-    #dplyr::filter(!(genus == "Hard coral")) %>%
-    dplyr::group_by(marine_park, plot_year) %>%
-    dplyr::summarise(percent_cover = mean(percent_cover)) %>%
+    #dplyr::filter(!(level3class == "Hard coral")) %>%
+    dplyr::group_by(marine_park, year, level3class) %>%
+    dplyr::summarise(percent_cover = mean(cover)) %>%
+    #dplyr::filter(min_rank(desc(percent_cover)) <= 4) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(park_family = paste(marine_park, level3class, sep="_"))
+
+  other <-
+    dplyr::anti_join(dat, coral_top_families, by = "park_family") %>%
+    dplyr::group_by(marine_park, year) %>%
+    dplyr::summarise(cover = sum(percent_cover)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(level3class = "Other Hard Coral")
+
+  top_fams <-
+    dplyr::semi_join(dat, coral_top_families, by = "park_family") %>%
+    dplyr::group_by(marine_park, year, level3class) %>%
+    dplyr::summarize(cover = mean(percent_cover)) %>%
     dplyr::ungroup()
 
-  top5 <- dat %>%
-    #dplyr::mutate(park_genus = paste(marine_park, genus, sep="_")) %>%
-    dplyr::group_by(marine_park, genus) %>%
-    dplyr::summarize(cover = mean(percent_cover)) %>%
-    dplyr::filter(min_rank(desc(cover)) <= 4) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(park_genus = paste(marine_park, genus, sep="_")) %>%
-    dplyr::select(park_genus)
-
-  dat <- dplyr::semi_join(dat, top5, by = "park_genus")
+  dat <- dplyr::bind_rows(other, top_fams)
 
   unique(dat$marine_park)
 
@@ -1866,13 +1864,13 @@ generate_plots <- function() {
 
     temp <- dat %>% dplyr::filter(marine_park == marinepark)
 
-    p <- ggplot2::ggplot(temp, ggplot2::aes(x = year, y = percent_cover, fill = genus)) +
+    p <- ggplot2::ggplot(temp, ggplot2::aes(x = year, y = cover, fill = level3class)) +
       ggplot2::geom_bar(position="stack", stat="identity") +
       ggplot2::ylab("Mean Coral Cover (%)") +
       ggplot2::xlab("Year")+
       ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                   expand = ggplot2::expansion(mult = c(0, 0.05))) +
-      paletteer::scale_fill_paletteer_d("fishualize::Acanthurus_olivaceus") +
+      ggplot2::scale_fill_manual(values = pal) +
       #ggh4x::facet_wrap2(ggplot2::vars(site), axes = "all", ncol = 2) +
       ggplot_mpatheme()
 
@@ -1890,33 +1888,44 @@ generate_plots <- function() {
   }
 
   ### ALL PARKS - PER SITE ----
-  dat <- mpa_data$coral_cover_species %>%
-    #dplyr::filter(!(level3class == "Hard coral")) %>%
-    dplyr::group_by(marine_park, year, site, level3class) %>%
+
+  drop_sites <- coral_cover_species %>%
+    dplyr::distinct(marine_park, site, year) %>%
+    dplyr::group_by(marine_park, site) %>%
+    dplyr::summarise(n = n()) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(n > 2) %>%
+    dplyr::mutate(park_site = paste(marine_park, site, sep= "_")) %>%
+    dplyr::select(park_site)
+
+  dat <- coral_cover_species %>%
+    dplyr::mutate(park_family = paste(marine_park, level3class, sep = "_")) %>%
+    dplyr::group_by(marine_park, year, site, park_family, level3class) %>%
     dplyr::summarise(percent_cover = mean(cover)) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(park_family = paste(marine_park, site, level3class, sep="_"),
-                  park_site_year = paste(marine_park, site, year, sep="_"))
+    dplyr::mutate(park_site_year = paste(marine_park, site, year, sep="_"),
+                  park_family = paste(marine_park, level3class, sep = "_"))
 
-  top4 <- mpa_data$coral_cover_species %>%
-    dplyr::group_by(marine_park, site, level3class) %>%
-    dplyr::summarize(percent_cover = mean(cover)) %>%
-    dplyr::filter(min_rank(desc(percent_cover)) <= 4) %>%
+  other <- dplyr::anti_join(dat, coral_top_families, by = "park_family") %>%
+    dplyr::group_by(marine_park, year, site, level3class) %>%
+    dplyr::summarize(cover = mean(percent_cover)) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(park_family = paste(marine_park, site, level3class, sep="_")) %>%
-    dplyr::select(park_family)
+    tidyr::drop_na(level3class) %>%
+    dplyr::group_by(marine_park, year, site) %>%
+    dplyr::summarise(percent_cover = sum(cover)) %>%
+    dplyr::mutate(level3class = "Other Hard Coral") %>%
+    dplyr::ungroup()
 
-  all <- dplyr::anti_join(dat, top4, by="park_family") %>%
-    dplyr::group_by(marine_park, site) %>%
-    dplyr::summarise(total_cover = sum(percent_cover)) %>%
+  top_fams <- dplyr::semi_join(dat, coral_top_families, by = "park_family") %>%
+    dplyr::group_by(marine_park, year, site, level3class) %>%
+    dplyr::summarize(cover = mean(percent_cover)) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(park_site_year = paste(marine_park, site, sep="_")) %>%
-    dplyr::rename(percent_cover = total_cover) %>%
-    dplyr::mutate(level3class = "Other Hard Coral",
-                  park_family = paste(site, level3class, sep="_"),
-                  percent_cover = round(percent_cover, digits = 2)) %>%
-    dplyr::select(!c(park_site_year)) %>%
-    dplyr::bind_rows(top4)
+    dplyr::rename(percent_cover = cover)
+
+  all <- dplyr::bind_rows(top_fams, other) %>%
+    dplyr::mutate(park_site = paste(marine_park, site, sep = "_")) %>%
+    dplyr::semi_join(drop_sites)
+
 
   unique(dat$marine_park)
 
@@ -1936,14 +1945,14 @@ generate_plots <- function() {
       temp2 <- temp %>% dplyr::filter(site == sites) #%>%
 
       p <- ggplot2::ggplot(temp2, ggplot2::aes(x = year, y = percent_cover, fill = level3class)) +
-        ggplot2::geom_bar(position="stack", stat="identity") +
+        ggplot2::geom_bar(position="stack", stat="identity", width = 0.7) +
         ggplot2::ylab("Mean Coral Cover (%)") +
         ggplot2::xlab("Year")+
         #ggplot2::ylim(min(temp$percent_cover), max(temp$percent_cover))+
-        #paletteer::scale_fill_paletteer_d("fishualize::Acanthurus_olivaceus") +
+        ggplot2::scale_fill_manual(values = pal) +
         ggplot2::scale_x_continuous(breaks=seq(min(years$year), max(years$year), 1)) +
         #ggplot2::coord_cartesian(xlim = c(min(years$year), max(years$year))) +
-        ggplot2::geom_col(width = 0.5) +
+        #ggplot2::geom_col(width = 0.4) +
         ggplot2::theme_minimal() +
         ggplot2::theme(axis.text = ggplot2::element_blank(),
                        axis.title = ggplot2::element_blank(),

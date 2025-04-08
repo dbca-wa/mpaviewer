@@ -21,6 +21,10 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
   # data_dir <- here::here("G:/mpaviewer_data")
   data_dir <- raw_dir
 
+  # DBCA googlesheets metadata sheet
+
+  dbca_googlesheet_url <- "https://docs.google.com/spreadsheets/d/1OuOt80TvJBCMPLR6oy7YhfoSD4VjC73cuKovGobxiyI/edit?usp=sharing"
+
   # Coral data
   # New coral data in dashboard format
   coral_cover <- list.files(path = data_dir, recursive = T, pattern = "_coral.csv", full.names = T) %>%
@@ -43,6 +47,10 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::mutate(level4class = stringr::str_replace_all(level4class, "Pectiniidae", "Merulinidae")) %>%
     dplyr::mutate(cover = round(cover, digits = 3))
 
+  coral_top_families <- googlesheets4::read_sheet(dbca_googlesheet_url, sheet = "coral_families_park") %>%
+    dplyr::mutate(park_family = paste(marine.park, Level3Class, sep = "_")) %>%
+    dplyr::select(park_family)
+
   coral_cover_metadata <- coral_cover %>%
     dplyr::select(zone, sector, site, site_code, reef_zone, latitude, longitude, replicate, survey, year, date, plot_year, analysis, software, marine_park, method, site_depth) %>%
     dplyr::distinct()
@@ -63,7 +71,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
 
   coral_cover_site <- coral_cover %>%
     dplyr::group_by(marine_park, site, year, level3class, level4class) %>%
-    dplyr::summarise(cover = sum(percent_cover)) %>%
+    dplyr::summarise(cover = mean(percent_cover)) %>%
     dplyr::mutate(level4class = stringr::str_replace_all(level4class, "Pectiniidae", "Merulinidae")) %>%
     dplyr::mutate(cover = round(cover, digits = 3))
 
@@ -95,6 +103,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     tidyr::drop_na(level3class) %>%
     dplyr::mutate(num = row_number())
 
+
   ### ► Life history sheet ----
   ## Will need to replace with DBCA's own version eventually but this will work for time being
   # TODO use the caab common names here instead
@@ -103,8 +112,6 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
 
   common_names <- CheckEM::australia_life_history %>%
     dplyr::select(scientific_name, family, genus, species, australian_common_name)
-
-  dbca_googlesheet_url <- "https://docs.google.com/spreadsheets/d/1OuOt80TvJBCMPLR6oy7YhfoSD4VjC73cuKovGobxiyI/edit?usp=sharing"
 
   # Old life hsitory sheet
   # life_history <- googlesheets4::read_sheet(dbca_googlesheet_url, sheet = "life_history") %>%
@@ -1311,6 +1318,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
   # TODO Come back to these
   coral_sampling_effort <- data.table::data.table(coral_sampling_effort)
   coral_cover_transect <- data.table::data.table(coral_cover_transect)
+  coral_top_families <- data.table::data.table(coral_top_families)
   coral_cover_species <- data.table::data.table(coral_cover_species)
   coral_cover_metadata <- data.table::data.table(coral_cover_metadata)
   coral_cover_reefzone <- data.table::data.table(coral_cover_reefzone)
@@ -1410,6 +1418,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
   data.table::setkey(coral_sampling_effort)
   # data.table::setkey(park_popups)
   data.table::setkey(coral_cover_transect)
+  data.table::setket(coral_top_families)
   data.table::setkey(coral_cover_species)
   data.table::setkey(coral_cover_metadata)
   data.table::setkey(coral_cover_reefzone)
@@ -1461,6 +1470,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
       state_pal = state_pal,
       # park_popups = park_popups,
       coral_cover_transect = coral_cover_transect,
+      coral_top_families = coral_top_families,
       coral_cover_species = coral_cover_species,
       coral_cover_metadata = coral_cover_metadata,
       rec_3b = rec_3b,
