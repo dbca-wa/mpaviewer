@@ -396,62 +396,6 @@ app_ui <- function(request) {
                              img(src = "www/plots/Coral_All_Parks_coral_cover.png", align="centre", width = "100%"))
                 ),
 
-          # Old dynamic coral tab, delete later
-
-          # tabItem(
-          #   tabName = "coraltab",
-          #   fluidRow(
-          #     tabBox(
-          #       title = "Choose a spatial scale to plot",
-          #       width = 8,
-          #       # width = "55%", # was 95%
-          #       id = "tabset2", height = "78vh",
-          #       tabPanel("State-wide summary",
-          #                style = "overflow: visible",
-          #                # column(width = 5,
-          #
-          #                selectInput(
-          #                  width = "100%",
-          #                  "benthicstatemethoddropdown",
-          #                  "Choose a metric to plot:",
-          #                  choices = c("Coral cover", "Coral recruitment"),
-          #                  multiple = FALSE,
-          #                  selectize = TRUE
-          #                )
-          #                ,
-          #
-          #                conditionalPanel('input.benthicstatemethoddropdown == "Coral cover"',
-          #                  htmlOutput("benthic.state.park.coralcover.dropdown"),
-          #                  withSpinner(plotOutput("benthic.state.coralcover.plot", height = 500))
-          #                  ),
-          #
-          #                conditionalPanel(
-          #                  'input.benthicstatemethoddropdown == "Coral recruitment"',
-          #
-          #                  htmlOutput("benthic.state.park.coralrecruitment.dropdown"),
-          #
-          #                  selectInput(
-          #                    width = "100%",
-          #                    "benthicstatecoralrecruitmentmetric",
-          #                    "Plot by:",
-          #                    choices = c("All park", "Taxa"),
-          #                    multiple = FALSE,
-          #                    selectize = TRUE
-          #                  )
-          #                ),
-          #
-          #                  conditionalPanel(
-          #                    'input.benthicstatemethoddropdown == "Coral recruitment" && input.benthicstatecoralrecruitmentmetric == "All park"',
-          #                    withSpinner(plotOutput("benthic.state.coralrecruitment.all.plot", height = 500))
-          #                  ),
-          #
-          #                  conditionalPanel(
-          #                    'input.benthicstatemethoddropdown == "Coral recruitment" && input.benthicstatecoralrecruitmentmetric == "Taxa"',
-          #                    htmlOutput("benthic.state.coralrecruitment.taxa.dropdown"),
-          #                    withSpinner(plotOutput("benthic.state.coralrecruitment.taxa.plot", height = 500))
-          #                  )
-          #       ), # end tab panel
-
 
           ## MARINE PARK ----
           tabPanel(
@@ -492,24 +436,28 @@ app_ui <- function(request) {
             conditionalPanel(
               'input.benthicparkmethoddropdown == "Coral cover"',
 
-              h3("Total abundance:", actionButton("park.ta", label = " ",
+              h3("Coral cover:", actionButton("park.ta", label = " ",
                                                   icon = icon("info"),
                                                   icon.library = "font awesome",
                                                   style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
 
               withSpinner(uiOutput("benthic.park.coralcover.plot")),
 
-              h4("Most abundant species:"),
+              h4("Most abundant families:"),
               withSpinner(uiOutput("benthic.park.top5.coralcover.plot")),
 
-              h4("By reef zone:"),
+              h4("Coral cover by reef zone:"),
               withSpinner(uiOutput("benthic.park.reefzone.coralcover.plot")),
 
-              htmlOutput("benthic.park.site.coralcover.dropdown"),
+              h4("Most abundant families by site:"),
 
-              h4("By site:"),
+              htmlOutput("benthic.park.site.coralcover.dropdown"),
               # withSpinner(uiOutput("ui.fish.park.total.zone.plot")),
-              withSpinner(uiOutput("benthic.site.coralcover.plot"))
+              withSpinner(uiOutput("benthic.site.coralcover.plot")),
+
+              h4("Coral cover by site:"),
+
+              withSpinner(uiOutput("benthic.site.coralcover.plot.facet"))
             )
 
           )

@@ -1681,7 +1681,18 @@ app_server <- function(input, output, session) {
         park <- stringr::str_replace_all(tolower(input$benthic.park.coralcover.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
         site <- input$benthic.park.site.coralcover.dropdown
 
-        img(src = paste0("www/plots/", "Coral_", park, "_", site, "_species_coral_cover.png"), align = "left", width = "100%")
+        img(src = paste0("www/plots/", "Coral_", park, "_site_", site, "_species_coral_cover.png"), align = "left", width = "100%")
+      })
+    })
+
+
+    ####### ► Coral per site facet plot ----
+    observeEvent(input$benthic.park.coralcover.dropdown, {
+
+      output$benthic.site.coralcover.plot.facet <- renderUI({
+        req(input$benthic.park.coralcover.dropdown)
+        park <- stringr::str_replace_all(tolower(input$benthic.park.coralcover.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
+        img(src = paste0("www/plots/", "Coral_", park, "_site_coral_cover.png"), align = "left", width = "100%")
       })
     })
 
@@ -1902,17 +1913,16 @@ app_server <- function(input, output, session) {
           ~ max(latitude_dd)
         ) %>%
 
-        leaflet::addAwesomeMarkers(lng = ~longitude_dd,
-                                   lat = ~latitude_dd,
-                                   icon = leaflet::awesomeIcons(
-                                     icon = 'surf',
-                                     iconColor = 'white',
-                                     library = 'fa',
-                                     markerColor = 'pink'
-                                   ),
-                                   popup = ~content,
-                                   label = ~as.character(site),
-                                   group = "Sampling locations"
+        leaflet::addCircleMarkers(lng = ~longitude_dd,
+                                  lat = ~latitude_dd,
+                                  color = "black",
+                                  weight = 2,
+                                  fillColor = "pink",
+                                  radius = 6,
+                                  opacity = 1,
+                                  popup = ~content,
+                                  label = ~as.character(site),
+                                  group = "Sampling locations"
         ) %>%
         # addMarkers(
         #   lng = ~longitude_dd,

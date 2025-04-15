@@ -32,48 +32,37 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::filter(level2class %in% c("Hard coral", "Octocorals - Hard")) %>%
     dplyr::mutate(year = as.numeric(year),
                   percent_cover = as.numeric(percent_cover),
-                  plot_year = as.numeric(year),
+                  plot_year = as.numeric(plot_year),
                   latitude = as.numeric(latitude),
                   longitude = as.numeric(longitude)) %>%
     dplyr::filter(!marine_park %in% c("archive", "C:")) # get rid of old files
 
-  unique(coral_cover$marine_park)
 
-  coral_cover_species <- coral_cover %>%
-    dplyr::group_by(marine_park, year, morphology, site, replicate, level3class, level4class) %>%
-    dplyr::summarise(cover = sum(percent_cover)) %>%
-    dplyr::ungroup() %>%
-    # dplyr::filter(cover > 0) %>%
-    dplyr::mutate(level4class = stringr::str_replace_all(level4class, "Pectiniidae", "Merulinidae")) %>%
-    dplyr::mutate(cover = round(cover, digits = 3))
+  unique(coral_cover$marine_park)
 
   coral_top_families <- googlesheets4::read_sheet(dbca_googlesheet_url, sheet = "coral_families_park") %>%
     dplyr::mutate(park_family = paste(marine.park, Level3Class, sep = "_")) %>%
     dplyr::select(park_family)
 
+  coral_park_sites <- googlesheets4::read_sheet(dbca_googlesheet_url, sheet = "coral_sites_park") %>%
+    dplyr::mutate(park_site = paste(marine.park, site, sep = "_")) %>%
+    dplyr::select(park_site)
+
+  coral_cover_transect_total <- coral_cover %>%
+    dplyr::group_by(marine_park, plot_year, sector, reef_zone, site, survey) %>%
+    dplyr::summarise(percent_cover = sum(percent_cover)) %>%
+    dplyr::ungroup()
+
+  coral_cover_transect_family <- coral_cover %>%
+    tidyr::drop_na(latitude) %>%
+    dplyr::group_by(marine_park, survey, plot_year, sector, reef_zone, site, latitude, longitude, level3class) %>%
+    dplyr::summarise(cover = sum(percent_cover)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(park_family = paste(marine_park, level3class, sep = "_"))
+
   coral_cover_metadata <- coral_cover %>%
     dplyr::select(zone, sector, site, site_code, reef_zone, latitude, longitude, replicate, survey, year, date, plot_year, analysis, software, marine_park, method, site_depth) %>%
     dplyr::distinct()
-
-  coral_zones <- coral_cover %>% dplyr::mutate(park_site = paste(marine_park, site, sep="_")) %>% dplyr::select(park_site, reef_zone) %>% dplyr::distinct()
-
-  unique(coral_cover$reef_zone)
-
-  coral_cover_transect <- plyr::ddply(coral_cover, plyr::.(marine_park, method, survey, plot_year, sector, site), plyr::summarize, percent_cover = sum(percent_cover)) %>%
-    dplyr::mutate(park_site = paste(marine_park, site, sep="_"),
-                  park_site_year = paste(marine_park, site, plot_year, sep="_"))
-
-  coral_cover_reefzone <- dplyr::left_join(coral_cover_transect, coral_zones, by="park_site") %>%
-    dplyr::group_by(marine_park, reef_zone, plot_year) %>%
-    dplyr::summarise(coral_cover = mean(percent_cover), se = plotrix::std.error(percent_cover), sd = sd(percent_cover)) %>%
-    dplyr::rename(percent_cover = coral_cover) %>%
-    dplyr::ungroup()
-
-  coral_cover_site <- coral_cover %>%
-    dplyr::group_by(marine_park, site, year, level3class, level4class) %>%
-    dplyr::summarise(cover = mean(percent_cover)) %>%
-    dplyr::mutate(level4class = stringr::str_replace_all(level4class, "Pectiniidae", "Merulinidae")) %>%
-    dplyr::mutate(cover = round(cover, digits = 3))
 
   rec_3b <- list.files(path = data_dir, recursive = T, pattern = "REC3b.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
     purrr::map_df(~ read_dbca_files_csv(., data_dir = data_dir)) %>%
@@ -218,6 +207,8 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::ungroup() %>%
     dplyr::filter(!grepl('Unknown', scientific_name))
 
+  cti_avg_genus <- googlesheets4::read_sheet(dbca_googlesheet_url, sheet = "cti_avg_genus") %>%
+    dplyr::rename(scientific_name = taxa)
 
   acknowledgements <- googlesheets4::read_sheet(dbca_googlesheet_url, sheet = "acknowledgments") %>%
     dplyr::mutate(park_method = paste0(park, "_", method))
@@ -1317,11 +1308,10 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
 
   # TODO Come back to these
   coral_sampling_effort <- data.table::data.table(coral_sampling_effort)
-  coral_cover_transect <- data.table::data.table(coral_cover_transect)
+  coral_cover_transect_total <- data.table::data.table(coral_cover_transect_total)
+  coral_cover_transect_family <- data.table::data.table(coral_cover_transect_family)
   coral_top_families <- data.table::data.table(coral_top_families)
-  coral_cover_species <- data.table::data.table(coral_cover_species)
   coral_cover_metadata <- data.table::data.table(coral_cover_metadata)
-  coral_cover_reefzone <- data.table::data.table(coral_cover_reefzone)
   rec_3b <- data.table::data.table(rec_3b)
   rec_3c2 <- data.table::data.table(rec_3c2)
 
@@ -1417,11 +1407,10 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
 
   data.table::setkey(coral_sampling_effort)
   # data.table::setkey(park_popups)
-  data.table::setkey(coral_cover_transect)
-  data.table::setket(coral_top_families)
-  data.table::setkey(coral_cover_species)
+  data.table::setkey(coral_cover_transect_total)
+  data.table::setkey(coral_cover_transect_family)
+  data.table::setkey(coral_top_families)
   data.table::setkey(coral_cover_metadata)
-  data.table::setkey(coral_cover_reefzone)
   data.table::setkey(rec_3b)
   data.table::setkey(rec_3c2)
   # data.table::setkey(common_names) # Not needed
@@ -1469,13 +1458,12 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
       state_mp = state_mp,
       state_pal = state_pal,
       # park_popups = park_popups,
-      coral_cover_transect = coral_cover_transect,
+      coral_cover_transect_total = coral_cover_transect_total,
+      coral_cover_transect_family = coral_cover_transect_family,
       coral_top_families = coral_top_families,
-      coral_cover_species = coral_cover_species,
       coral_cover_metadata = coral_cover_metadata,
       rec_3b = rec_3b,
       rec_3c2 = rec_3c2,
-      coral_cover_reefzone = coral_cover_reefzone,
       total_species_coral = total_species_coral,
       total_number_coral = total_number_coral,
       # common_names = common_names, # Not needed
