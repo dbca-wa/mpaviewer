@@ -1608,6 +1608,9 @@ app_server <- function(input, output, session) {
     ####### ►  Create a site dropdown ----
     output$benthic.park.site.coralcover.dropdown <- renderUI({
       options <- mpa_data$coral_cover_metadata %>%
+        dplyr::group_by(marine_park, site) %>%
+        dplyr::summarise(n = length(plot_year)) %>%
+        dplyr::filter(n > 2) %>%
         dplyr::filter(marine_park %in% c(input$benthic.park.coralcover.dropdown)) %>%
         dplyr::distinct(site) %>%
         dplyr::arrange() %>%
