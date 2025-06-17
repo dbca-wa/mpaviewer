@@ -28,7 +28,8 @@ generate_plots <- function() {
            "Marine Nature Reserve" = "#bfd054",
            "SP Habitat Protection" = "#CAC3D5",
            "Shore Based Activities" = "#231D1D",
-           "SP Wildlife Conservation" = "#7C7CB8")
+           "SP Wildlife Conservation" = "#7C7CB8",
+           "SP Wildlife Viewing" = "#7C7CB8")
 
   # BEGIN PLOTTING ----
   # FISH PLOTS ----
@@ -48,6 +49,8 @@ generate_plots <- function() {
     temp <- dat[marine_park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
+
+      message(methods)
 
       temp2 <- temp[method %in% c(methods)]
 
@@ -96,15 +99,23 @@ generate_plots <- function() {
       }
 
       if(methods %in% c("stereo-ROVs+UVC")){
-          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
-            ggplot2::geom_label(
-              x = 2021,
-              y = +Inf,
-              label = "\n\n method\nchange",
-              size = 5,
-              fill = "white",
-              check_overlap = TRUE,
-              label.size = NA)
+        #
+        temp2 <- temp2 %>%
+          dplyr::mutate(change = dplyr::if_else(year > 2018, "2021 - ROV", "1999 - 2018 UVC"))
+
+        vline <- data.frame(x = c(2020), change = "1999 - 2018 UVC")
+
+          p <- ggplot2::ggplot(temp2, ggplot2::aes(x = year, y = mean, fill = status)) +
+            ggplot2::geom_point(shape = 23, size = 6, col = "black", position = ggplot2::position_dodge(width = 0.5)) +
+            ggplot2::geom_errorbar(ggplot2::aes(ymin = mean - se, ymax = mean + se), width=.2, position = ggplot2::position_dodge(.5)) + ggplot2::xlab("Year") +
+            ggplot2::ylab("Average total abundance\nper sample (+/- SE)") +
+            ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+            ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+                                        expand = ggplot2::expansion(mult = c(0, 0.05))) +
+            ggplot2::scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
+            ggplot2::facet_wrap(~change, scales = "free") +
+            ggh4x::force_panelsizes(cols = c(9, 1)) +
+            ggplot_mpatheme()
       }
 
       p
@@ -116,7 +127,7 @@ generate_plots <- function() {
 #       dev.off()
 
       ggplot2::ggsave(
-        paste0("inst/app/www/plots/", park.name, "_", methods, "_total_abundance.png"),
+        paste0("inst/app/www/plots/", "Fish_", park.name, "_", methods, "_total_abundance.png"),
         p,
         width = 10,
         height = 3,
@@ -133,12 +144,17 @@ generate_plots <- function() {
   # dat <- sr[complete %in% c("Consistently sampled")]  # Turned off after meeting with Jordan 6th Nov 2023
 
   unique(dat$marine_park)
+  unique(dat$status)
 
   for(marinepark in unique(dat$marine_park)){
+
+    message(marinepark)
 
     temp <- dat[marine_park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
+
+      message(methods)
 
       temp2 <- temp[method %in% c(methods)]
 
@@ -189,12 +205,28 @@ generate_plots <- function() {
       }
 
       if(methods %in% c("stereo-ROVs+UVC")){
+        # temp2 <- temp2 %>%
+        #   dplyr::mutate(change = dplyr::if_else(year > 2018, "2021 - ROV", "1999 - 2018 UVC"))
+        #
+        # vline <- data.frame(x = c(2020), change = "1999 - 2018 UVC")
+        #
+        # p <- ggplot2::ggplot(temp2, ggplot2::aes(x = year, y = mean, fill = status)) +
+        #   ggplot2::geom_point(shape = 23, size = 6, col = "black", position = ggplot2::position_dodge(width = 0.5)) +
+        #   ggplot2::geom_errorbar(ggplot2::aes(ymin = mean - se, ymax = mean + se), width=.2, position = ggplot2::position_dodge(.5)) + ggplot2::xlab("Year") +
+        #   ggplot2::ylab("Average total abundance\nper sample (+/- SE)") +
+        #   ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+        #   ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+        #                               expand = ggplot2::expansion(mult = c(0, 0.05))) +
+        #   ggplot2::scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
+        #   ggplot2::facet_grid(dbca_sanctuary~change, scales = "free") +
+        #   ggh4x::force_panelsizes(cols = c(8, 2.5)) +
+        #   ggplot_mpatheme()
         p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
           ggplot2::geom_label(
-            x = 2021,
+            x = 2019,
             y = +Inf,
             label = "\n\n method\nchange",
-            size = 5,
+            size = 4,
             fill = "white",
             check_overlap = TRUE,
             label.size = NA)
@@ -211,7 +243,7 @@ generate_plots <- function() {
       }
 
       ggplot2::ggsave(
-        paste0("inst/app/www/plots/", park.name, "_", methods, "_total_abundance_sanctuary.png"),
+        paste0("inst/app/www/plots/", "Fish_", park.name, "_", methods, "_total_abundance_sanctuary.png"),
         p,
         width = 10,
         height = p.height,
@@ -316,7 +348,7 @@ generate_plots <- function() {
         }
 
         ggplot2::ggsave(
-          paste0("inst/app/www/plots/", park.name, "_", methods, "_total_abundance_site.png"),
+          paste0("inst/app/www/plots/","Fish_", park.name, "_", methods, "_total_abundance_site.png"),
           p,
           width = 10,
           height = p.height,
@@ -327,18 +359,26 @@ generate_plots <- function() {
     }
   }
 
+  test <- mpa_data$ta_sr_zone %>%
+    dplyr::mutate(park_zone = paste(marine_park, methods, dbca_zone, sep = "_"))
+  unique(test$park_zone)
   #### TOTAL ABUNDANCE - BY ZONE ----
   ta <- mpa_data$ta_sr_zone[metric %in% c("Total abundance")]
   dat <- ta
   # dat <- sr[complete %in% c("Consistently sampled")]  # Turned off after meeting with Jordan 6th Nov 2023
 
   unique(dat$marine_park)
+  unique(dat$dbca_zone)
 
   for(marinepark in unique(dat$marine_park)){
+
+    print(marinepark)
 
     temp <- dat[marine_park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
+
+      print(methods)
 
       temp2 <- temp[method %in% c(methods)]
 
@@ -388,15 +428,32 @@ generate_plots <- function() {
       }
 
       if(methods %in% c("stereo-ROVs+UVC")){
-        p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
-          ggplot2::geom_label(
-            x = 2021,
-            y = +Inf,
-            label = "\n\n method\nchange",
-            size = 5,
-            fill = "white",
-            check_overlap = TRUE,
-            label.size = NA)
+        # p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+        #   ggplot2::geom_label(
+        #     x = 2021,
+        #     y = +Inf,
+        #     label = "\n\n method\nchange",
+        #     size = 5,
+        #     fill = "white",
+        #     check_overlap = TRUE,
+        #     label.size = NA)
+
+        temp2 <- temp2 %>%
+          dplyr::mutate(change = dplyr::if_else(year > 2018, "2021 - ROV", "1999 - 2018 UVC"))
+
+        vline <- data.frame(x = c(2020), change = "1999 - 2018 UVC")
+
+        p <- ggplot2::ggplot(temp2, ggplot2::aes(x = year, y = mean, fill = dbca_zone)) +
+          ggplot2::geom_point(shape = 23, size = 6, col = "black", position = ggplot2::position_dodge(width = 0.5)) +
+          ggplot2::geom_errorbar(ggplot2::aes(ymin = mean - se, ymax = mean + se), width=.2, position = ggplot2::position_dodge(.5)) + ggplot2::xlab("Year") +
+          ggplot2::ylab("Average total abundance\nper sample (+/- SE)") +
+          ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+          ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+                                      expand = ggplot2::expansion(mult = c(0, 0.05))) +
+          ggplot2::scale_fill_manual(values = c(pal)) +
+          ggplot2::facet_wrap(~change, scales = "free") +
+          ggh4x::force_panelsizes(cols = c(9, 2)) +
+          ggplot_mpatheme()
       }
 
       p
@@ -411,7 +468,7 @@ generate_plots <- function() {
 
 
       ggplot2::ggsave(
-        paste0("inst/app/www/plots/", park.name, "_", methods, "_total_abundance_zone.png"),
+        paste0("inst/app/www/plots/", "Fish_", park.name, "_", methods, "_total_abundance_zone.png"),
         p,
         width = 10,
         height = p.height,
@@ -434,9 +491,13 @@ generate_plots <- function() {
 
   for(marinepark in unique(dat$marine_park)){
 
+    print(marinepark)
+
     temp <- dat[marine_park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
+
+      print(methods)
 
       temp2 <- temp[method %in% c(methods)]
 
@@ -485,15 +546,32 @@ generate_plots <- function() {
       }
 
       if(methods %in% c("stereo-ROVs+UVC")){
-        p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
-          ggplot2::geom_label(
-            x = 2021,
-            y = +Inf,
-            label = "\n\n method\nchange",
-            size = 5,
-            fill = "white",
-            check_overlap = TRUE,
-            label.size = NA)
+
+        temp2 <- temp2 %>%
+          dplyr::mutate(change = dplyr::if_else(year > 2018, "2021 - ROV", "1999 - 2018 UVC"))
+
+        vline <- data.frame(x = c(2020), change = "1999 - 2018 UVC")
+
+        p <- ggplot2::ggplot(temp2, ggplot2::aes(x = year, y = mean, fill = status)) +
+          ggplot2::geom_point(shape = 23, size = 6, col = "black", position = ggplot2::position_dodge(width = 0.5)) +
+          ggplot2::geom_errorbar(ggplot2::aes(ymin = mean - se, ymax = mean + se), width=.2, position = ggplot2::position_dodge(.5)) + ggplot2::xlab("Year") +
+          ggplot2::ylab("Average total abundance\nper sample (+/- SE)") +
+          ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+          ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+                                      expand = ggplot2::expansion(mult = c(0, 0.05))) +
+          ggplot2::scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
+          ggplot2::facet_wrap(~change, scales = "free") +
+          ggh4x::force_panelsizes(cols = c(9, 2)) +
+          ggplot_mpatheme()
+        # p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+        #   ggplot2::geom_label(
+        #     x = 2021,
+        #     y = +Inf,
+        #     label = "\n\n method\nchange",
+        #     size = 5,
+        #     fill = "white",
+        #     check_overlap = TRUE,
+        #     label.size = NA)
       }
 
       p
@@ -505,7 +583,7 @@ generate_plots <- function() {
       # dev.off()
 
       ggplot2::ggsave(
-        paste0("inst/app/www/plots/", park.name, "_", methods, "_species_richness.png"),
+        paste0("inst/app/www/plots/", "Fish_", park.name, "_", methods, "_species_richness.png"),
         p,
         width = 10,
         height = 3,
@@ -524,9 +602,13 @@ generate_plots <- function() {
 
   for(marinepark in unique(dat$marine_park)){
 
+    message(marinepark)
+
     temp <- dat[marine_park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
+
+      message(methods)
 
       temp2 <- temp[method %in% c(methods)]
 
@@ -577,15 +659,31 @@ generate_plots <- function() {
       }
 
       if(methods %in% c("stereo-ROVs+UVC")){
-        p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
-          ggplot2::geom_label(
-            x = 2021,
-            y = +Inf,
-            label = "\n\n method\nchange",
-            size = 5,
-            fill = "white",
-            check_overlap = TRUE,
-            label.size = NA)
+        temp2 <- temp2 %>%
+          dplyr::mutate(change = dplyr::if_else(year > 2018, "ROV", "1999 - 2018 UVC"))
+
+        vline <- data.frame(x = c(2020), change = "1999 - 2018 UVC")
+
+        p <- ggplot2::ggplot(temp2, ggplot2::aes(x = year, y = mean, fill = status)) +
+          ggplot2::geom_point(shape = 23, size = 5, col = "black", position = ggplot2::position_dodge(width = 0.5)) +
+          ggplot2::geom_errorbar(ggplot2::aes(ymin = mean - se, ymax = mean + se), width=.2, position = ggplot2::position_dodge(.5)) + ggplot2::xlab("Year") +
+          ggplot2::ylab("Average total abundance\nper sample (+/- SE)") +
+          ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+          ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+                                      expand = ggplot2::expansion(mult = c(0, 0.05))) +
+          ggplot2::scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
+          ggplot2::facet_wrap(dbca_sanctuary~change, scales = "free") +
+          ggh4x::force_panelsizes(cols = c(9, 2)) +
+          ggplot_mpatheme()
+        # p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+        #   ggplot2::geom_label(
+        #     x = 2021,
+        #     y = +Inf,
+        #     label = "\n\n method\nchange",
+        #     size = 5,
+        #     fill = "white",
+        #     check_overlap = TRUE,
+        #     label.size = NA)
       }
       p
 
@@ -598,7 +696,7 @@ generate_plots <- function() {
       }
 
       ggplot2::ggsave(
-        paste0("inst/app/www/plots/", park.name, "_", methods, "_species_richness_sanctuary.png"),
+        paste0("inst/app/www/plots/", "Fish_", park.name, "_", methods, "_species_richness_sanctuary.png"),
         p,
         width = 10,
         height = p.height,
@@ -722,9 +820,13 @@ generate_plots <- function() {
 
   for(marinepark in unique(dat$marine_park)){
 
+    message(marinepark)
+
     temp <- dat[marine_park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
+
+      message(methods)
 
       temp2 <- temp[method %in% c(methods)]
 
@@ -774,15 +876,31 @@ generate_plots <- function() {
       }
 
       if(methods %in% c("stereo-ROVs+UVC")){
-        p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
-          ggplot2::geom_label(
-            x = 2021,
-            y = +Inf,
-            label = "\n\n method\nchange",
-            size = 5,
-            fill = "white",
-            check_overlap = TRUE,
-            label.size = NA)
+        temp2 <- temp2 %>%
+          dplyr::mutate(change = dplyr::if_else(year > 2018, "ROV", "1999 - 2018 UVC"))
+
+        vline <- data.frame(x = c(2020), change = "1999 - 2018 UVC")
+
+        p <- ggplot2::ggplot(temp2, ggplot2::aes(x = year, y = mean, fill = dbca_zone)) +
+          ggplot2::geom_point(shape = 23, size = 5, col = "black", position = ggplot2::position_dodge(width = 0.5)) +
+          ggplot2::geom_errorbar(ggplot2::aes(ymin = mean - se, ymax = mean + se), width=.2, position = ggplot2::position_dodge(.5)) + ggplot2::xlab("Year") +
+          ggplot2::ylab("Average total abundance\nper sample (+/- SE)") +
+          ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+          ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+                                      expand = ggplot2::expansion(mult = c(0, 0.05))) +
+          ggplot2::scale_fill_manual(values = c(pal)) +
+          ggplot2::facet_wrap(dbca_sanctuary~change, scales = "free") +
+          ggh4x::force_panelsizes(cols = c(9, 2)) +
+          ggplot_mpatheme()
+        # p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+        #   ggplot2::geom_label(
+        #     x = 2021,
+        #     y = +Inf,
+        #     label = "\n\n method\nchange",
+        #     size = 5,
+        #     fill = "white",
+        #     check_overlap = TRUE,
+        #     label.size = NA)
       }
       p
 
@@ -794,9 +912,8 @@ generate_plots <- function() {
       #   p.height <- 3 * ceiling(length(unique(temp2$dbca_sanctuary))/3)
       # }
 
-
       ggplot2::ggsave(
-        paste0("inst/app/www/plots/", park.name, "_", methods, "_species_richness_zone.png"),
+        paste0("inst/app/www/plots/", "Fish_", park.name, "_", methods, "_species_richness_zone.png"),
         p,
         width = 10,
         height = p.height,
@@ -838,7 +955,7 @@ generate_plots <- function() {
       park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
 
       ggplot2::ggsave(
-        paste0("inst/app/www/plots/", park.name, "_", methods, "_top10.png"),
+        paste0("inst/app/www/plots/", "Fish_", park.name, "_", methods, "_top10.png"),
         p,
         width = 10,
         height = 4,
@@ -861,6 +978,8 @@ generate_plots <- function() {
     temp <- dat[marine_park %in% c(marinepark)]
 
     for(methods in unique(temp$method)){
+
+      message(methods)
 
       temp2 <- temp[method %in% c(methods)]
 
@@ -910,22 +1029,39 @@ generate_plots <- function() {
       }
 
       if(methods %in% c("stereo-ROVs+UVC")){
-        p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
-          ggplot2::geom_label(
-            x = 2021,
-            y = +Inf,
-            label = "\n\n method\nchange",
-            size = 5,
-            fill = "white",
-            check_overlap = TRUE,
-            label.size = NA)
+
+        temp2 <- temp2 %>%
+          dplyr::mutate(change = dplyr::if_else(year > 2018, "2021 - ROV", "1999 - 2018 UVC"))
+
+        vline <- data.frame(x = c(2020), change = "1999 - 2018 UVC")
+
+        p <- ggplot2::ggplot(temp2, ggplot2::aes(x = year, y = mean, fill = status)) +
+          ggplot2::geom_point(shape = 23, size = 6, col = "black", position = ggplot2::position_dodge(width = 0.5)) +
+          ggplot2::geom_errorbar(ggplot2::aes(ymin = mean - se, ymax = mean + se), width=.2, position = ggplot2::position_dodge(.5)) + ggplot2::xlab("Year") +
+          ggplot2::ylab("Average total abundance\nper sample (+/- SE)") +
+          ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+          ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+                                      expand = ggplot2::expansion(mult = c(0, 0.05))) +
+          ggplot2::scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
+          ggplot2::facet_wrap(~change, scales = "free") +
+          ggh4x::force_panelsizes(cols = c(9, 2)) +
+          ggplot_mpatheme()
+        # p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+        #   ggplot2::geom_label(
+        #     x = 2021,
+        #     y = +Inf,
+        #     label = "\n\n method\nchange",
+        #     size = 5,
+        #     fill = "white",
+        #     check_overlap = TRUE,
+        #     label.size = NA)
       }
       p
 
       park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
 
       ggplot2::ggsave(
-        paste0("inst/app/www/plots/", park.name, "_", methods, "_sum_targets.png"),
+        paste0("inst/app/www/plots/", "Fish_", park.name, "_", methods, "_sum_targets.png"),
         p,
         width = 10,
         height = 3,
@@ -997,22 +1133,56 @@ generate_plots <- function() {
       }
 
       if(methods %in% c("stereo-ROVs+UVC")){
-        p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
-          ggplot2::geom_label(
-            x = 2021,
-            y = +Inf,
-            label = "\n\n method\nchange",
-            size = 5,
-            fill = "white",
-            check_overlap = TRUE,
-            label.size = NA)
+
+        temp2 <- temp2 %>%
+          dplyr::mutate(change = dplyr::if_else(year > 2018, "2021 - ROV", "1999 - 2018 UVC"))
+
+        vline <- data.frame(x = c(2020), change = "1999 - 2018 UVC")
+
+        p <- ggplot2::ggplot(temp2, ggplot2::aes(x = year, y = mean, fill = status)) +
+          ggplot2::geom_point(shape = 23, size = 6, col = "black", position = ggplot2::position_dodge(width = 0.5)) +
+          ggplot2::geom_errorbar(ggplot2::aes(ymin = mean - se, ymax = mean + se), width=.2, position = ggplot2::position_dodge(.5)) + ggplot2::xlab("Year") +
+          ggplot2::ylab("Average total abundance\nper sample (+/- SE)") +
+          ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+          ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+                                      expand = ggplot2::expansion(mult = c(0, 0.05))) +
+          ggplot2::scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
+          ggplot2::facet_wrap(~change, scales = "free") +
+          ggh4x::force_panelsizes(cols = c(9, 2)) +
+          ggplot_mpatheme()
+
+        # temp2 <- temp2 %>%
+        #   dplyr::mutate(change = dplyr::if_else(year > 2018, "2021 - ROV", "1999 - 2018 UVC"))
+        #
+        # vline <- data.frame(x = c(2020), change = "1999 - 2018 UVC")
+        #
+        # p <- ggplot2::ggplot(temp2, ggplot2::aes(x = year, y = mean, fill = status)) +
+        #   ggplot2::geom_point(shape = 23, size = 6, col = "black", position = ggplot2::position_dodge(width = 0.5)) +
+        #   ggplot2::geom_errorbar(ggplot2::aes(ymin = mean - se, ymax = mean + se), width=.2, position = ggplot2::position_dodge(.5)) + ggplot2::xlab("Year") +
+        #   ggplot2::ylab("Average total abundance\nper sample (+/- SE)") +
+        #   ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+        #   ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+        #                               expand = ggplot2::expansion(mult = c(0, 0.05))) +
+        #   ggplot2::scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
+        #   ggplot2::facet_grid(dbca_sanctuary~change, scales = "free") +
+        #   ggh4x::force_panelsizes(cols = c(8, 2.5)) +
+        #   ggplot_mpatheme()
+        # p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+        #   ggplot2::geom_label(
+        #     x = 2021,
+        #     y = +Inf,
+        #     label = "\n\n method\nchange",
+        #     size = 5,
+        #     fill = "white",
+        #     check_overlap = TRUE,
+        #     label.size = NA)
       }
       p
 
       park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
 
       ggplot2::ggsave(
-        paste0("inst/app/www/plots/", park.name, "_", methods, "_sum_all_targets.png"),
+        paste0("inst/app/www/plots/", "Fish_", park.name, "_", methods, "_sum_all_targets.png"),
         p,
         width = 10,
         height = 3,
@@ -1084,17 +1254,17 @@ generate_plots <- function() {
             )}
       }
 
-      if(methods %in% c("stereo-ROVs+UVC")){
-        p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
-          ggplot2::geom_label(
-            x = 2021,
-            y = +Inf,
-            label = "\n\n method\nchange",
-            size = 5,
-            fill = "white",
-            check_overlap = TRUE,
-            label.size = NA)
-      }
+      # if(methods %in% c("stereo-ROVs+UVC")){
+      #   p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+      #     ggplot2::geom_label(
+      #       x = 2021,
+      #       y = +Inf,
+      #       label = "\n\n method\nchange",
+      #       size = 5,
+      #       fill = "white",
+      #       check_overlap = TRUE,
+      #       label.size = NA)
+      # }
       p
 
       park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
@@ -1106,7 +1276,7 @@ generate_plots <- function() {
       }
 
       ggplot2::ggsave(
-        paste0("inst/app/www/plots/", park.name, "_", methods, "_sum_targets_sanctuary.png"),
+        paste0("inst/app/www/plots/", "Fish_", park.name, "_", methods, "_sum_targets_sanctuary.png"),
         p,
         width = 10,
         height = p.height,
@@ -1178,18 +1348,18 @@ generate_plots <- function() {
             )}
       }
 
-      if(methods %in% c("stereo-ROVs+UVC")){
-        p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
-          ggplot2::geom_label(
-            x = 2021,
-            y = +Inf,
-            label = "\n\n method\nchange",
-            size = 5,
-            fill = "white",
-            check_overlap = TRUE,
-            label.size = NA)
-      }
-      p
+      # if(methods %in% c("stereo-ROVs+UVC")){
+      #   p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+      #     ggplot2::geom_label(
+      #       x = 2021,
+      #       y = +Inf,
+      #       label = "\n\n method\nchange",
+      #       size = 5,
+      #       fill = "white",
+      #       check_overlap = TRUE,
+      #       label.size = NA)
+      # }
+      # p
 
       park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
 
@@ -1200,7 +1370,7 @@ generate_plots <- function() {
       }
 
       ggplot2::ggsave(
-        paste0("inst/app/www/plots/", park.name, "_", methods, "_sum_all_targets_sanctuary.png"),
+        paste0("inst/app/www/plots/", "Fish_", park.name, "_", methods, "_sum_all_targets_sanctuary.png"),
         p,
         width = 10,
         height = p.height,
@@ -1222,6 +1392,8 @@ generate_plots <- function() {
   unique(dat$marine_park)
 
   for(marinepark in unique(dat$marine_park)){
+
+    message(marinepark)
 
     temp <- dat[marine_park %in% c(marinepark)]
 
@@ -1278,15 +1450,32 @@ generate_plots <- function() {
       }
 
       if(methods %in% c("stereo-ROVs+UVC")){
-        p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
-          ggplot2::geom_label(
-            x = 2021,
-            y = +Inf,
-            label = "\n\n method\nchange",
-            size = 5,
-            fill = "white",
-            check_overlap = TRUE,
-            label.size = NA)
+        temp2 <- temp2 %>%
+          dplyr::mutate(change = dplyr::if_else(year > 2018, "2021 - ROV", "1999 - 2018 UVC"))
+
+        vline <- data.frame(x = c(2020), change = "1999 - 2018 UVC")
+
+        p <- ggplot2::ggplot(temp2, ggplot2::aes(x = year, y = mean, fill = status)) +
+          ggplot2::geom_point(shape = 23, size = 6, col = "black", position = ggplot2::position_dodge(width = 0.5)) +
+          ggplot2::geom_errorbar(ggplot2::aes(ymin = mean - se, ymax = mean + se), width=.2, position = ggplot2::position_dodge(.5)) + ggplot2::xlab("Year") +
+          ggplot2::ylab("Average total abundance\nper sample (+/- SE)") +
+          ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+          ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+                                      expand = ggplot2::expansion(mult = c(0, 0.05))) +
+          ggplot2::scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
+          ggplot2::facet_wrap(~change, scales = "free") +
+          ggh4x::force_panelsizes(cols = c(9, 2)) +
+          ggplot_mpatheme()
+
+        # p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+        #   ggplot2::geom_label(
+        #     x = 2021,
+        #     y = +Inf,
+        #     label = "\n\n method\nchange",
+        #     size = 5,
+        #     fill = "white",
+        #     check_overlap = TRUE,
+        #     label.size = NA)
       }
 
       p <- p +
@@ -1297,7 +1486,7 @@ generate_plots <- function() {
       p.height <- 3 * length(unique(temp2$trophic_group))
 
       ggplot2::ggsave(
-        paste0("inst/app/www/plots/", park.name, "_", methods, "_trophic.png"),
+        paste0("inst/app/www/plots/", "Fish_", park.name, "_", methods, "_trophic.png"),
         p,
         width = 10,
         height = p.height,
@@ -1382,15 +1571,31 @@ generate_plots <- function() {
         }
 
         if(methods %in% c("stereo-ROVs+UVC")){
-          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
-            ggplot2::geom_label(
-              x = 2021,
-              y = +Inf,
-              label = "\n\n method\nchange",
-              size = 5,
-              fill = "white",
-              check_overlap = TRUE,
-              label.size = NA)
+          temp3 <- temp3 %>%
+            dplyr::mutate(change = dplyr::if_else(year > 2018, "ROV", "1999 - 2018 UVC"))
+
+          vline <- data.frame(x = c(2020), change = "1999 - 2018 UVC")
+
+          p <- ggplot2::ggplot(temp2, ggplot2::aes(x = year, y = mean, fill = status)) +
+            ggplot2::geom_point(shape = 23, size = 5, col = "black", position = ggplot2::position_dodge(width = 0.5)) +
+            ggplot2::geom_errorbar(ggplot2::aes(ymin = mean - se, ymax = mean + se), width=.2, position = ggplot2::position_dodge(.5)) + ggplot2::xlab("Year") +
+            ggplot2::ylab("Average total abundance\nper sample (+/- SE)") +
+            ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
+            ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+                                        expand = ggplot2::expansion(mult = c(0, 0.05))) +
+            ggplot2::scale_fill_manual(values = c("Fished" = "#b9e6fb", "No-take" = "#7bbc63")) +
+            ggplot2::facet_wrap(dbca_sanctuary~change, scales = "free") +
+            ggh4x::force_panelsizes(cols = c(9, 2)) +
+            ggplot_mpatheme()
+          # p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
+          #   ggplot2::geom_label(
+          #     x = 2021,
+          #     y = +Inf,
+          #     label = "\n\n method\nchange",
+          #     size = 5,
+          #     fill = "white",
+          #     check_overlap = TRUE,
+          #     label.size = NA)
         }
 
         p
@@ -1398,7 +1603,7 @@ generate_plots <- function() {
         park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
 
         ggplot2::ggsave(
-          paste0("inst/app/www/plots/species/", park.name, "_", methods, "_", species, ".png"),
+          paste0("inst/app/www/plots/species/", "Fish_", park.name, "_", methods, "_", species, ".png"),
           p,
           width = 10,
           height = 3,
@@ -1505,7 +1710,7 @@ generate_plots <- function() {
 
 
         ggplot2::ggsave(
-          paste0("inst/app/www/plots/species/", park.name, "_", methods, "_", species, "_sanctuary.png"),
+          paste0("inst/app/www/plots/species/", "Fish_", park.name, "_", methods, "_", species, "_sanctuary.png"),
           p,
           width = 10,
           height = 3,
@@ -1639,7 +1844,7 @@ generate_plots <- function() {
       park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
 
       ggplot2::ggsave(
-        paste0("inst/app/www/plots/", park.name, "_", methods, "_cti.png"),
+        paste0("inst/app/www/plots/", "Fish_", park.name, "_", methods, "_cti.png"),
         p,
         width = 10,
         height = 3,

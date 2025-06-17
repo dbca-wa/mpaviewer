@@ -836,7 +836,7 @@ app_server <- function(input, output, session) {
       park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
       method <- input$fish.park.method.dropdown
 
-      img(src = paste0("www/plots/", park, "_", method, "_cti.png"), align = "left", width = "100%")
+      img(src = paste0("www/plots/", "Fish_", park, "_", method, "_cti.png"), align = "left", width = "100%")
     })
   })
 
@@ -850,7 +850,7 @@ app_server <- function(input, output, session) {
       park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
       method <- input$fish.park.method.dropdown
 
-      img(src = paste0("www/plots/", park, "_", method, "_total_abundance.png"), align = "left", width = "100%")
+      img(src = paste0("www/plots/", "Fish_", park, "_", method, "_total_abundance.png"), align = "left", width = "100%")
     })
   })
 
@@ -867,7 +867,7 @@ app_server <- function(input, output, session) {
 
 
         tagList(h4("Total abundance by site:"),
-                img(src = paste0("www/plots/", park, "_", method, "_total_abundance_site.png"), align = "left", width = "100%"))
+                img(src = paste0("www/plots/", "Fish_", park, "_", method, "_total_abundance_site.png"), align = "left", width = "100%"))
 
       }
     })
@@ -882,7 +882,7 @@ app_server <- function(input, output, session) {
       park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
       method <- input$fish.park.method.dropdown
 
-      img(src = paste0("www/plots/", park, "_", method, "_total_abundance_sanctuary.png"), align = "left", width = "100%")
+      img(src = paste0("www/plots/", "Fish_", park, "_", method, "_total_abundance_sanctuary.png"), align = "left", width = "100%")
     })
   })
 
@@ -910,7 +910,7 @@ app_server <- function(input, output, session) {
       park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
       method <- input$fish.park.method.dropdown
 
-      img(src = paste0("www/plots/", park, "_", method, "_total_abundance_zone.png"), align = "left", width = "100%")
+      img(src = paste0("www/plots/", "Fish_", park, "_", method, "_total_abundance_zone.png"), align = "left", width = "100%")
     })
   })
 
@@ -922,7 +922,7 @@ app_server <- function(input, output, session) {
       park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
       method <- input$fish.park.method.dropdown
 
-      img(src = paste0("www/plots/", park, "_", method, "_species_richness.png"), align = "left", width = "100%")
+      img(src = paste0("www/plots/", "Fish_", park, "_", method, "_species_richness.png"), align = "left", width = "100%")
       # img(src = paste0("www/images/fish_", park, ".jpg"), align = "right", width = "100%") # removed www from URL to get rid of golem
     })
   })
@@ -940,7 +940,7 @@ app_server <- function(input, output, session) {
 
 
         tagList(h4("Species richness by site:"),
-                img(src = paste0("www/plots/", park, "_", method, "_species_richness_site.png"), align = "left", width = "100%"))
+                img(src = paste0("www/plots/", "Fish_", park, "_", method, "_species_richness_site.png"), align = "left", width = "100%"))
 
       }
     })
@@ -955,7 +955,7 @@ app_server <- function(input, output, session) {
       park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
       method <- input$fish.park.method.dropdown
 
-      img(src = paste0("www/plots/", park, "_", method, "_species_richness_sanctuary.png"), align = "left", width = "100%")
+      img(src = paste0("www/plots/", "Fish_", park, "_", method, "_species_richness_sanctuary.png"), align = "left", width = "100%")
     })
   })
 
@@ -967,7 +967,7 @@ app_server <- function(input, output, session) {
       park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
       method <- input$fish.park.method.dropdown
 
-      img(src = paste0("www/plots/", park, "_", method, "_species_richness_zone.png"), align = "left", width = "100%")
+      img(src = paste0("www/plots/", "Fish_", park, "_", method, "_species_richness_zone.png"), align = "left", width = "100%")
     })
   })
 
@@ -979,7 +979,7 @@ app_server <- function(input, output, session) {
       park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
       method <- input$fish.park.method.dropdown
 
-      img(src = paste0("www/plots/", park, "_", method, "_top10.png"), align = "left", width = "100%")
+      img(src = paste0("www/plots/", "Fish_", park, "_", method, "_top10.png"), align = "left", width = "100%")
     })
   })
 
@@ -991,7 +991,7 @@ app_server <- function(input, output, session) {
       park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
       method <- input$fish.park.method.dropdown
 
-      img(src = paste0("www/plots/", park, "_", method, "_trophic.png"), align = "left", width = "100%")
+      img(src = paste0("www/plots/", "Fish_", park, "_", method, "_trophic.png"), align = "left", width = "100%")
     })
   })
 
@@ -1007,7 +1007,7 @@ app_server <- function(input, output, session) {
 
       print(dir())
 
-      file <- paste0("inst/app/www/plots/species/", park, "_", method, "_", species, "_KDE.png")
+      file <- paste0("inst/app/www/plots/species/", "Fish_", park, "_", method, "_", species, "_KDE.png")
 
       message(file)
 
@@ -1015,7 +1015,7 @@ app_server <- function(input, output, session) {
         print("The file exists!")
 
         tagList(h4(paste0("Kernel Density Estimate: ", species)),
-                img(src = paste0("www/plots/species/", park, "_", method, "_", species, "_KDE.png"), align = "left", width = "100%"))
+                img(src = paste0("www/plots/species/", "Fish_", park, "_", method, "_", species, "_KDE.png"), align = "left", width = "100%"))
 
       } else {
 
@@ -1201,7 +1201,7 @@ app_server <- function(input, output, session) {
       park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
       method <- input$fish.park.method.dropdown
 
-      img(src = paste0("www/plots/", park, "_", method, "_sum_targets.png"), align = "left", width = "100%")
+      img(src = paste0("www/plots/", "Fish_", park, "_", method, "_sum_targets.png"), align = "left", width = "100%")
     })
   })
 
@@ -1212,7 +1212,7 @@ app_server <- function(input, output, session) {
       park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
       method <- input$fish.park.method.dropdown
 
-      img(src = paste0("www/plots/", park, "_", method, "_sum_targets_sanctuary.png"), align = "left", width = "100%")
+      img(src = paste0("www/plots/", "Fish_", park, "_", method, "_sum_targets_sanctuary.png"), align = "left", width = "100%")
     })
   })
 
@@ -1223,7 +1223,7 @@ app_server <- function(input, output, session) {
       park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
       method <- input$fish.park.method.dropdown
 
-      img(src = paste0("www/plots/", park, "_", method, "_sum_all_targets.png"), align = "left", width = "100%")
+      img(src = paste0("www/plots/", "Fish_", park, "_", method, "_sum_all_targets.png"), align = "left", width = "100%")
     })
   })
 
@@ -1234,7 +1234,7 @@ app_server <- function(input, output, session) {
       park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
       method <- input$fish.park.method.dropdown
 
-      img(src = paste0("www/plots/", park, "_", method, "_sum_all_targets_sanctuary.png"), align = "left", width = "100%")
+      img(src = paste0("www/plots/", "Fish_", park, "_", method, "_sum_all_targets_sanctuary.png"), align = "left", width = "100%")
     })
   })
 
@@ -1248,7 +1248,7 @@ app_server <- function(input, output, session) {
       species <- stringr::str_replace_all(input$fish.park.fished.species.dropdown, c(" Targeted" = "", " Highly retained" = ""), "")
 
       tagList(h4(paste0("Total abundance of ", species, ":")),
-              img(src = paste0("www/plots/species/", park, "_", method, "_", species, ".png"), align = "left", width = "100%"))
+              img(src = paste0("www/plots/species/", "Fish_", park, "_", method, "_", species, ".png"), align = "left", width = "100%"))
 
 
     })
@@ -1265,7 +1265,7 @@ app_server <- function(input, output, session) {
       species <- stringr::str_replace_all(input$fish.park.fished.species.dropdown, c(" Targeted" = "", " Highly retained" = ""), "")
 
       tagList(h4(paste0("Total abundance of ", species, " by sanctuary:")),
-              img(src = paste0("www/plots/species/", park, "_", method, "_", species, "_sanctuary.png"), align = "left", width = "100%"))
+              img(src = paste0("www/plots/species/", "Fish_", park, "_", method, "_", species, "_sanctuary.png"), align = "left", width = "100%"))
     })
   })
 
@@ -1278,7 +1278,7 @@ app_server <- function(input, output, session) {
       species <- input$fish.park.all.species.dropdown
 
       tagList(h4(paste0("Total abundance of ", species, ":")),
-              img(src = paste0("www/plots/species/", park, "_", method, "_", species, ".png"), align = "left", width = "100%"))
+              img(src = paste0("www/plots/species/", "Fish_", park, "_", method, "_", species, ".png"), align = "left", width = "100%"))
     })
   })
 
@@ -1291,7 +1291,7 @@ app_server <- function(input, output, session) {
       species <- input$fish.park.all.species.dropdown
 
       tagList(h4(paste0("Total abundance of ", species, " by sanctuary:")),
-              img(src = paste0("www/plots/species/", park, "_", method, "_", species, "_sanctuary.png"), align = "left", width = "100%"))
+              img(src = paste0("www/plots/species/", "Fish_", park, "_", method, "_", species, "_sanctuary.png"), align = "left", width = "100%"))
     })
   })
 

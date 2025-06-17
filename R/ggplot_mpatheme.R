@@ -20,7 +20,7 @@ ggplot_mpatheme <- function() {
       axis.title.x = ggplot2::element_text(vjust = 0.3, size = 12),
       axis.title.y = ggplot2::element_text(vjust = 0.6, angle = 90, size = 12),
       axis.text.y = ggplot2::element_text(size = 12),
-      axis.text.x = ggplot2::element_text(size = 12, angle = 90, vjust = 0.5, hjust=1),
+      axis.text.x = ggplot2::element_text(size = dplyr::if_else((max(temp$year)-min(temp$year)) > 12, 8, 12), angle = 90, vjust = 0.5, hjust=1),
       axis.line.x = ggplot2::element_line(colour = "black", size = 0.5, linetype = "solid"),
       axis.line.y = ggplot2::element_line(colour = "black", size = 0.5, linetype = "solid"),
       strip.background = ggplot2::element_blank(),

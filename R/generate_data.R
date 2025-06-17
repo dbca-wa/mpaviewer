@@ -1367,8 +1367,6 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
   cti_park <- data.table::data.table(cti_park)
   cti_site <- data.table::data.table(cti_site)
 
-
-
   data.table::setkey(methods)
   data.table::setkey(acknowledgements)
   data.table::setkey(abundance_sum)
