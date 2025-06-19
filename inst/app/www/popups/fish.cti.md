@@ -1,4 +1,4 @@
-This indicator, commonly referred to as the Community Temperature Index (CTI),
+This indicator, commonly referred to as the Reef Fish Temperature Index (RFTI),
 is a community weighted mean of the thermal affinity for each fish species
 recorded on a survey. <br>
 <br>

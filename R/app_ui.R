@@ -231,7 +231,7 @@ app_ui <- function(request) {
                   conditionalPanel(
                     'input.fishparkmetric == "Whole assemblage"',
 
-                    h3("Community temperature index (CTI):", actionButton("park.cti", label = " ",
+                    h3("Reef fish temperature index (RFTI):", actionButton("park.cti", label = " ",
                                                         icon = icon("info"),
                                                         icon.library = "font awesome",
                                                         style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
@@ -422,7 +422,7 @@ app_ui <- function(request) {
               ),
               column(
                 width = 1,
-                actionButton("alert.marinepark",
+                actionButton("alert.coral.marinepark",
                              label = " ",
                              icon = icon("info"),
                              icon.library = "font awesome",
@@ -436,7 +436,7 @@ app_ui <- function(request) {
             conditionalPanel(
               'input.benthicparkmethoddropdown == "Coral cover"',
 
-              h3("Coral cover:", actionButton("park.ta", label = " ",
+              h3("Coral cover:", actionButton("park.coralcover", label = " ",
                                                   icon = icon("info"),
                                                   icon.library = "font awesome",
                                                   style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),

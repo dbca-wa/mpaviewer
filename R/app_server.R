@@ -1437,7 +1437,7 @@ app_server <- function(input, output, session) {
 
   observeEvent(input$park.cti,
                showModal(modalDialog(
-                 title = "What is community temperature index (CTI)?",
+                 title = "What is reef fish temperature index (RFTI)?",
                  includeHTML("inst/app/www/popups/fish.cti.html")))
   )
 
@@ -1959,5 +1959,24 @@ app_server <- function(input, output, session) {
 
       map
     })
+
+    ####### ►  Pop ups - marine park ----
+
+    observeEvent(
+      input$alert.coral.marinepark,
+
+      showModal(modalDialog(
+        title = input$benthic.park.coralcover.dropdown,
+        includeHTML(paste0("inst/app/www/popups/fish_",
+                           stringr::str_replace_all(tolower(input$benthic.park.coralcover.dropdown), c("marine park" = "", " " = "")),
+                           ".html"))
+      )
+      ))
+
+    observeEvent(input$park.coralcover,
+                 showModal(modalDialog(
+                   title = "How do we measure coral cover?",
+                   includeHTML("inst/app/www/popups/coral.cover.html")))
+    )
 }
 

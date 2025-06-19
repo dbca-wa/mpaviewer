@@ -167,7 +167,7 @@ generate_plots <- function() {
         ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                     expand = ggplot2::expansion(mult = c(0, 0.05))) +
         ggplot2::scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
-        ggh4x::facet_wrap2(ggplot2::vars(dbca_sanctuary), axes = "all", ncol = 3) +
+        ggh4x::facet_wrap2(ggplot2::vars(dbca_sanctuary), axes = "all", ncol = 3, scales = "free_y") +
         ggplot_mpatheme()
 
       gazetted <- unique(temp2$gazetted)
@@ -284,7 +284,7 @@ generate_plots <- function() {
                                       expand = ggplot2::expand_scale(mult = c(0, 0.05))) +
           ggplot2::scale_shape_manual(values = c("Consistently sampled" = 21, "Intermittently sampled" = 22)) +
           ggplot2::scale_fill_manual(values = c("Fished" = "#b9e6fb", "No-take" = "#7bbc63")) +
-          ggh4x::facet_wrap2(ggplot2::vars(site), axes = "all", ncol = 3) +
+          ggh4x::facet_wrap2(ggplot2::vars(site), axes = "all", ncol = 3, scales = "free_y") +
           ggplot_mpatheme()
 
         gazetted <- unique(temp2$gazetted)
@@ -1217,7 +1217,7 @@ generate_plots <- function() {
         ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                     expand = ggplot2::expansion(mult = c(0, 0.05))) +
         ggplot2::scale_fill_manual(values = c("Fished" = "#b9e6fb", "No-take" = "#7bbc63")) +
-        ggh4x::facet_wrap2(ggplot2::vars(dbca_sanctuary), axes = "all", ncol = 3) +
+        ggh4x::facet_wrap2(ggplot2::vars(dbca_sanctuary), axes = "all", ncol = 3, scales = "free_y") +
         ggplot_mpatheme()
 
       gazetted <- unique(temp2$gazetted)
@@ -1311,7 +1311,7 @@ generate_plots <- function() {
         ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                     expand = ggplot2::expansion(mult = c(0, 0.05))) +
         ggplot2::scale_fill_manual(values = c("Fished" = "#b9e6fb", "No-take" = "#7bbc63")) +
-        ggh4x::facet_wrap2(ggplot2::vars(dbca_sanctuary), axes = "all", ncol = 3) +
+        ggh4x::facet_wrap2(ggplot2::vars(dbca_sanctuary), axes = "all", ncol = 3, scales = "free_y") +
         ggplot_mpatheme()
 
       gazetted <- unique(temp2$gazetted)
@@ -1687,15 +1687,15 @@ generate_plots <- function() {
         }
 
         if(methods %in% c("stereo-ROVs+UVC")){
-          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
-            ggplot2::geom_label(
-              x = 2021,
-              y = +Inf,
-              label = "\n\n method\nchange",
-              size = 5,
-              fill = "white",
-              check_overlap = TRUE,
-              label.size = NA)
+          p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021, color = "Method change"), linetype = "dashed") #+
+            # ggplot2::geom_label(
+            #   x = 2021,
+            #   y = +Inf,
+            #   label = "\n\n method\nchange",
+            #   size = 3,
+            #   fill = "white",
+            #   check_overlap = TRUE,
+            #   label.size = NA)
         }
 
         p
@@ -1713,7 +1713,7 @@ generate_plots <- function() {
           paste0("inst/app/www/plots/species/", "Fish_", park.name, "_", methods, "_", species, "_sanctuary.png"),
           p,
           width = 10,
-          height = 3,
+          height = p.height,
           dpi = 300
         )
       }
@@ -1815,7 +1815,7 @@ generate_plots <- function() {
         ggplot2::geom_point(shape = 23, size = 4, col = "black", position = ggplot2::position_dodge(width = 0.5)) +
         ggplot2::scale_fill_manual(values = c("cadetblue"))+
         ggplot2::geom_errorbar(ggplot2::aes(ymin = cti - se, ymax = cti + se), width=.2, position = ggplot2::position_dodge(.5)) + ggplot2::xlab("Year") +
-        ggplot2::ylab("Average CTI (°C)\nper sample (+/- SE)") +
+        ggplot2::ylab("Average RFTI (°C)\nper sample (+/- SE)") +
         ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                     expand = ggplot2::expansion(mult = c(0, 0.05))) +
         ggplot_mpatheme()
