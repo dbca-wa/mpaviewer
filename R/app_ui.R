@@ -223,7 +223,7 @@ app_ui <- function(request) {
                     width = "100%",
                     "fishparkmetric",
                     "Choose a group of metrics to plot:",
-                    choices = c("Whole assemblage", "Individual species", "Target species", "Life history traits"),
+                    choices = c("Whole assemblage", "Individual species", "Target species", "Feeding guilds"),
                     multiple = FALSE,
                     selectize = TRUE
                   )#)
@@ -231,7 +231,7 @@ app_ui <- function(request) {
                   conditionalPanel(
                     'input.fishparkmetric == "Whole assemblage"',
 
-                    h3("Reef fish temperature index (RFTI):", actionButton("park.cti", label = " ",
+                    h3("Reef fish thermal index (RFTI):", actionButton("park.cti", label = " ",
                                                         icon = icon("info"),
                                                         icon.library = "font awesome",
                                                         style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
@@ -286,13 +286,13 @@ app_ui <- function(request) {
                   conditionalPanel(
                     'input.fishparkmetric == "Target species"',
 
-                    h4("Total abundance of top 5 highly targeted species:"),
+                    h4("Total abundance of highly retained demersal species:"),
                     withSpinner(uiOutput("fish.park.fished.sum.plot")),
 
                     h4("Total abundance of all targeted species:"),
                     withSpinner(uiOutput("fish.park.fished.all.sum.plot")),
 
-                    h4("Total abundance of top 5 highly targeted species by sanctuary:"),
+                    h4("Total abundance of highly retained demersal species by sanctuary:"),
                     withSpinner(uiOutput("fish.park.fished.sum.sanctuary.plot")),
 
                     h4("Total abundance of all targeted species by sanctuary:"),
@@ -334,8 +334,25 @@ app_ui <- function(request) {
                     ))
                   ),
                   conditionalPanel(
-                    'input.fishparkmetric == "Life history traits"',
-                    withSpinner(uiOutput("fish.park.trophic.plot"))
+                    'input.fishparkmetric == "Feeding guilds"',
+
+                    # h4("Piscivores:"),
+                    uiOutput("fish.park.trophic.pisc.plot"),
+
+                    # h4("Herbivores:"),
+                    withSpinner(uiOutput("fish.park.trophic.herb.plot")),
+
+                    # h4("Corallivores:"),
+                    withSpinner(uiOutput("fish.park.trophic.coral.plot")),
+
+                    # h4("Omnivores:"),
+                    withSpinner(uiOutput("fish.park.trophic.omni.plot")),
+
+                    # h4("Intertivores:"),
+                    withSpinner(uiOutput("fish.park.trophic.invert.plot")),
+
+                    # h4("Planktivores:"),
+                    withSpinner(uiOutput("fish.park.trophic.plank.plot"))
                   )
                 )
 

@@ -228,7 +228,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
                                                     #"point" = "BRUVS",
                                                     "transect" = "DOVs",
                                                     "transect" = "ROVs",
-                                                    "transect" = "UVC_ROV")) %>%
+                                                    "transect" = "UVC")) %>%
     dplyr::distinct(marine_park, indicator, read_method, method)
 
   unique(folders$marine_park)
@@ -285,7 +285,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
                                                #"stereo-BRUVs" = "BRUVS",
                                                "stereo-DOVs" = "DOVs",
                                                "stereo-ROVs" = "ROVs",
-                                               "stereo-ROVs+UVC" = "UVC_ROV")) %>%
+                                               "UVC" = "UVC")) %>%
     dplyr::mutate(year = as.numeric(substr(campaignid, 1, 4))) %>%
     dplyr::left_join(.,complete_sites) %>%
     dplyr::left_join(.,complete_needed_campaigns) %>%
@@ -335,7 +335,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
 
   ## ► Summarise to find sampling effort, this is used for the leaflet maps ----
   sampling_effort <- metadata %>%
-    dplyr::group_by(marine_park, method, sample, status, site, location, latitude_dd, longitude_dd, depth_m, complete) %>%
+    dplyr::group_by(marine_park, method, sample, year, status, site, location, latitude_dd, longitude_dd, depth_m, complete) %>%
     dplyr::summarise(number_of_times_sampled = dplyr::n()) %>%
     dplyr::ungroup()
 
@@ -388,13 +388,14 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
                                                #"stereo-BRUVs" = "BRUVS",
                                                "stereo-DOVs" = "DOVs",
                                                "stereo-ROVs" = "ROVs",
-                                               "stereo-ROVs+UVC" = "UVC_ROV")) %>%
+                                               "UVC" = "UVC")) %>%
     # Attempt to partially tidy the data ---
     dplyr::filter(!family %in% c("Unknown", NA)) %>%
     dplyr::mutate(species = dplyr::if_else(is.na(species), "spp", species)) %>%
     dplyr::mutate(genus = dplyr::if_else(is.na(genus), family, genus)) %>%
     dplyr::mutate(species = dplyr::if_else(species == "spp.", "spp", species)) %>% #ngari capes Pseudocaranx spp old data
-    dplyr::mutate(genus = dplyr::if_else(genus %in% "Unknown", family, genus))%>% dplyr::filter(!campaignid %in% c("2021-05_JurienBay.MP.Monitoring_UVC"))
+    dplyr::mutate(genus = dplyr::if_else(genus %in% "Unknown", family, genus))%>%
+    dplyr::filter(!campaignid %in% c("2021-05_JurienBay.MP.Monitoring_UVC"))
 
   unique(count$campaignid)
   unique(count$method)
@@ -442,7 +443,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
                                                #"stereo-BRUVs" = "BRUVS",
                                                "stereo-DOVs" = "DOVs",
                                                "stereo-ROVs" = "ROVs",
-                                               "stereo-ROVs+UVC" = "UVC_ROV")) %>%
+                                               "UVC" = "UVC")) %>%
     dplyr::filter(!is.na(length)) %>%
     # Attempt to partially tidy the data ---
     dplyr::filter(!family %in% c("Unknown", NA)) %>%
@@ -505,7 +506,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
                                                #"stereo-BRUVs" = "BRUVS",
                                                "stereo-DOVs" = "DOVs",
                                                "stereo-ROVs" = "ROVs",
-                                               "stereo-ROVs+UVC" = "UVC_ROV")) %>%
+                                               "UVC" = "UVC")) %>%
 
     # Attempt to partially tidy the data ---
     dplyr::filter(!family %in% c("Unknown", NA)) %>%
@@ -559,7 +560,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
                                                #"stereo-BRUVs" = "BRUVS",
                                                "stereo-DOVs" = "DOVs",
                                                "stereo-ROVs" = "ROVs",
-                                               "stereo-ROVs+UVC" = "UVC_ROV")) %>%
+                                               "UVC" = "UVC")) %>%
     dplyr::mutate(sample = stringr::str_replace_all(.$sample, "SIMP_20200323_PP_DOV_3.", "SIMP_20200323_PP_DOV_3"))%>%
     dplyr::filter(!campaignid %in% c("2021-05_JurienBay.MP.Monitoring_UVC"))  %>% # to fix mistake
     dplyr::filter(!is.na(number))
@@ -777,7 +778,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
   unique(abundance$method)
 
   test <- abundance %>%
-    dplyr::filter(method %in% "stereo-ROVs+UVC")
+    dplyr::filter(method %in% "UVC")
 
   complete_length_summary <- complete_length %>%
     dplyr::group_by(marine_park, method, campaignid, sample) %>%
@@ -989,9 +990,9 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::ungroup() %>%
     dplyr::select(campaignstatus, med_length)
 
-  test <- target_mass_length %>%
-    dplyr::group_by(campaignid, status, scientific_name) %>%
-    dplyr::distinct()
+  # test <- target_mass_length %>%
+  #   dplyr::group_by(campaignid, status, scientific_name) %>%
+  #   dplyr::distinct()
 
   target_mass_threed <- dplyr::left_join(fished_all_species_dd, complete_length, by = "scientific_name") %>%
     dplyr::filter(number > 0) %>%
@@ -1001,9 +1002,9 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::mutate(campaignstatus = paste0(campaignid, status, scientific_name)) %>%
     dplyr::left_join(., target_medians, by = "campaignstatus")
 
-  dplyr::if_else(nrow(target_medians)==nrow(), "GOOD - Number of target species matches number of medians", "NO GOOD - Number of target species DOES NOT match number of medians")
+  # dplyr::if_else(nrow(target_medians)==nrow(), "GOOD - Number of target species matches number of medians", "NO GOOD - Number of target species DOES NOT match number of medians")
 
-## _______________________________________________________ ----
+  ## _______________________________________________________ ----
   ##                         ALL METRICS                     ----
   ## _______________________________________________________ ----
 
@@ -1055,7 +1056,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
   )
 
   wampa <- wampa %>% dplyr::filter(!waname %in% c("Unassigned", "Marine Management Area", "Marine Nature Reserve", "Fish Habitat Protection Area", "Marine Park")) # TODO will need to include marine park soon
-  unique(test$NAME)
+  # unique(test$NAME)
 
   unique(wampa$waname)
 

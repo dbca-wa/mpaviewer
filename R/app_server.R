@@ -610,7 +610,8 @@ app_server <- function(input, output, session) {
                        label = ~as.character(sample),
                        color = "black", weight = 0.5,
                        fillColor = ~marker_col,
-                       opacity = 1, radius = 7) %>%
+                       opacity = 1, radius = 7,
+                       group = ~method) %>%
 
       # # UVC
       # addCircleMarkers(data = uvc,
@@ -700,6 +701,8 @@ app_server <- function(input, output, session) {
     # Create the basemap with marine parks and legend
     pal <- data.frame(marker_col = c("#F1652C", "yellow", "#2ECFE2","#2ECFE2", "#739AF8"), method = c("stereo-DOVs", "stereo-BRUVs", "stereo-ROVs","stereo-ROVs+UVC", "UVC"))
     dat <- dplyr::left_join(dat, pal, by = "method")
+    groups <- dat %>%
+      dplyr::distinct(year)
 
     map <- leaflet_basemap(dat) %>%
       fitBounds(~ min(longitude_dd), ~ min(latitude_dd), ~ max(longitude_dd), ~ max(latitude_dd)) %>%
@@ -714,18 +717,18 @@ app_server <- function(input, output, session) {
                                 lat = ~latitude_dd,
                                 popup = ~content,
                                 label = ~as.character(sample),
-                                color = "grey", weight = 1,
+                                color = "black", weight = 1,
                                 fillColor = ~marker_col,
                                 opacity = 1, radius = 8,
-                                group = "Sampling locations") %>%
-      addLegend(
+                                group = ~year) %>% #"Sampling locations"
+      leaflet::addLayersControl(data = dat,
+        overlayGroups = ~year,
+        options = layersControlOptions(collapsed = FALSE)
+      ) %>%
+      leaflet::addLegend(
         pal = mpa_data$state_pal, values = mpa_data$state_mp$zone, opacity = 1,
         title = "Zones",
         position = "bottomleft", group = "Marine Parks"
-      ) %>%
-      addLayersControl(
-        overlayGroups = c("Sampling locations", "Marine Parks"),
-        options = layersControlOptions(collapsed = FALSE)
       )
 
     map
@@ -892,7 +895,7 @@ app_server <- function(input, output, session) {
            "Recreation" = "#F8EE75",
            "General Use" = "#BBE3EF",
            "SP Benthic Protection" = "#CAC3D5",
-           "Outside Park" = "#bebebe",
+           "Outside Park" = "#B3B3B3",
            "Conservation Area" = "#C0B134",
            "Marine Management Area" = "#b7cfe1",
            "SP Seagrass Protection" = "#AB9ECC",
@@ -984,16 +987,80 @@ app_server <- function(input, output, session) {
   })
 
   ####### ►  Trophic group ----
+
+  #### Piscivore ---
   observeEvent(input$fish.park.dropdown, {
-    output$fish.park.trophic.plot <- renderUI({
+    output$fish.park.trophic.pisc.plot <- renderUI({
       req(input$fish.park.dropdown, input$fish.park.method.dropdown)
 
       park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
       method <- input$fish.park.method.dropdown
 
-      img(src = paste0("www/plots/", "Fish_", park, "_", method, "_trophic.png"), align = "left", width = "100%")
+      img(src = paste0("www/plots/", "Fish_", park, "_", method, "_trophic_Piscivore.png"), align = "left", width = "100%")
     })
   })
+
+  #### Herbivore ---
+  observeEvent(input$fish.park.dropdown, {
+    output$fish.park.trophic.herb.plot <- renderUI({
+      req(input$fish.park.dropdown, input$fish.park.method.dropdown)
+
+      park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
+      method <- input$fish.park.method.dropdown
+      pics <- list.files(path = "www/plots", full.names = TRUE, pattern = ".png")
+
+      img(src = paste0("www/plots/", "Fish_", park, "_", method, "_trophic_Herbivore.png"), align = "left", width = "100%")
+    })
+  })
+
+  #### Corallivore ---
+  observeEvent(input$fish.park.dropdown, {
+    output$fish.park.trophic.coral.plot <- renderUI({
+      req(input$fish.park.dropdown, input$fish.park.method.dropdown)
+
+      park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
+      method <- input$fish.park.method.dropdown
+
+      img(src = paste0("www/plots/", "Fish_", park, "_", method, "_trophic_Corallivore.png"), align = "left", width = "100%")
+    })
+  })
+
+  #### Omnivore ---
+  observeEvent(input$fish.park.dropdown, {
+    output$fish.park.trophic.omni.plot <- renderUI({
+      req(input$fish.park.dropdown, input$fish.park.method.dropdown)
+
+      park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
+      method <- input$fish.park.method.dropdown
+
+      img(src = paste0("www/plots/", "Fish_", park, "_", method, "_trophic_Omnivore.png"), align = "left", width = "100%")
+    })
+  })
+
+  #### Invertivore ---
+  observeEvent(input$fish.park.dropdown, {
+    output$fish.park.trophic.invert.plot <- renderUI({
+      req(input$fish.park.dropdown, input$fish.park.method.dropdown)
+
+      park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
+      method <- input$fish.park.method.dropdown
+
+      img(src = paste0("www/plots/", "Fish_", park, "_", method, "_trophic_Invertivore.png"), align = "left", width = "100%")
+    })
+  })
+
+  #### Planktivore ---
+  observeEvent(input$fish.park.dropdown, {
+    output$fish.park.trophic.plank.plot <- renderUI({
+      req(input$fish.park.dropdown, input$fish.park.method.dropdown)
+
+      park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
+      method <- input$fish.park.method.dropdown
+
+      img(src = paste0("www/plots/", "Fish_", park, "_", method, "_trophic_Planktivore.png"), align = "left", width = "100%")
+    })
+  })
+
 
   ####### ►  KDE plot ----
   # 20 individuals min to plot a line (KDE). Depends on scale. If zones in one year then you need 20 in the zone for that year.
@@ -1248,7 +1315,7 @@ app_server <- function(input, output, session) {
       species <- stringr::str_replace_all(input$fish.park.fished.species.dropdown, c(" Targeted" = "", " Highly retained" = ""), "")
 
       tagList(h4(paste0("Total abundance of ", species, ":")),
-              img(src = paste0("www/plots/species/", "Fish_", park, "_", method, "_", species, ".png"), align = "left", width = "100%"))
+              img(src = paste0("www/plots/species/", "Fish_", park, "_", method, "_", species, "_targeted.png"), align = "left", width = "100%"))
 
 
     })
