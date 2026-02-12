@@ -627,16 +627,19 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     tidyr::replace_na(list(number = 0)) %>%
     dplyr::select(marine_park, campaignid, method, sample, family, genus, species, number, length) %>%
     dplyr::left_join(metadata) %>%
-    dplyr::mutate(scientific_name = paste(genus, species, sep = " ")) %>%
-    dplyr::left_join(common_names) %>%
-    dplyr::mutate(scientific_name = paste0(scientific_name, " (", australian_common_name, ")")) %>%
+    # dplyr::mutate(scientific_name = paste(genus, species, sep = " ")) %>%
+    # dplyr::left_join(common_names) %>%
+    # dplyr::mutate(scientific_name = paste0(scientific_name, " (", australian_common_name, ")")) %>%
     dplyr::mutate(id = paste(campaignid, sample)) %>%
 
     # Attempt to partially tidy the data ---
     dplyr::filter(!family %in% c("Unknown", NA)) %>%
     dplyr::mutate(species = dplyr::if_else(is.na(species), "spp", species)) %>%
     dplyr::mutate(genus = dplyr::if_else(is.na(genus), family, genus)) %>%
-    dplyr::mutate(genus = dplyr::if_else(genus %in% "Unknown", family, genus))
+    dplyr::mutate(genus = dplyr::if_else(genus %in% "Unknown", family, genus)) %>%
+    dplyr::mutate(scientific_name = paste(genus, species, sep = " ")) %>%
+    dplyr::left_join(common_names) %>%
+    dplyr::mutate(scientific_name = paste0(scientific_name, " (", australian_common_name, ")"))
 
   length(unique(complete_length$id))
   length(unique(complete_length$scientific_name))
@@ -1003,6 +1006,42 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::left_join(., target_medians, by = "campaignstatus")
 
   # dplyr::if_else(nrow(target_medians)==nrow(), "GOOD - Number of target species matches number of medians", "NO GOOD - Number of target species DOES NOT match number of medians")
+
+  # Mass for B20 Metric ----
+
+  CE.LH <- readRDS(url("https://github.com/GlobalArchiveManual/CheckEM/raw/main/annotation-schema/output/fish/schema/australia_life-history.RDS")) %>%
+    #filter to Australia
+    dplyr::filter(global_region == "Australia") %>%
+    dplyr::filter(grepl('North-west|South-west', marine_region)) %>%
+    dplyr::mutate(marine_region_mass = ifelse(grepl('North-west', marine_region) & grepl('South-west', marine_region), "WA",
+                                  ifelse(grepl('North-west', marine_region), "North-west",
+                                         ifelse(grepl('South-west', marine_region), "South-west", NA))),
+                  scientific_name = paste0(scientific_name, " (", australian_common_name, ")")) %>%
+    dplyr::filter(!species == "spp") %>%
+    dplyr::select(scientific_name, species, fb_length_weight_measure, fb_a, fb_b, fb_a_ll, fb_b_ll)
+
+  B20_mass_values <- CE.LH %>%
+    dplyr::group_by(genus, marine_region_mass) %>%
+    dplyr::summarise(fb_a = mean(fb_a), fb_b = mean(fb_b), fb_a_ll = mean(fb_b_ll), fb_b_ll = mean(fb_b_ll)) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(!fb_a == is.na(fb_a)) %>%
+    dplyr::mutate(species = "spp",
+                  scientific_name = paste0(genus, " ", species, " (NA)"))
+
+  B20_mass <- complete_length %>%
+    dplyr::filter(length >= 200) %>%
+    dplyr::left_join(CE.LH, by = "scientific_name") %>%
+    mutate(length.cm = length/10) %>%
+    mutate(adjlength=(length.cm*fb_b_ll)+fb_a_ll)%>%
+    mutate(adjlength=as.numeric(adjlength))%>%
+    mutate(biomass.g=(adjlength^fb_b)*fb_a*number)%>%
+    mutate(biomass.kg = biomass.g/1000) %>%
+    mutate(biomass.kg = round(biomass.kg, 2)) %>%
+    mutate(biomass.g = round(biomass.g, 2)) %>%
+    mutate(length = as.numeric(length))
+    # select(c(-FB.Max,-AdjLength, -aLL, -bLL, -a, -b, -Length.cm)) %>%
+    # relocate(Genus_species, .before = Family)
+
 
   ## _______________________________________________________ ----
   ##                         ALL METRICS                     ----

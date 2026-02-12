@@ -5,9 +5,12 @@
 # googlesheets4::gs4_auth()
 
 ## If CheckEM package has changed you will need to remove the package and reinstall ----
+## deactivate renv before trying to install CheckEM --
+# renv::::deactivate()
 # remove.packages("CheckEM")
 # renv::install("GlobalArchiveManual/CheckEM")
-# devtools::install_github("GlobalArchiveManual/CheckEM")
+# remotes::install_github("GlobalArchiveManual/CheckEM")
+
 # library(CheckEM)
 
 # Step 1. Load all functions from package ----
