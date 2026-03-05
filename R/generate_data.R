@@ -111,7 +111,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     CheckEM::clean_names() %>%
     dplyr::select(!complex_functional_group) %>%
     dplyr::rename(trophic_group = simple_functional_group) #%>%
-    #dplyr::glimpse()
+  #dplyr::glimpse()
 
   # unique(life_history$trophic_group)
 
@@ -272,7 +272,6 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::mutate(latitude_dd = as.numeric(latitude_dd),
                   longitude_dd = as.numeric(longitude_dd)) %>%
     dplyr::left_join(zoning) %>%
-
     dplyr::mutate(status = stringr::str_replace_all(.$status, c("Sanctuary" = "No-take",
                                                                 "No Take" = "No-take",
                                                                 "MPA" = "No-take",
@@ -286,7 +285,8 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
                                                "stereo-DOVs" = "DOVs",
                                                "stereo-ROVs" = "ROVs",
                                                "UVC" = "UVC")) %>%
-    dplyr::mutate(year = as.numeric(substr(campaignid, 1, 4))) %>%
+    # dplyr::mutate(year = as.numeric(substr(campaignid, 1, 4))) %>%
+    dplyr::mutate(year = as.numeric(str_extract(campaignid, "\\d{4}"))) %>% # Claude updated here, Ningaloo campaign id was breaking this (DR2024-02_CSIRO_Ningaloo_stereoBRUVs)
     dplyr::left_join(.,complete_sites) %>%
     dplyr::left_join(.,complete_needed_campaigns) %>%
     dplyr::mutate(complete = dplyr::if_else(is.na(complete_needed), "Consistently sampled", complete)) %>%
@@ -295,11 +295,11 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::mutate(dbca_zone = as.character(dbca_zone)) %>%
 
     dplyr::mutate(dbca_zone = stringr::str_replace_all(dbca_zone, c("Sanctaury" = "Sanctuary",
-                                                           "SP Benthic" = "SP Benthic Protection",
-                                                           "SP Benthic Protection Protection" = "SP Benthic Protection",
-                                                           "Marine Management Area" = "General Use",
-                                                           "Marine" = "",
-                                                           "Recreational" = "Recreation"))) %>%
+                                                                    "SP Benthic" = "SP Benthic Protection",
+                                                                    "SP Benthic Protection Protection" = "SP Benthic Protection",
+                                                                    "Marine Management Area" = "General Use",
+                                                                    "Marine" = "",
+                                                                    "Recreational" = "Recreation"))) %>%
 
     dplyr::select(marine_park, method, campaignid, sample, latitude_dd, longitude_dd, date_time,
                   location, status, site,
@@ -393,7 +393,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::filter(!family %in% c("Unknown", NA)) %>%
     dplyr::mutate(species = dplyr::if_else(is.na(species), "spp", species)) %>%
     dplyr::mutate(genus = dplyr::if_else(is.na(genus), family, genus)) %>%
-    dplyr::mutate(species = dplyr::if_else(species == "spp.", "spp", species)) %>% #ngari capes Pseudocaranx spp old data
+    dplyr::mutate(species = dplyr::if_else(species == "spp.", "spp", species)) %>% # Ngari capes Pseudocaranx spp old data
     dplyr::mutate(genus = dplyr::if_else(genus %in% "Unknown", family, genus))%>%
     dplyr::filter(!campaignid %in% c("2021-05_JurienBay.MP.Monitoring_UVC"))
 
@@ -464,7 +464,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::distinct(campaignid) %>%
     dplyr::filter(!campaignid %in% c("2021-05_JurienBay.MP.Monitoring_UVC")) %>%
     dplyr::pull("campaignid") #%>%
-    #dplyr::glimpse()
+  #dplyr::glimpse()
 
   # Read in points ----
   points <- data.frame()
@@ -682,7 +682,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::filter(!method %in% c("stereo-BRUVs")) %>%
     dplyr::filter(campaignid %in% c(em_campaigns)) %>%
     dplyr::as_data_frame()#%>%
-    #dplyr::glimpse()
+  #dplyr::glimpse()
 
   #unique(dov_abundance$campaignid)
   # 2017-04_Shoalwater.MP.Monitoring_stereoDOVs
@@ -946,14 +946,14 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::ungroup() %>%
     dplyr::mutate(mean_cti = total_cti/total_maxn) %>%
     #dplyr::filter(mean_cti > 0) %>%
-    dplyr::mutate(year = stringr::str_sub(campaignid, 0, 4))
+    dplyr::mutate(year = stringr::str_extract(campaignid, "\\d{4}")) # Updated here, one campaignID was breaking this
 
   cti_park <- cti_site %>%
     tidyr::drop_na(mean_cti) %>%
     dplyr::group_by(marine_park, method, campaignid) %>%
     dplyr::summarise(n = n(), cti = mean(mean_cti), se = plotrix::std.error(mean_cti, na.rm = TRUE), sd = sd(mean_cti, na.rm = TRUE)) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(year = stringr::str_sub(campaignid, 0, 4))
+    dplyr::mutate(year = stringr::str_extract(campaignid, "\\d{4}")) # Updated here, one campaignID was breaking this
 
   # TARGET SPECIES MASS Metric ----
 
@@ -1014,11 +1014,10 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::filter(global_region == "Australia") %>%
     dplyr::filter(grepl('North-west|South-west', marine_region)) %>%
     dplyr::mutate(marine_region_mass = ifelse(grepl('North-west', marine_region) & grepl('South-west', marine_region), "WA",
-                                  ifelse(grepl('North-west', marine_region), "North-west",
-                                         ifelse(grepl('South-west', marine_region), "South-west", NA))),
+                                              ifelse(grepl('North-west', marine_region), "North-west",
+                                                     ifelse(grepl('South-west', marine_region), "South-west", NA))),
                   scientific_name = paste0(scientific_name, " (", australian_common_name, ")")) %>%
-    dplyr::filter(!species == "spp") %>%
-    dplyr::select(scientific_name, species, fb_length_weight_measure, fb_a, fb_b, fb_a_ll, fb_b_ll)
+    dplyr::filter(!species == "spp")
 
   B20_mass_values <- CE.LH %>%
     dplyr::group_by(genus, marine_region_mass) %>%
@@ -1030,17 +1029,20 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
 
   B20_mass <- complete_length %>%
     dplyr::filter(length >= 200) %>%
-    dplyr::left_join(CE.LH, by = "scientific_name") %>%
-    mutate(length.cm = length/10) %>%
-    mutate(adjlength=(length.cm*fb_b_ll)+fb_a_ll)%>%
-    mutate(adjlength=as.numeric(adjlength))%>%
-    mutate(biomass.g=(adjlength^fb_b)*fb_a*number)%>%
-    mutate(biomass.kg = biomass.g/1000) %>%
-    mutate(biomass.kg = round(biomass.kg, 2)) %>%
-    mutate(biomass.g = round(biomass.g, 2)) %>%
-    mutate(length = as.numeric(length))
-    # select(c(-FB.Max,-AdjLength, -aLL, -bLL, -a, -b, -Length.cm)) %>%
-    # relocate(Genus_species, .before = Family)
+    dplyr::left_join(CE.LH %>%
+                       dplyr::select(scientific_name, species, fb_length_weight_measure,
+                                     fb_a, fb_b, fb_a_ll, fb_b_ll),
+                     by = "scientific_name") %>%
+    dplyr::mutate(length.cm = length/10) %>%
+    dplyr::mutate(adjlength = (length.cm*fb_b_ll)+fb_a_ll)%>%
+    dplyr::mutate(adjlength = as.numeric(adjlength))%>%
+    dplyr::mutate(biomass.g = (adjlength^fb_b)*fb_a*number)%>%
+    dplyr::mutate(biomass.kg = biomass.g/1000) %>%
+    dplyr::mutate(biomass.kg = round(biomass.kg, 2)) %>%
+    dplyr::mutate(biomass.g = round(biomass.g, 2)) %>%
+    dplyr::mutate(length = as.numeric(length))
+  # select(c(-FB.Max,-AdjLength, -aLL, -bLL, -a, -b, -Length.cm)) %>%
+  # relocate(Genus_species, .before = Family)
 
 
   ## _______________________________________________________ ----
@@ -1062,84 +1064,112 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
   fished_all_complete_length <- dplyr::semi_join(complete_length, fished_all_species) %>%
     dplyr::filter(number > 0)
 
-  state_mp <- sf::st_read(here::here("inst/data/spatial/WA_MPA_2018.shp"))
+  # state_mp <- sf::st_read(here::here("inst/data/spatial/WA_MPA_2018.shp")) # Gets overwritten anyways
 
-  wampa  <- sf::st_read(here::here("inst/data/spatial/WA_MPA_2020_SP.shp"))                          # all wa mpas
-  # simplify state parks names
-  wampa$waname <- gsub("( \\().+(\\))", "", wampa$ZONE_TYPE)
-  wampa$waname <- gsub(" [1-4]", "", wampa$waname)
-  # ab_mpa$waname[ab_mpa$ZONE_TYPE == unique(ab_mpa$ZONE_TYPE)[14]] <-
-  #   c("Special Purpose Zone\n(Habitat Protection)")
+  #____________________________________________________________________________#
+  # Old code chunk to get marine parks
+  # Replace with newer shapefile - leave old version in case some columns are necessary
 
-  # TODO add Rottnest
+  # wampa  <- sf::st_read(here::here("inst/data/spatial/WA_MPA_2020_SP.shp"))                          # all wa mpas
+  # # simplify state parks names
+  # wampa$waname <- gsub("( \\().+(\\))", "", wampa$ZONE_TYPE)
+  # wampa$waname <- gsub(" [1-4]", "", wampa$waname)
+  # # ab_mpa$waname[ab_mpa$ZONE_TYPE == unique(ab_mpa$ZONE_TYPE)[14]] <-
+  # #   c("Special Purpose Zone\n(Habitat Protection)")
+  #
+  # # TODO add Rottnest
+  #
+  # wampa$waname[wampa$NAME == "Hamelin Pool"]     <- "Marine Nature Reserve"
+  # wampa$waname[wampa$NAME == "Abrolhos Islands"] <- "Fish Habitat Protection Area"
+  #
+  # wampa$waname <- dplyr::recode(wampa$waname,
+  #                               "General Use" = "General Use",
+  #                               "Special Purpose Zone (Shore Based Activities)" =
+  #                                 "Special Purpose Zone\n(Shore Based Activities)",
+  #                               "Special Purpose Zone (Seagrass Protection) (IUCN IV)" = "Special Purpose Zone",
+  #                               "MMA" = "Marine Management Area",
+  #                               "MP" = "Marine Park",
+  #                               "Special Purpose Zone" = "Special Purpose",
+  #                               "Sanctuary Zone" = "Sanctuary (no-take)",
+  #                               "General Use Zone" = "General Use",
+  #                               "Recreation Area" = "Recreation",
+  #                               "Sanctuary Area" = "Sanctuary (no-take)",
+  #                               "Recreation Zone" = "Recreation",
+  #                               "Conservation Area" = "Conservation (no-take)",
+  #                               "General Use Area" = "General Use",
+  #
+  # )
+  #
+  # wampa <- wampa %>% dplyr::filter(!waname %in% c("Unassigned", "Marine Management Area", "Marine Nature Reserve", "Fish Habitat Protection Area", "Marine Park")) # TODO will need to include marine park soon
+  # # unique(test$NAME)
+  #
+  # unique(wampa$waname)
+  #
+  #
+  # # # filter out unassigned and unclassified
+  # # state_mp <- state_mp[!state_mp$ZONE_TYPE %in% c("Unassigned (IUCN IA)", "Unassigned (IUCN II)", "Unassigned (IUCN III)", "Unassigned (IUCN IV)", "Unassigned (IUCN VI)", "MMA (Unclassified) (IUCN VI)", "MP (Unclassified) (IUCN VI)"), ]
+  # # state_mp$zone <- stringr::str_replace_all(state_mp$ZONE_TYPE, c("[^[:alnum:]]" = " "))
+  # # state_mp$zone <- stringr::str_replace_all(state_mp$zone, c(
+  # #   "Conservation Area  IUCN IA " = "Conservation (no-take)",
+  # #   "General Use  IUCN II " = "General Use",
+  # #   "General Use Area  IUCN VI " = "General Use",
+  # #   "General Use Zone  IUCN II " = "General Use",
+  # #   "Recreation Area  IUCN II " = "Recreation",
+  # #   "Recreation Zone  IUCN II " = "Recreation",
+  # #   "Sanctuary Area  IUCN VI " = "Sanctuary (no-take)",
+  # #   "Sanctuary Zone  IUCN IA " = "Sanctuary (no-take)",
+  # #   "Special Purpose Zone  Aquaculture   IUCN VI " = "Special Purpose",
+  # #   "Special Purpose Zone  Benthic Protection   IUCN IV " = "Special Purpose",
+  # #   "Special Purpose Zone  Dugong Protection   IUCN IV " = "Special Purpose",
+  # #   "Special Purpose Zone  Habitat Protection   IUCN IV " = "Special Purpose",
+  # #   "Special Purpose Zone  Pearling   IUCN VI " = "Special Purpose",
+  # #   "Special Purpose Zone  Puerulus   IUCN IA " = "Special Purpose",
+  # #   "Special Purpose Zone  Scientific Reference   IUCN II " = "Special Purpose",
+  # #   "Special Purpose Zone  Scientific Reference   IUCN VI " = "Special Purpose",
+  # #   "Special Purpose Zone  Seagrass Protection   IUCN IV " = "Special Purpose",
+  # #   "Special Purpose Zone  Shore Based Activities   IUCN II " = "Special Purpose",
+  # #   "Special Purpose Zone  Wildlife Conservation   IUCN VI " = "Special Purpose",
+  # #   "Special Purpose Zone  Wildlife Viewing and Protection   IUCN IV " = "Special Purpose",
+  # #   "Special Purpose Zone 1  Shore based Activities   IUCN II " = "Special Purpose",
+  # #   "Special Purpose Zone 2  Shore based Activities   IUCN II " = "Special Purpose",
+  # #   "Special Purpose Zone 3  Shore based Activities   IUCN II " = "Special Purpose",
+  # #   "Special Purpose Zone 3  Shore based Activities   IUCN VI " = "Special Purpose",
+  # #   "Special Purpose Zone 4  Shore based Activities   IUCN II " = "Special Purpose"
+  # # ))
+  #
+  # state_mp <- wampa
+  # state_mp$zone <- as.factor(state_mp$waname)
+  # state_mp$zone <- forcats::fct_relevel(
+  #   state_mp$zone,
+  #   "Conservation (no-take)",
+  #   "Sanctuary (no-take)",
+  #   "Recreation",
+  #   "General Use",
+  #   "Special Purpose"
+  # )
+  #
+  # state_pal <- leaflet::colorFactor(c(
+  #   "#bfaf02", # conservation
+  #   "#7bbc63", # sanctuary = National Park
+  #   "#fdb930", # recreation
+  #   "#b9e6fb", # general use
+  #   "#ccc1d6" # special purpose
+  # ), state_mp$zone)
 
-  wampa$waname[wampa$NAME == "Hamelin Pool"]     <- "Marine Nature Reserve"
-  wampa$waname[wampa$NAME == "Abrolhos Islands"] <- "Fish Habitat Protection Area"
-
-  wampa$waname <- dplyr::recode(wampa$waname,
-                                "General Use" = "General Use",
-                                "Special Purpose Zone (Shore Based Activities)" =
-                                  "Special Purpose Zone\n(Shore Based Activities)",
-                                "Special Purpose Zone (Seagrass Protection) (IUCN IV)" = "Special Purpose Zone",
-                                "MMA" = "Marine Management Area",
-                                "MP" = "Marine Park",
-                                "Special Purpose Zone" = "Special Purpose",
-                                "Sanctuary Zone" = "Sanctuary (no-take)",
-                                "General Use Zone" = "General Use",
-                                "Recreation Area" = "Recreation",
-                                "Sanctuary Area" = "Sanctuary (no-take)",
-                                "Recreation Zone" = "Recreation",
-                                "Conservation Area" = "Conservation (no-take)",
-                                "General Use Area" = "General Use",
-
-  )
-
-  wampa <- wampa %>% dplyr::filter(!waname %in% c("Unassigned", "Marine Management Area", "Marine Nature Reserve", "Fish Habitat Protection Area", "Marine Park")) # TODO will need to include marine park soon
-  # unique(test$NAME)
-
-  unique(wampa$waname)
-
-
-  # # filter out unassigned and unclassified
-  # state_mp <- state_mp[!state_mp$ZONE_TYPE %in% c("Unassigned (IUCN IA)", "Unassigned (IUCN II)", "Unassigned (IUCN III)", "Unassigned (IUCN IV)", "Unassigned (IUCN VI)", "MMA (Unclassified) (IUCN VI)", "MP (Unclassified) (IUCN VI)"), ]
-  # state_mp$zone <- stringr::str_replace_all(state_mp$ZONE_TYPE, c("[^[:alnum:]]" = " "))
-  # state_mp$zone <- stringr::str_replace_all(state_mp$zone, c(
-  #   "Conservation Area  IUCN IA " = "Conservation (no-take)",
-  #   "General Use  IUCN II " = "General Use",
-  #   "General Use Area  IUCN VI " = "General Use",
-  #   "General Use Zone  IUCN II " = "General Use",
-  #   "Recreation Area  IUCN II " = "Recreation",
-  #   "Recreation Zone  IUCN II " = "Recreation",
-  #   "Sanctuary Area  IUCN VI " = "Sanctuary (no-take)",
-  #   "Sanctuary Zone  IUCN IA " = "Sanctuary (no-take)",
-  #   "Special Purpose Zone  Aquaculture   IUCN VI " = "Special Purpose",
-  #   "Special Purpose Zone  Benthic Protection   IUCN IV " = "Special Purpose",
-  #   "Special Purpose Zone  Dugong Protection   IUCN IV " = "Special Purpose",
-  #   "Special Purpose Zone  Habitat Protection   IUCN IV " = "Special Purpose",
-  #   "Special Purpose Zone  Pearling   IUCN VI " = "Special Purpose",
-  #   "Special Purpose Zone  Puerulus   IUCN IA " = "Special Purpose",
-  #   "Special Purpose Zone  Scientific Reference   IUCN II " = "Special Purpose",
-  #   "Special Purpose Zone  Scientific Reference   IUCN VI " = "Special Purpose",
-  #   "Special Purpose Zone  Seagrass Protection   IUCN IV " = "Special Purpose",
-  #   "Special Purpose Zone  Shore Based Activities   IUCN II " = "Special Purpose",
-  #   "Special Purpose Zone  Wildlife Conservation   IUCN VI " = "Special Purpose",
-  #   "Special Purpose Zone  Wildlife Viewing and Protection   IUCN IV " = "Special Purpose",
-  #   "Special Purpose Zone 1  Shore based Activities   IUCN II " = "Special Purpose",
-  #   "Special Purpose Zone 2  Shore based Activities   IUCN II " = "Special Purpose",
-  #   "Special Purpose Zone 3  Shore based Activities   IUCN II " = "Special Purpose",
-  #   "Special Purpose Zone 3  Shore based Activities   IUCN VI " = "Special Purpose",
-  #   "Special Purpose Zone 4  Shore based Activities   IUCN II " = "Special Purpose"
-  # ))
-
-  state_mp <- wampa
-  state_mp$zone <- as.factor(state_mp$waname)
-  state_mp$zone <- forcats::fct_relevel(
-    state_mp$zone,
-    "Conservation (no-take)",
-    "Sanctuary (no-take)",
-    "Recreation",
-    "General Use",
-    "Special Purpose"
+  state_mp <- sf::st_read(here::here('inst/data/spatial/western-australia_marine-parks-all.shp')) %>%
+    dplyr::filter(epbc == "State") %>%
+    dplyr::mutate(zone = dplyr::case_when(stringr::str_detect(zone_type, "(?i)Special") ~ "Special Purpose",
+                                          stringr::str_detect(zone_type, "(?i)Recreation") ~ "Recreation",
+                                          stringr::str_detect(zone_type, "(?i)General") ~ "General Use",
+                                          stringr::str_detect(zone_type, "(?i)Sanctuary") ~ "Sanctuary (no-take)",
+                                          stringr::str_detect(zone_type, fixed("Conservation Area (IUCN IA)")) ~ "Conservation (no-take)",
+                                          .default = "check"))
+  state_mp$zone <- forcats::fct_relevel(state_mp$zone,
+                                        "Conservation (no-take)",
+                                        "Sanctuary (no-take)",
+                                        "Recreation",
+                                        "General Use",
+                                        "Special Purpose"
   )
 
   state_pal <- leaflet::colorFactor(c(
@@ -1149,7 +1179,6 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     "#b9e6fb", # general use
     "#ccc1d6" # special purpose
   ), state_mp$zone)
-
 
   # spatial.data <- state_mp@data
 
@@ -1551,4 +1580,3 @@ print.mpa_data <- function(mpa_data, ...) {
   )
   invisible(mpa_data)
 }
-
