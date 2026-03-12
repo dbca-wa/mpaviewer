@@ -4,7 +4,7 @@
 \alias{ggplot_mpatheme}
 \title{A custom GGplot2 theme for mpaviewer}
 \usage{
-ggplot_mpatheme()
+ggplot_mpatheme(n_years = NULL)
 }
 \value{
 A custom ggplot2::theme()

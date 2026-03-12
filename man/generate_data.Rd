@@ -2,7 +2,7 @@
 % Please edit documentation in R/generate_data.R
 \name{generate_data}
 \alias{generate_data}
-\title{Generate one data object to use in server.R}
+\title{Generate one data object to use in server}
 \usage{
 generate_data(
   raw_dir,
@@ -21,7 +21,7 @@ An object of class "mpa_data" containing all data tibbles and objects
 used by server.R
 }
 \description{
-Generate one data object to use in server.R
+Generate one data object to use in server
 }
 \examples{
 \dontrun{

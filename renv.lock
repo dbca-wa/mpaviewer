@@ -2074,7 +2074,7 @@
     },
     "shiny": {
       "Package": "shiny",
-      "Version": "1.12.1",
+      "Version": "1.13.0",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -2104,7 +2104,7 @@
         "withr",
         "xtable"
       ],
-      "Hash": "4eee104c56972c9ef07741219099b0dd"
+      "Hash": "3ae8521a5a4576fc4b78d00d401f22f9"
     },
     "shinyWidgets": {
       "Package": "shinyWidgets",

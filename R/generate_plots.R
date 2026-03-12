@@ -10,7 +10,7 @@
 generate_plots <- function() {
   options(ragg.max_dim = 1000000)
 
-  message("This function takes a couple minutes to run")
+  message("This function is very slow to run")
 
   # LOAD DATA ----
   load("inst/data/mpa_data.Rdata")
