@@ -73,6 +73,7 @@ Once app and Docker image work, create a new version, tag, and push the
 tag.
 
 ``` r
+
 styler::style_pkg()
 spelling::spell_check_package()
 spelling::update_wordlist()
