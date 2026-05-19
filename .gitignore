@@ -39,3 +39,5 @@ rsconnect
 /doc/
 inst/app/www/plots
 .quarto
+# Secrets
+.env*

@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mpaviewer-deployment
+spec:
+  selector:
+    matchLabels:
+      app: mpaviewer-deployment
+  template:
+    metadata:
+      labels:
+        app: mpaviewer-deployment
+    spec:
+      containers:
+        - name: mpaviewer
+          command:
+            - R
+            - '-e'
+            - options('shiny.port'=8080,shiny.host='0.0.0.0');mpaviewer::run_app()
+          volumeMounts:
+            - name: mpaviewer-data-blob-uat
+              mountPath: /app/inst/data
+      volumes:
+        - name: mpaviewer-data-blob-uat
+          persistentVolumeClaim:
+            claimName: pvc-mpaviewer-data-blob-uat
