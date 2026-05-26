@@ -39,3 +39,4 @@ rsconnect
 /doc/
 inst/app/www/plots
 .quarto
+.positai

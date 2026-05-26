@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.5.2",
+    "Version": "4.5.3",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -572,7 +572,7 @@
     },
     "dplyr": {
       "Package": "dplyr",
-      "Version": "1.2.0",
+      "Version": "1.2.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -591,7 +591,7 @@
         "utils",
         "vctrs"
       ],
-      "Hash": "71a469a5d5f9fdbf7de6c0dbeece0e22"
+      "Hash": "d71f190466b9496cf8543c76641be5cf"
     },
     "e1071": {
       "Package": "e1071",
@@ -732,14 +732,14 @@
     },
     "fs": {
       "Package": "fs",
-      "Version": "1.6.6",
+      "Version": "2.1.0",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "R",
         "methods"
       ],
-      "Hash": "7eb1e342eee7e0a7449c49cdaa526d39"
+      "Hash": "09278623bca442bc53b0940ffa2f6d87"
     },
     "gargle": {
       "Package": "gargle",
@@ -952,14 +952,14 @@
     },
     "glue": {
       "Package": "glue",
-      "Version": "1.8.0",
+      "Version": "1.8.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "R",
         "methods"
       ],
-      "Hash": "5899f1eaa825580172bb56c08266f37c"
+      "Hash": "f8122473e9a49e00d0642f78235ca5e3"
     },
     "golem": {
       "Package": "golem",
@@ -1290,7 +1290,7 @@
     },
     "lattice": {
       "Package": "lattice",
-      "Version": "0.22-7",
+      "Version": "0.22-9",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -1301,7 +1301,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "934f30aea6442867f57a610034ab06d3"
+      "Hash": "91febc38a877968922d0d37d5db0f674"
     },
     "lazyeval": {
       "Package": "lazyeval",
@@ -1420,13 +1420,13 @@
     },
     "magrittr": {
       "Package": "magrittr",
-      "Version": "2.0.4",
+      "Version": "2.0.5",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "R"
       ],
-      "Hash": "8b3b213aa0c54a0dec254288ccb545d1"
+      "Hash": "665e77ab6e5f37a7913226d40b324e37"
     },
     "memoise": {
       "Package": "memoise",
@@ -1734,7 +1734,7 @@
     },
     "purrr": {
       "Package": "purrr",
-      "Version": "1.2.1",
+      "Version": "1.2.2",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -1745,7 +1745,7 @@
         "rlang",
         "vctrs"
       ],
-      "Hash": "0154ac5b9ef4df1a7be3a54602e781cf"
+      "Hash": "0a35605539b085a4828ec55ad973fe60"
     },
     "ragg": {
       "Package": "ragg",
@@ -1877,14 +1877,14 @@
     },
     "rlang": {
       "Package": "rlang",
-      "Version": "1.1.7",
+      "Version": "1.2.0",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "R",
         "utils"
       ],
-      "Hash": "34c0d101f4613098abc538b82e0d86c5"
+      "Hash": "f88151fb9ca15e72dc351deb1328716e"
     },
     "rmarkdown": {
       "Package": "rmarkdown",

@@ -66,6 +66,7 @@ generate_plots <- function() {
         ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
         ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                     expand = ggplot2::expansion(mult = c(0, 0.05))) +
+        ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
         ggplot2::scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
         ggplot_mpatheme(n_years = n_years)
 
@@ -80,11 +81,10 @@ generate_plots <- function() {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
             ggplot2::geom_label(
               x = gazetted,
-              y = +Inf,
+              y = + Inf,
               label = "\n\n gazetted",
               size = 4,
               fill = "white",
-              check_overlap = TRUE,
               label.size = NA
             )}
       }
@@ -94,11 +94,10 @@ generate_plots <- function() {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
             ggplot2::geom_label(
               x = re_zoned,
-              y = +Inf,
+              y = + Inf,
               label = "\n\n rezoned",
-              size = 5,
+              size = 4,
               fill = "white",
-              check_overlap = TRUE,
               label.size = NA
             )}
       }
@@ -117,6 +116,7 @@ generate_plots <- function() {
           ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
           ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                       expand = ggplot2::expansion(mult = c(0, 0.05))) +
+          ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
           ggplot2::scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
           ggplot2::facet_wrap(~change, scales = "free") +
           ggh4x::force_panelsizes(cols = c(9, 1)) +
@@ -166,7 +166,7 @@ generate_plots <- function() {
       temp2 <- temp[method %in% c(methods)]
       n_years <- diff(range(temp2$year, na.rm = TRUE))
 
-      yearnum <- temp %>% summarise(n = max(year) - min(year))
+      yearnum <- temp %>% dplyr::summarise(n = max(year) - min(year))
 
       if(yearnum < 14){
         p.width = 3
@@ -181,7 +181,8 @@ generate_plots <- function() {
         ggplot2::ylab("Average total abundance\n per sample (+/- SE)") +
         ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
         ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
-                                    expand = ggplot2::expansion(mult = c(0, 0.05))) +
+                                    expand = ggplot2::expansion(mult = if (marinepark %in% "Lalang-gaddam Marine Park") c(0, 0.15) else c(0, 0.05))) +
+        ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
         ggplot2::scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
         ggh4x::facet_wrap2(ggplot2::vars(dbca_sanctuary), axes = "all", ncol = p.width, scales = "free_y") +
         ggplot_mpatheme(n_years = n_years)
@@ -197,11 +198,10 @@ generate_plots <- function() {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
             ggplot2::geom_label(
               x = gazetted,
-              y = +Inf,
+              y = + Inf,
               label = "\n\n gazetted",
               size = 3,
               fill = "white",
-              check_overlap = TRUE,
               label.size = NA
             )}
       }
@@ -211,11 +211,10 @@ generate_plots <- function() {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
             ggplot2::geom_label(
               x = re_zoned,
-              y = +Inf,
+              y = + Inf,
               label = "\n\n rezoned",
               size = 3,
               fill = "white",
-              check_overlap = TRUE,
               label.size = NA
             )}
       }
@@ -240,11 +239,10 @@ generate_plots <- function() {
         p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
           ggplot2::geom_label(
             x = 2019,
-            y = +Inf,
+            y = + Inf,
             label = "\n\n method\nchange",
             size = 4,
             fill = "white",
-            check_overlap = TRUE,
             label.size = NA)
       }
 
@@ -252,7 +250,7 @@ generate_plots <- function() {
 
       park.name <- stringr::str_replace_all(tolower(marinepark), c("marine park" = "", "island marine reserve" = "", " " = ""))
 
-      if (length(unique(temp2$dbca_sanctuary)) %in% c(1,2,3) ){
+      if (length(unique(temp2$dbca_sanctuary)) %in% c(1, 2, 3) ){
         p.height <- 3
       } else {
         p.height <- p.width * ceiling(length(unique(temp2$dbca_sanctuary))/p.width)
@@ -300,7 +298,8 @@ generate_plots <- function() {
           ggplot2::ylab("Average total abundance \nper sample (+/- SE)") +
           ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
           ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
-                                      expand = ggplot2::expand_scale(mult = c(0, 0.05))) +
+                                      expand = ggplot2::expand_scale(mult = c(0, 0.2))) +
+          ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
           ggplot2::scale_shape_manual(values = c("Consistently sampled" = 21, "Intermittently sampled" = 22)) +
           ggplot2::scale_fill_manual(values = c("Fished" = "#b9e6fb", "No-take" = "#7bbc63")) +
           ggh4x::facet_wrap2(ggplot2::vars(site), axes = "all", ncol = 3, scales = "free_y") +
@@ -317,11 +316,10 @@ generate_plots <- function() {
             p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
               ggplot2::geom_label(
                 x = gazetted,
-                y = +Inf,
+                y = + Inf,
                 label = "\n\n gazetted",
                 size = 5,
                 fill = "white",
-                check_overlap = TRUE,
                 label.size = NA
               )}
         }
@@ -331,11 +329,10 @@ generate_plots <- function() {
             p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
               ggplot2::geom_label(
                 x = re_zoned,
-                y = +Inf,
+                y = + Inf,
                 label = "\n\n rezoned",
-                size = 5,
+                size = 3,
                 fill = "white",
-                check_overlap = TRUE,
                 label.size = NA
               )}
         }
@@ -344,11 +341,10 @@ generate_plots <- function() {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
             ggplot2::geom_label(
               x = 2021,
-              y = +Inf,
+              y = + Inf,
               label = "\n\n method\nchange",
               size = 5,
               fill = "white",
-              check_overlap = TRUE,
               label.size = NA)
         }
 
@@ -412,8 +408,11 @@ generate_plots <- function() {
         ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
         ggplot2::xlab("Year") +
         ggplot2::ylab("Average total abundance \n per sample (+/- SE)") +
+        # ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
+        #                             expand = ggplot2::expand_scale(mult = c(0, 0.05))) +
         ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
-                                    expand = ggplot2::expand_scale(mult = c(0, 0.05))) +
+                                    expand = ggplot2::expansion(mult = if (marinepark %in% "Lalang-gaddam Marine Park") c(0, 0.15) else c(0, 0.05))) +
+        ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
         ggplot2::scale_fill_manual(values = c(pal)) +
         ggplot_mpatheme(n_years = n_years)
 
@@ -428,11 +427,10 @@ generate_plots <- function() {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
             ggplot2::geom_label(
               x = gazetted,
-              y = +Inf,
+              y = + Inf,
               label = "\n\n gazetted",
               size = 5,
               fill = "white",
-              check_overlap = TRUE,
               label.size = NA
             )}
       }
@@ -442,11 +440,10 @@ generate_plots <- function() {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
             ggplot2::geom_label(
               x = re_zoned,
-              y = +Inf,
+              y = + Inf,
               label = "\n\n rezoned",
               size = 5,
               fill = "white",
-              check_overlap = TRUE,
               label.size = NA
             )}
       }
@@ -475,6 +472,7 @@ generate_plots <- function() {
           ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
           ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                       expand = ggplot2::expansion(mult = c(0, 0.05))) +
+          ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
           ggplot2::scale_fill_manual(values = c(pal)) +
           ggplot2::facet_wrap(~change, scales = "free") +
           ggh4x::force_panelsizes(cols = c(9, 2)) +
@@ -534,6 +532,7 @@ generate_plots <- function() {
         ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
         ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                     expand = ggplot2::expansion(mult = c(0, 0.05))) +
+        ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
         ggplot2::scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
         ggplot_mpatheme(n_years = n_years)
 
@@ -548,11 +547,10 @@ generate_plots <- function() {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
             ggplot2::geom_label(
               x = gazetted,
-              y = +Inf,
+              y = + Inf,
               label = "\n\n gazetted",
               size = 5,
               fill = "white",
-              check_overlap = TRUE,
               label.size = NA
             )}
       }
@@ -562,11 +560,10 @@ generate_plots <- function() {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
             ggplot2::geom_label(
               x = re_zoned,
-              y = +Inf,
+              y = + Inf,
               label = "\n\n rezoned",
               size = 5,
               fill = "white",
-              check_overlap = TRUE,
               label.size = NA
             )}
       }
@@ -586,6 +583,7 @@ generate_plots <- function() {
           ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
           ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                       expand = ggplot2::expansion(mult = c(0, 0.05))) +
+          ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
           ggplot2::scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
           ggplot2::facet_wrap(~change, scales = "free") +
           ggh4x::force_panelsizes(cols = c(9, 2)) +
@@ -658,6 +656,7 @@ generate_plots <- function() {
         ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
         ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                     expand = ggplot2::expansion(mult = c(0, 0.05))) +
+        ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
         ggplot2::scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
         ggh4x::facet_wrap2(ggplot2::vars(dbca_sanctuary), axes = "all", ncol = p.width) +
         ggplot_mpatheme(n_years = n_years)
@@ -673,11 +672,10 @@ generate_plots <- function() {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
             ggplot2::geom_label(
               x = gazetted,
-              y = +Inf,
+              y = + Inf,
               label = "\n\n gazetted",
               size = 3,
               fill = "white",
-              check_overlap = TRUE,
               label.size = NA
             )}
       }
@@ -687,11 +685,10 @@ generate_plots <- function() {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
             ggplot2::geom_label(
               x = re_zoned,
-              y = +Inf,
+              y = + Inf,
               label = "\n\n rezoned",
               size = 3,
               fill = "white",
-              check_overlap = TRUE,
               label.size = NA
             )}
       }
@@ -710,6 +707,7 @@ generate_plots <- function() {
           ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
           ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                       expand = ggplot2::expansion(mult = c(0, 0.05))) +
+          ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
           ggplot2::scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
           ggplot2::facet_wrap(dbca_sanctuary~change, scales = "free") +
           ggh4x::force_panelsizes(cols = c(9, 2)) +
@@ -777,6 +775,7 @@ generate_plots <- function() {
           ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
           ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                       expand = ggplot2::expand_scale(mult = c(0, 0.05))) +
+          ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
           ggplot2::scale_shape_manual(values = c("Consistently sampled" = 21, "Intermittently sampled" = 22)) +
           ggplot2::scale_fill_manual(values = c("Fished" = "#b9e6fb", "No-take" = "#7bbc63")) +
           ggh4x::facet_wrap2(ggplot2::vars(site), axes = "all", ncol = 3) +
@@ -793,11 +792,10 @@ generate_plots <- function() {
             p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
               ggplot2::geom_label(
                 x = gazetted,
-                y = +Inf,
+                y = + Inf,
                 label = "\n\n gazetted",
                 size = 5,
                 fill = "white",
-                check_overlap = TRUE,
                 label.size = NA
               )}
         }
@@ -807,11 +805,10 @@ generate_plots <- function() {
             p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
               ggplot2::geom_label(
                 x = re_zoned,
-                y = +Inf,
+                y = + Inf,
                 label = "\n\n rezoned",
                 size = 5,
                 fill = "white",
-                check_overlap = TRUE,
                 label.size = NA
               )}
         }
@@ -883,6 +880,7 @@ generate_plots <- function() {
         ggplot2::ylab("Average species richness \n per sample (+/- SE)") +
         ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                     expand = ggplot2::expand_scale(mult = c(0, 0.05))) +
+        ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
         ggplot2::scale_fill_manual(values = c(pal)) +
         ggplot_mpatheme(n_years = n_years)
 
@@ -897,11 +895,10 @@ generate_plots <- function() {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
             ggplot2::geom_label(
               x = gazetted,
-              y = +Inf,
+              y = + Inf,
               label = "\n\n gazetted",
               size = 5,
               fill = "white",
-              check_overlap = TRUE,
               label.size = NA
             )}
       }
@@ -911,11 +908,10 @@ generate_plots <- function() {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
             ggplot2::geom_label(
               x = re_zoned,
-              y = +Inf,
+              y = + Inf,
               label = "\n\n rezoned",
               size = 5,
               fill = "white",
-              check_overlap = TRUE,
               label.size = NA
             )}
       }
@@ -940,11 +936,10 @@ generate_plots <- function() {
         p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = 2021), linetype = "dashed") +
           ggplot2::geom_label(
             x = 2021,
-            y = +Inf,
+            y = + Inf,
             label = "\n\n method\nchange",
             size = 5,
             fill = "white",
-            check_overlap = TRUE,
             label.size = NA)
       }
       p
@@ -1042,6 +1037,7 @@ generate_plots <- function() {
         ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
         ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                     expand = ggplot2::expansion(mult = c(0, 0.05))) +
+        ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
         ggplot2::scale_fill_manual(values = c("Fished" = "#b9e6fb", "No-take" = "#7bbc63")) +
         ggplot_mpatheme(n_years = n_years)
 
@@ -1056,11 +1052,10 @@ generate_plots <- function() {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
             ggplot2::geom_label(
               x = gazetted,
-              y = +Inf,
+              y = + Inf,
               label = "\n\n gazetted",
               size = 5,
               fill = "white",
-              check_overlap = TRUE,
               label.size = NA
             )}
       }
@@ -1070,11 +1065,10 @@ generate_plots <- function() {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
             ggplot2::geom_label(
               x = re_zoned,
-              y = +Inf,
+              y = + Inf,
               label = "\n\n rezoned",
               size = 5,
               fill = "white",
-              check_overlap = TRUE,
               label.size = NA
             )}
       }
@@ -1094,6 +1088,7 @@ generate_plots <- function() {
           ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
           ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                       expand = ggplot2::expansion(mult = c(0, 0.05))) +
+          ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
           ggplot2::scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
           ggplot2::facet_wrap(~change, scales = "free") +
           ggh4x::force_panelsizes(cols = c(9, 2)) +
@@ -1150,6 +1145,7 @@ generate_plots <- function() {
         ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
         ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                     expand = ggplot2::expansion(mult = c(0, 0.05))) +
+        ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
         ggplot2::scale_fill_manual(values = c("Fished" = "#b9e6fb", "No-take" = "#7bbc63")) +
         ggplot_mpatheme(n_years = n_years)
 
@@ -1164,11 +1160,10 @@ generate_plots <- function() {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
             ggplot2::geom_label(
               x = gazetted,
-              y = +Inf,
+              y = + Inf,
               label = "\n\n gazetted",
               size = 5,
               fill = "white",
-              check_overlap = TRUE,
               label.size = NA
             )}
       }
@@ -1178,11 +1173,10 @@ generate_plots <- function() {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
             ggplot2::geom_label(
               x = re_zoned,
-              y = +Inf,
+              y = + Inf,
               label = "\n\n rezoned",
               size = 5,
               fill = "white",
-              check_overlap = TRUE,
               label.size = NA
             )}
       }
@@ -1202,6 +1196,7 @@ generate_plots <- function() {
           ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
           ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                       expand = ggplot2::expansion(mult = c(0, 0.05))) +
+          ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
           ggplot2::scale_fill_manual(values = c("#b9e6fb", "#7bbc63")) +
           ggplot2::facet_wrap(~change, scales = "free") +
           ggh4x::force_panelsizes(cols = c(9, 2)) +
@@ -1293,6 +1288,7 @@ generate_plots <- function() {
         ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
         ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                     expand = ggplot2::expansion(mult = c(0, 0.05))) +
+        ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
         ggplot2::scale_fill_manual(values = c("Fished" = "#b9e6fb", "No-take" = "#7bbc63")) +
         ggh4x::facet_wrap2(ggplot2::vars(dbca_sanctuary), axes = "all", ncol = p.width, scales = "free_y") +
         ggplot_mpatheme(n_years = n_years)
@@ -1308,11 +1304,10 @@ generate_plots <- function() {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
             ggplot2::geom_label(
               x = gazetted,
-              y = +Inf,
+              y = + Inf,
               label = "\n\n gazetted",
               size = 3,
               fill = "white",
-              check_overlap = TRUE,
               label.size = NA
             )}
       }
@@ -1322,11 +1317,10 @@ generate_plots <- function() {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
             ggplot2::geom_label(
               x = re_zoned,
-              y = +Inf,
+              y = + Inf,
               label = "\n\n rezoned",
               size = 3,
               fill = "white",
-              check_overlap = TRUE,
               label.size = NA
             )}
       }
@@ -1398,6 +1392,7 @@ generate_plots <- function() {
         ggplot2::stat_smooth(method = "gam", formula = y ~ s(x, k = 3), size = 1, col = "black") +
         ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                     expand = ggplot2::expansion(mult = c(0, 0.05))) +
+        ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
         ggplot2::scale_fill_manual(values = c("Fished" = "#b9e6fb", "No-take" = "#7bbc63")) +
         ggh4x::facet_wrap2(ggplot2::vars(dbca_sanctuary), axes = "all", ncol = p.width, scales = "free_y") +
         ggplot_mpatheme(n_years = n_years)
@@ -1413,11 +1408,10 @@ generate_plots <- function() {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
             ggplot2::geom_label(
               x = gazetted,
-              y = +Inf,
+              y = + Inf,
               label = "\n\n gazetted",
               size = 3,
               fill = "white",
-              check_overlap = TRUE,
               label.size = NA
             )}
       }
@@ -1427,11 +1421,10 @@ generate_plots <- function() {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
             ggplot2::geom_label(
               x = re_zoned,
-              y = +Inf,
+              y = + Inf,
               label = "\n\n rezoned",
               size = 3,
               fill = "white",
-              check_overlap = TRUE,
               label.size = NA
             )}
       }
@@ -1503,7 +1496,7 @@ generate_plots <- function() {
           ggplot2::ggtitle(lifetrait) +
           ggplot2::xlab("Year") +
           ggplot2::ylab("Average abundance per sample \n(+/- SE)") +
-          ggplot2::scale_y_continuous(expand = c(0, 0.1)) +
+          ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
           ggplot2::scale_x_continuous(
             breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
             expand = ggplot2::expand_scale(mult = c(0, 0.05))
@@ -1524,11 +1517,10 @@ generate_plots <- function() {
             p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
               ggplot2::geom_label(
                 x = gazetted,
-                y = +Inf,
+                y = + Inf,
                 label = "\n\n gazetted",
                 size = 5,
                 fill = "white",
-                check_overlap = TRUE,
                 label.size = NA
               )}
         }
@@ -1538,11 +1530,10 @@ generate_plots <- function() {
             p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
               ggplot2::geom_label(
                 x = re_zoned,
-                y = +Inf,
+                y = + Inf,
                 label = "\n\n rezoned",
                 size = 5,
                 fill = "white",
-                check_overlap = TRUE,
                 label.size = NA
               )}
         }
@@ -1632,7 +1623,7 @@ generate_plots <- function() {
           ggplot2::ylab("Average abundance \n per sample (+/- SE)") +
           ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                       expand = ggplot2::expand_scale(mult = c(0, 0.05))) +
-          ggplot2::scale_y_continuous(expand = c(0, 0.1)) +
+          ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
           ggplot2::scale_fill_manual(values = c("Fished" = "#b9e6fb", "No-take" = "#7bbc63")) +
           ggh4x::facet_wrap2(ggplot2::vars(scientific_name), axes = "all", ncol = 1) +
           ggplot_mpatheme(n_years = n_years)
@@ -1648,11 +1639,10 @@ generate_plots <- function() {
             p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
               ggplot2::geom_label(
                 x = gazetted,
-                y = +Inf,
+                y = + Inf,
                 label = "\n\n gazetted",
                 size = 5,
                 fill = "white",
-                check_overlap = TRUE,
                 label.size = NA
               )}
         }
@@ -1662,11 +1652,10 @@ generate_plots <- function() {
             p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
               ggplot2::geom_label(
                 x = re_zoned,
-                y = +Inf,
+                y = + Inf,
                 label = "\n\n rezoned",
                 size = 5,
                 fill = "white",
-                check_overlap = TRUE,
                 label.size = NA
               )}
         }
@@ -1748,7 +1737,7 @@ generate_plots <- function() {
           ggplot2::ylab("Average abundance \n per sample (+/- SE)") +
           ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                       expand = ggplot2::expand_scale(mult = c(0, 0.05))) +
-          ggplot2::scale_y_continuous(expand = c(0, 0.1)) +
+          ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
           ggplot2::scale_fill_manual(values = c("Fished" = "#b9e6fb", "No-take" = "#7bbc63")) +
           ggh4x::facet_wrap2(ggplot2::vars(scientific_name), axes = "all", ncol = 1) +
           ggplot_mpatheme(n_years = n_years)
@@ -1764,11 +1753,10 @@ generate_plots <- function() {
             p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
               ggplot2::geom_label(
                 x = gazetted,
-                y = +Inf,
+                y = + Inf,
                 label = "\n\n gazetted",
                 size = 5,
                 fill = "white",
-                check_overlap = TRUE,
                 label.size = NA
               )}
         }
@@ -1778,11 +1766,10 @@ generate_plots <- function() {
             p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
               ggplot2::geom_label(
                 x = re_zoned,
-                y = +Inf,
+                y = + Inf,
                 label = "\n\n rezoned",
                 size = 5,
                 fill = "white",
-                check_overlap = TRUE,
                 label.size = NA
               )}
         }
@@ -1864,7 +1851,7 @@ generate_plots <- function() {
           ggplot2::ylab("Average abundance \n per sample (+/- SE)") +
           ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                       expand = ggplot2::expand_scale(mult = c(0, 0.05))) +
-          ggplot2::scale_y_continuous(expand = c(0, 0.1)) +
+          ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
           ggplot2::scale_fill_manual(values = c("Fished" = "#b9e6fb", "No-take" = "#7bbc63")) +
           ggh4x::facet_wrap2(ggplot2::vars(scientific_name), axes = "all", ncol = 1) +
           ggplot_mpatheme(n_years = n_years)
@@ -1880,11 +1867,10 @@ generate_plots <- function() {
             p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
               ggplot2::geom_label(
                 x = gazetted,
-                y = +Inf,
+                y = + Inf,
                 label = "\n\n gazetted",
                 size = 3,
                 fill = "white",
-                check_overlap = TRUE,
                 label.size = NA
               )}
         }
@@ -1894,11 +1880,10 @@ generate_plots <- function() {
             p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
               ggplot2::geom_label(
                 x = re_zoned,
-                y = +Inf,
+                y = + Inf,
                 label = "\n\n rezoned",
                 size = 3,
                 fill = "white",
-                check_overlap = TRUE,
                 label.size = NA
               )}
         }
@@ -1991,7 +1976,7 @@ generate_plots <- function() {
           ggplot2::ylab("Average abundance \n per sample (+/- SE)") +
           ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                       expand = ggplot2::expand_scale(mult = c(0, 0.05))) +
-          ggplot2::scale_y_continuous(expand = c(0, 0.1)) +
+          ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
           ggplot2::scale_fill_manual(values = c("Fished" = "#b9e6fb", "No-take" = "#7bbc63")) +
           ggh4x::facet_wrap2(ggplot2::vars(dbca_sanctuary), axes = "all", ncol = p.width) +
           ggplot_mpatheme(n_years = n_years)
@@ -2007,11 +1992,10 @@ generate_plots <- function() {
             p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = gazetted), linetype = "dashed") +
               ggplot2::geom_label(
                 x = gazetted,
-                y = +Inf,
+                y = + Inf,
                 label = "\n\n gazetted",
                 size = 3,
                 fill = "white",
-                check_overlap = TRUE,
                 label.size = NA
               )}
         }
@@ -2021,11 +2005,10 @@ generate_plots <- function() {
             p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = re_zoned), linetype = "dashed") +
               ggplot2::geom_label(
                 x = re_zoned,
-                y = +Inf,
+                y = + Inf,
                 label = "\n\n rezoned",
                 size = 3,
                 fill = "white",
-                check_overlap = TRUE,
                 label.size = NA
               )}
         }
@@ -2165,6 +2148,7 @@ generate_plots <- function() {
         ggplot2::ylab("Average RFTI (°C)\nper sample (+/- SE)") +
         ggplot2::scale_x_continuous(breaks = function(x) seq(ceiling(x[1]), floor(x[2]), by = 1),
                                     expand = ggplot2::expansion(mult = c(0, 0.05))) +
+        ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0.1)) +
         ggplot_mpatheme(n_years = n_years)
 
       min_year <- min(temp2$year)
@@ -2177,11 +2161,10 @@ generate_plots <- function() {
           p <- p + ggplot2::geom_vline(ggplot2::aes(xintercept = heatwave), linetype = "dashed", colour = "red") +
             ggplot2::geom_label(
               x = heatwave,
-              y = +Inf,
+              y = + Inf,
               label = "\n\n Marine heat wave",
               size = 3,
               fill = "white",
-              check_overlap = TRUE,
               label.size = NA
             )}
       }

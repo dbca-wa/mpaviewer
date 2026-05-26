@@ -32,10 +32,10 @@ copy_data <- function(dir = iLab::get_dir("iLab_fish")) {
 
   # Changing park names and creating directory paths ----
   save_list <- file_list %>%
-    dplyr::mutate(method = case_when(stringr::str_detect(file_full_dir, "BRUV") ~ "BRUVs",
+    dplyr::mutate(method = dplyr::case_when(stringr::str_detect(file_full_dir, "BRUV") ~ "BRUVs",
                                      stringr::str_detect(file_full_dir, "DOV") ~ "DOVs",
                                      stringr::str_detect(file_full_dir, "ROV") ~ "ROVs",
-                                     stringr::str_detect(file_full_dir, "UVC") ~ "DOVs"), # Seems wrong but matches what was happening with old ifelse
+                                     stringr::str_detect(file_full_dir, "UVC") ~ "UVC"),
                   park = stringr::str_match(file_full_dir, '^(?:[^/]+/){5}([^/]+).*')[, 2]) %>%
     dplyr::left_join(park_codes, by = c("park" = "code")) %>%
     dplyr::mutate(park_path = paste0(dashboard_dir, "/", full.name, "/"),

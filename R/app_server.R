@@ -28,8 +28,8 @@ app_server <- function(input, output, session) {
 
   output$statewide_plots <- renderUI({
     print("total fish")
-    total_fish <- mpa_data$total_number_fish_park #%>% dplyr::glimpse()
-    total_species <- mpa_data$total_species_fish_park # %>% glimpse()
+    total_fish <- mpa_data$total_number_fish_park
+    total_species <- mpa_data$total_species_fish_park
     mins_watched <- mpa_data$mins_watched
 
     # if (nrow(total_fish) > 0) {

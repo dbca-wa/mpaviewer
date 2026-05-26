@@ -1,3 +1,5 @@
+rm(list = ls())
+
 ## Authenticate GoogleDrive and GoogleSheets ----
 # options(gargle_oauth_cache = ".secrets")
 ## check the value of the option, if you like
@@ -12,6 +14,8 @@
 # remotes::install_github("GlobalArchiveManual/CheckEM")
 
 # library(CheckEM)
+
+# TO INSTALL PACKAGES FROM GITHUB, RUN: renv::install("iLab-fish/iLab")
 
 # Step 1. Load all functions from package ----
 pkgload::load_all(export_all = FALSE, helpers = FALSE, attach_testthat = FALSE)
@@ -36,15 +40,13 @@ project_dir <- getwd()
 mpaviewer::generate_data(raw_dir = raw_dir)
 
 # Step 4. Generate new plots
-# Sys.time() # Takes a few hours to run
-# mpaviewer:::generate_plots()
-# Sys.time()
+mpaviewer:::generate_plots()
 
 # Step 5. Run demo app
-# options("golem.app.prod" = TRUE)
+options("golem.app.prod" = TRUE)
 
 # RUN app
- mpaviewer::run_app()
+mpaviewer::run_app()
 
 # Step 6. Deploy to shiny server for testing
 # rsconnect::deployApp()
