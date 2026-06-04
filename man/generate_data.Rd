@@ -11,6 +11,8 @@ generate_data(
 )
 }
 \arguments{
+\item{raw_dir}{File path to load data from}
+
 \item{save}{Boolean whether to save data to rds}
 
 \item{dest}{The target file to save rds as,

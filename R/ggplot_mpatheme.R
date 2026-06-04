@@ -1,5 +1,7 @@
 #' A custom GGplot2 theme for mpaviewer
 #'
+#' @param n_years Integer value used to scale x-axis text size. Defaults to NULL.
+#'
 #' @return A custom ggplot2::theme()
 #' @export
 ggplot_mpatheme <- function(n_years = NULL) {

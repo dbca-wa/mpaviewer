@@ -12,13 +12,11 @@ Imports:
     cachem,
     ckanr (>= 0.7.0),
     config (>= 0.3.1),
-    cowplot (>= 1.1.1),
     data.table,
     devtools (>= 2.4.5),
     dplyr (>= 1.1.2),
     forcats (>= 1.0.0),
     fs (>= 1.6.2),
-    ggbreak,
     ggh4x,
     ggplot2 (>= 3.4.2),
     glue (>= 1.6.2),
@@ -27,14 +25,12 @@ Imports:
     googlesheets4,
     grid,
     here (>= 1.0.1),
-    htmltools (>= 0.5.5),
     httr (>= 1.4.5),
     leafgl (>= 0.1.1),
     leaflegend,
     leaflet (>= 2.1.2),
-    lutz,
     magrittr (>= 2.0.3),
-    plyr (>= 1.8.8),
+    plotrix,
     purrr (>= 1.0.1),
     readr (>= 2.1.4),
     rlang,
@@ -46,7 +42,6 @@ Imports:
     shinydashboardPlus (>= 2.0.3),
     shinyWidgets (>= 0.7.6),
     stringr (>= 1.5.0),
-    thinkr,
     tidyr (>= 1.3.0),
     utils
 Suggests: 
@@ -56,8 +51,6 @@ Suggests:
     testthat (>= 3.0.0)
 VignetteBuilder: 
     knitr
-Remotes:
-    github::GlobalArchiveManual/CheckEM
 Config/testthat/edition: 3
 Encoding: UTF-8
 Language: en-US

@@ -4,11 +4,13 @@
 #' @param save Boolean whether to save data to rds
 #' @param dest The target file to save rds as,
 #'   default: here::here("inst/data/mpa_data.rds")
+#' @param raw_dir File path to load data from
 #'
 #' @return An object of class "mpa_data" containing all data tibbles and objects
 #'   used by server.R
 #' @export
-#' @import purrr
+#' @importFrom purrr map_df
+#' @importFrom plotrix std.error
 #'
 #' @examples
 #' \dontrun{
@@ -1000,8 +1002,6 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
 
   # CTI Metric ----
 
-  library(plotrix)
-
   cti_site <- abundance %>%
     dplyr::filter(maxn > 0) %>%
     dplyr::mutate(maxnlog = log10(maxn+1)) %>%
@@ -1648,7 +1648,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
 #' @title S3 print method for 'mpa_data'.
 #' @description Prints a short representation of mpa_data returned by
 #' `generate_data`.
-#' @param x An object of class `mpa_data` as returned by `generate_data`.
+#' @param mpa_data An object of class `mpa_data` as returned by `generate_data`.
 #' @param ... Extra parameters for `print`
 #' @export
 #' @family included

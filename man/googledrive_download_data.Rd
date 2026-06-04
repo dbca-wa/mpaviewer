@@ -7,14 +7,9 @@
 googledrive_download_data(raw_dir, project_dir)
 }
 \arguments{
-\item{ckan_url}{The data catalogue URL,
-default: \code{Sys.getenv("CKAN_URL")} or the current DBCA CKAN server.}
+\item{raw_dir}{A local directory to download files to.}
 
-\item{data_rid}{The resource ID of the data file,
-default: \code{Sys.getenv("MPAVIEWER_RID")} or the current resource ID.}
-
-\item{data_dir}{A local directory to download files to,
-default: \code{here::here("inst/data")}.}
+\item{project_dir}{A local directory containing the Github repository.}
 }
 \value{
 None.
