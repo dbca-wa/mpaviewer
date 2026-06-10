@@ -18,7 +18,7 @@ spec:
           command:
             - R
             - '-e'
-            - options('shiny.port'=8080,shiny.host='0.0.0.0');mpaviewer::run_app()
+            - options('shiny.port'=8080,shiny.host='0.0.0.0');shiny::runApp('/app', host='0.0.0.0', port=8080)
           volumeMounts:
             - name: mpaviewer-data-blob-prod
               mountPath: /app/inst/data
