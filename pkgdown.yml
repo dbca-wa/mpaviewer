@@ -3,7 +3,7 @@ pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   mpaviewer: mpaviewer.html
-last_built: 2026-06-10T04:37Z
+last_built: 2026-06-11T04:26Z
 urls:
   reference: https://dbca-wa.github.io/mpaviewer/reference
   article: https://dbca-wa.github.io/mpaviewer/articles
