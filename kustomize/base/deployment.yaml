@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mpaviewer-deployment
+  labels:
+    app: mpaviewer-deployment
+spec:
+  selector:
+    matchLabels:
+      app: mpaviewer-deployment
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: mpaviewer-deployment
+    spec:
+      containers:
+        - name: mpaviewer
+          image: ghcr.io/dbca-wa/mpaviewer
+          imagePullPolicy: Always
+          env:
+            - name: TZ
+              value: 'Australia/Perth'
+          resources:
+            requests:
+              memory: '16Mi'
+              cpu: '10m'
+            limits:
+              memory: '1024Mi'
+              cpu: '500m'
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            privileged: false
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmpfs-ram
+      volumes:
+        - name: tmpfs-ram
+          emptyDir:
+            medium: 'Memory'
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      automountServiceAccountToken: false

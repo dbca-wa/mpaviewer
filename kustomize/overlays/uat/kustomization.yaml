@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+nameSuffix: -uat
+resources:
+  - ../../base
+  - ingress.yaml
+  - pvc.yaml
+labels:
+  - includeSelectors: true
+    pairs:
+      variant: uat
+patches:
+  - path: deployment_patch.yaml
+  - path: service_patch.yaml
+secretGenerator:
+  - name: mpaviewer-azure-storage-secret
+    type: Opaque
+    envs:
+      - .env.azurestorageaccount
+generatorOptions:
+  disableNameSuffixHash: true
