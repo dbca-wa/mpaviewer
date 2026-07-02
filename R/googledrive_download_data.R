@@ -4,12 +4,8 @@
 #' variables. It will work with defaults unless the location of the data file
 #' changes.
 #'
-#' @param ckan_url The data catalogue URL,
-#'   default: `Sys.getenv("CKAN_URL")` or the current DBCA CKAN server.
-#' @param data_rid The resource ID of the data file,
-#'   default: `Sys.getenv("MPAVIEWER_RID")` or the current resource ID.
-#' @param data_dir A local directory to download files to,
-#'   default: `here::here("inst/data")`.
+#' @param raw_dir A local directory to download files to.
+#' @param project_dir A local directory containing the Github repository.
 #'
 #' @return None.
 #' @export

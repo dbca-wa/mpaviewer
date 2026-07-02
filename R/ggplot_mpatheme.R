@@ -1,8 +1,12 @@
 #' A custom GGplot2 theme for mpaviewer
 #'
+#' @param n_years Integer value used to scale x-axis text size. Defaults to NULL.
+#'
 #' @return A custom ggplot2::theme()
 #' @export
-ggplot_mpatheme <- function() {
+ggplot_mpatheme <- function(n_years = NULL) {
+  size_x <- if (!is.null(n_years) && is.finite(n_years) && n_years > 12) 8 else 12
+
   ggplot2::theme_bw() +
     ggplot2::theme( # use theme_get() to see available options
       panel.grid = ggplot2::element_blank(),
@@ -20,7 +24,9 @@ ggplot_mpatheme <- function() {
       axis.title.x = ggplot2::element_text(vjust = 0.3, size = 12),
       axis.title.y = ggplot2::element_text(vjust = 0.6, angle = 90, size = 12),
       axis.text.y = ggplot2::element_text(size = 12),
-      axis.text.x = ggplot2::element_text(size = dplyr::if_else((max(temp$year)-min(temp$year)) > 12, 8, 12), angle = 90, vjust = 0.5, hjust=1),
+      # axis.text.x = ggplot2::element_text(size = dplyr::if_else((max(temp$year) - min(temp$year)) > 12, 8, 12), angle = 90, vjust = 0.5, hjust = 1),
+      # axis.text.x = ggplot2::element_text(size = 12, angle = 90, vjust = 0.5, hjust = 1), # Added to test
+      axis.text.x = ggplot2::element_text(size = size_x, angle = 90, vjust = 0.5, hjust = 1),
       axis.line.x = ggplot2::element_line(colour = "black", size = 0.5, linetype = "solid"),
       axis.line.y = ggplot2::element_line(colour = "black", size = 0.5, linetype = "solid"),
       strip.background = ggplot2::element_blank(),

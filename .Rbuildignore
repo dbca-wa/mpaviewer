@@ -22,3 +22,5 @@ $run_dev.*
 ^rsconnect$
 ^R/_disable_autoload.R
 ^\.secrets$
+^\.positai$
+^\.claude$

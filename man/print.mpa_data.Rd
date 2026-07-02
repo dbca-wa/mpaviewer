@@ -7,9 +7,9 @@
 \method{print}{mpa_data}(mpa_data, ...)
 }
 \arguments{
-\item{...}{Extra parameters for \code{print}}
+\item{mpa_data}{An object of class \code{mpa_data} as returned by \code{generate_data}.}
 
-\item{x}{An object of class \code{mpa_data} as returned by \code{generate_data}.}
+\item{...}{Extra parameters for \code{print}}
 }
 \description{
 Prints a short representation of mpa_data returned by

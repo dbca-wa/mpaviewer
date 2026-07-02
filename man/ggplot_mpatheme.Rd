@@ -4,7 +4,10 @@
 \alias{ggplot_mpatheme}
 \title{A custom GGplot2 theme for mpaviewer}
 \usage{
-ggplot_mpatheme()
+ggplot_mpatheme(n_years = NULL)
+}
+\arguments{
+\item{n_years}{Integer value used to scale x-axis text size. Defaults to NULL.}
 }
 \value{
 A custom ggplot2::theme()

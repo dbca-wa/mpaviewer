@@ -2,7 +2,7 @@
 % Please edit documentation in R/generate_data.R
 \name{generate_data}
 \alias{generate_data}
-\title{Generate one data object to use in server.R}
+\title{Generate one data object to use in server}
 \usage{
 generate_data(
   raw_dir,
@@ -11,6 +11,8 @@ generate_data(
 )
 }
 \arguments{
+\item{raw_dir}{File path to load data from}
+
 \item{save}{Boolean whether to save data to rds}
 
 \item{dest}{The target file to save rds as,
@@ -21,7 +23,7 @@ An object of class "mpa_data" containing all data tibbles and objects
 used by server.R
 }
 \description{
-Generate one data object to use in server.R
+Generate one data object to use in server
 }
 \examples{
 \dontrun{

@@ -1,14 +1,16 @@
-#' Generate one data object to use in server.R
+#' Generate one data object to use in server
 #'
 #'
 #' @param save Boolean whether to save data to rds
 #' @param dest The target file to save rds as,
 #'   default: here::here("inst/data/mpa_data.rds")
+#' @param raw_dir File path to load data from
 #'
 #' @return An object of class "mpa_data" containing all data tibbles and objects
 #'   used by server.R
 #' @export
-#' @import purrr
+#' @importFrom purrr map_df
+#' @importFrom plotrix std.error
 #'
 #' @examples
 #' \dontrun{
@@ -16,7 +18,7 @@
 #' x <- generate_data() # returns data and saves data to local file
 #' }
 generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa_data.rds")) {
-  message("This function takes ~ 10 minutes to run")
+  message("This function is slow to run")
 
   # data_dir <- here::here("G:/mpaviewer_data")
   data_dir <- raw_dir
@@ -64,13 +66,13 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::select(zone, sector, site, site_code, reef_zone, latitude, longitude, replicate, survey, year, date, plot_year, analysis, software, marine_park, method, site_depth) %>%
     dplyr::distinct()
 
-  rec_3b <- list.files(path = data_dir, recursive = T, pattern = "REC3b.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
+  rec_3b <- list.files(path = data_dir, recursive = T, pattern = "REC3b.csv", full.names = T) %>% # list all files ending in "REC3b.csv"
     purrr::map_df(~ read_dbca_files_csv(., data_dir = data_dir)) %>%
     dplyr::filter(!marine_park %in% c("archive", "C:")) %>% # get rid of old files
     dplyr::mutate(year = as.numeric(year),
                   mean = as.numeric(mean))
 
-  rec_3c2 <- list.files(path = data_dir, recursive = T, pattern = "REC3c2.csv", full.names = T) %>% # list all files ending in "_Metadata.csv"
+  rec_3c2 <- list.files(path = data_dir, recursive = T, pattern = "REC3c2.csv", full.names = T) %>% # list all files ending in "REC3c2.csv"
     purrr::map_df(~ read_dbca_files_csv(., data_dir = data_dir)) %>%
     dplyr::filter(!marine_park %in% c("archive", "C:")) %>% # get rid of old files
     dplyr::mutate(year = as.numeric(year),
@@ -90,7 +92,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
   coral_header_summaries_species <- coral_cover %>%
     dplyr::distinct(level3class) %>%
     tidyr::drop_na(level3class) %>%
-    dplyr::mutate(num = row_number())
+    dplyr::mutate(num = dplyr::row_number())
 
 
   ### ► Life history sheet ----
@@ -111,10 +113,12 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     CheckEM::clean_names() %>%
     dplyr::select(!complex_functional_group) %>%
     dplyr::rename(trophic_group = simple_functional_group) #%>%
-    #dplyr::glimpse()
+  #dplyr::glimpse()
 
   # unique(life_history$trophic_group)
 
+  # Read in information to filter the temporal plots/data only
+  # Need to update this sheet if we want to include temporal plots for any of the new data added
   complete_sites <- googlesheets4::read_sheet(dbca_googlesheet_url, sheet = "temporal_years_sites") %>%
     CheckEM::clean_names() %>%
     dplyr::mutate(year = strsplit(as.character(include_years), split = ", "))%>%
@@ -126,6 +130,8 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::select(marine_park, method, year, site) %>%
     dplyr::mutate(complete = "Consistently sampled")
 
+  # Just marine parks and methods that have been consistently sampled
+  # To use for temporal plots
   complete_needed_campaigns <- complete_sites %>%
     dplyr::distinct(marine_park, method) %>%
     dplyr::mutate(complete_needed = "Consistently sampled")
@@ -163,23 +169,8 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::distinct(scientific_name, .keep_all = TRUE)
 
   trophic_groups <- life_history %>%
-    # dplyr::select(-c(target.code, feeding.guild, trophic.guild)) %>% # TODO use the regions for this
-    # dplyr::mutate(trophic_group = stringr::str_replace_all(.$community, c("NANA" = "Unknown",
-    #                                                                           "NA" = "Unknown",
-    #                                                                           "planktivore" = "Planktivore",
-    #                                                                           "Algal Feeder" = "Algal feeder"))) %>%
-    # tidyr::replace_na(list(trophic_group = "Unknown")) %>%
     dplyr::distinct() %>%
-    # dplyr::full_join(codes)%>%
-    # dplyr::filter(!is.na(marine_park)) %>% # To get rid of ones that don't have data yet
     dplyr::filter(!is.na(genus))
-
-  test <- trophic_groups %>%
-    dplyr::group_by(family, genus, species) %>%
-    dplyr::summarise(n = dplyr::n())
-
-  # There are a few duplicate trophic groups that will cause errors
-  # TODO Use the region matching for trophic and fish!!!
 
   # park_popups <- here::here("inst/data/parks.popups.csv") |> # BG TO DO -  CHANGE THIS
   #   read.csv(na.strings = c("NA", "NaN", " ", "", NA)) |>
@@ -231,18 +222,13 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
                                                     "transect" = "UVC")) %>%
     dplyr::distinct(marine_park, indicator, read_method, method)
 
-  unique(folders$marine_park)
-  unique(folders$indicator)
-  unique(folders$read_method)
-  unique(folders$method)
-
-  metadata <- data.frame()
+  metadata_joined <- data.frame()
 
   for(i in 1:nrow(folders)){
 
 
     folder <- folders[i,]
-    path <- paste(data_dir,unique(folder$marine_park), unique(folder$indicator), unique(folder$method), sep = "/")
+    path <- paste(data_dir, unique(folder$marine_park), unique(folder$indicator), unique(folder$method), sep = "/")
 
     message(path)
 
@@ -250,35 +236,69 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     marine_park <- unique(folder$marine_park)
     method <- unique(folder$method)
 
-    if(read_method %in% "point"){
+    if(read_method %in% "point") {
 
       metadata_temp <- CheckEM::read_metadata(dir = path, method = "BRUVs") %>%
         dplyr::mutate(marine_park = marine_park) %>%
         dplyr::mutate(method = method)
 
-    } else {
+    }
 
+    if(read_method %in% "transect") {
       metadata_temp <- CheckEM::read_metadata(dir = path, method = "DOVs")%>%
         dplyr::mutate(marine_park = marine_park) %>%
         dplyr::mutate(method = method)
-
     }
 
-    metadata <- dplyr::bind_rows(metadata, metadata_temp)
+    # else {
+    #
+    #   metadata_temp <- CheckEM::read_metadata(dir = path, method = "DOVs")%>%
+    #     dplyr::mutate(marine_park = marine_park) %>%
+    #     dplyr::mutate(method = method)
+    #
+    # }
+
+    metadata_joined <- dplyr::bind_rows(metadata_joined, metadata_temp)
 
   }
 
-  metadata <- metadata %>%
+  # test <- dplyr::filter(metadata_joined, is.na(dbca_zone))
+  # unique(test$campaignid)
+
+  # zoning_shp <- sf::st_read("inst/data/spatial/western-australia_marine-parks_all.gpkg") %>%
+  #   dplyr::glimpse()
+  #
+  # metadata_sf <- sf::st_as_sf(metadata_joined, coords = c("longitude_dd", "latitude_dd"), crs = 4326) %>%
+  #   sf::st_intersection(zoning_shp)
+  #
+  # nrow(metadata_joined)
+  # nrow(metadata_sf)
+  # 13995 - 11866 # All these ones are outside the park, need to review and fix the shapefile
+  #
+  # test_samps <- metadata_sf %>%
+  #   as.data.frame() %>%
+  #   dplyr::select(campaignid, sample)
+  #
+  # missing <- metadata_joined %>%
+  #   dplyr::anti_join(test_samps)
+  # unique(missing$campaignid)
+  #
+  # write.csv(missing, file = "inst/data/spatial/missing_samples.csv", row.names = F)
+
+  metadata <- metadata_joined %>%
     dplyr::mutate(latitude_dd = as.numeric(latitude_dd),
                   longitude_dd = as.numeric(longitude_dd)) %>%
+    dplyr::filter(!campaignid %in% c("2021-05_JurienBay.MP.Monitoring_UVC", # removed due to double up with 2021 ROVs
+                                     "DR2024-02_CSIRO_Ningaloo_stereoBRUVs", # Removed as it is CSIRO data just being picked up in the Cleaned Data folder
+                                     "2007-11_Point.Ann.MF_stereoBRUVs"), # Removed historic Point Ann data - mostly outside of the park
+                  !(campaignid %in% "2023-05_Marmion.MP.Monitoring_stereoBRUVs" & is.na(dbca_zone)),
+                  !(campaignid %in% "2023-05_Shoalwater.MP.Monitoring_stereo-BRUVs" & is.na(dbca_zone)),
+                  !(campaignid %in% "2018-03_SharkBay.MP.Monitoring_stereoBRUVs" & is.na(dbca_zone)),
+                  !(campaignid %in% "2012-06_Marmion.Warnbro.Cross.Shelf_stereoBRUVs" & is.na(dbca_zone)),
+                  !location %in% "Mermaid",
+                  !marine_park %in% "Rottnest Island Marine Reserve"
+                  ) %>%
     dplyr::left_join(zoning) %>%
-
-    dplyr::mutate(status = stringr::str_replace_all(.$status, c("Sanctuary" = "No-take",
-                                                                "No Take" = "No-take",
-                                                                "MPA" = "No-take",
-                                                                "Reserve" = "No-take",
-                                                                "No-Take" = "No-take",
-                                                                "Protected" = "No-take"))) %>%
     dplyr::mutate(dbca_zone = stringr::str_replace_all(.$dbca_zone, c("Sanctuary Zone" = "Sanctuary"))) %>%
     dplyr::mutate(method = forcats::fct_recode(method,
                                                "stereo-BRUVs" = "BRUVs",
@@ -286,29 +306,34 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
                                                "stereo-DOVs" = "DOVs",
                                                "stereo-ROVs" = "ROVs",
                                                "UVC" = "UVC")) %>%
-    dplyr::mutate(year = as.numeric(substr(campaignid, 1, 4))) %>%
+    dplyr::mutate(year = as.numeric(stringr::str_extract(campaignid, "\\d{4}"))) %>%
     dplyr::left_join(.,complete_sites) %>%
     dplyr::left_join(.,complete_needed_campaigns) %>%
     dplyr::mutate(complete = dplyr::if_else(is.na(complete_needed), "Consistently sampled", complete)) %>%
     tidyr::replace_na(list(complete = "Intermittently sampled")) %>%
-
     dplyr::mutate(dbca_zone = as.character(dbca_zone)) %>%
-
-    dplyr::mutate(dbca_zone = stringr::str_replace_all(dbca_zone, c("Sanctaury" = "Sanctuary",
-                                                           "SP Benthic" = "SP Benthic Protection",
-                                                           "SP Benthic Protection Protection" = "SP Benthic Protection",
-                                                           "Marine Management Area" = "General Use",
-                                                           "Marine" = "",
-                                                           "Recreational" = "Recreation"))) %>%
-
+    dplyr::mutate(dbca_zone = dplyr::case_when(stringr::str_detect(dbca_zone, "Benthic") ~ "SP Benthic Protection",
+                                        stringr::str_detect(dbca_zone, "Recreational") ~ "Recreation",
+                                        stringr::str_detect(dbca_zone, "Marine Management Area") ~ "General Use",
+                                        stringr::str_detect(dbca_zone, "Scientific Reference") ~ "SP Scientific Reference",
+                                        stringr::str_detect(dbca_zone, "Scientific Reference") ~ "SP Scientific Reference",
+                                        stringr::str_detect(dbca_zone, "Wildlife Conservation") ~ "SP Wildlife Conservation",
+                                        stringr::str_detect(dbca_zone, "Wildlife Viewing") ~ "SP Wildlife Viewing",
+                                        stringr::str_detect(dbca_zone, "Commonwealth") ~ "Outside Park",
+                                        stringr::str_detect(dbca_zone, "Outside") ~ "Outside Park",
+                                        is.na(dbca_zone) ~ "Proposed Marine Park", # Just Exmouth Gulf, need to see what this does later
+                                        .default = dbca_zone)) %>%
     dplyr::select(marine_park, method, campaignid, sample, latitude_dd, longitude_dd, date_time,
                   location, status, site,
                   successful_count, successful_length,
                   depth_m, observer_count,
                   year,
-                  # month, day,
-                  gazetted, re_zoned, complete, dbca_zone, dbca_sanctuary) %>% # Trying to remove columns to save space/time to load the app
-    dplyr::filter(!campaignid %in% c("2021-05_JurienBay.MP.Monitoring_UVC")) # removed due to double up with 2021 ROVs
+                  gazetted, re_zoned, complete, dbca_zone, dbca_sanctuary) # Trying to remove columns to save space/time to load the app
+
+  # Save out the tidy metadata to share with people
+  # Consider changing the location and name of the saved file
+  write.csv(metadata, file.path(iLab::get_dir("iLab_fish", sub.folder = "!Essential_Files/All_Data"), "metadata.csv"),
+            row.names = F)
 
   names(metadata) %>% sort() # All the names of the dataframe
   unique(metadata$marine_park) %>% sort()
@@ -320,17 +345,16 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
   unique(metadata$dbca_sanctuary)
   unique(metadata$status)
 
-  test <- metadata %>%
-    dplyr::filter(is.na(year)) # finds any missing years
-
   test_complete <- metadata %>%
     dplyr::filter(complete %in% "Consistently sampled")
 
+  # Reorder the data from northern park to southern park
   lats <- metadata %>%
     dplyr::group_by(marine_park) %>%
     dplyr::summarise(mean_lat = mean(latitude_dd)) %>% # biggest is the most north
     dplyr::arrange(desc(mean_lat)) # Could make this again on the server side
 
+  # Doesn't actually reorder the table, just the factor
   metadata$marine_park <- forcats::fct_relevel(metadata$marine_park, c(unique(lats$marine_park)))
 
   ## ► Summarise to find sampling effort, this is used for the leaflet maps ----
@@ -371,7 +395,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
 
     } else {
 
-      count_temp <- CheckEM::read_counts(dir = path, method = "DOVs")%>%
+      count_temp <- CheckEM::read_counts(dir = path, method = "DOVs") %>%
         dplyr::mutate(marine_park = marine_park) %>%
         dplyr::mutate(method = method)
 
@@ -381,11 +405,14 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
 
   }
 
+  include <- metadata %>%
+    dplyr::distinct(campaignid, sample)
+
   count <- count %>%
     dplyr::mutate(count = as.numeric(count)) %>%
     dplyr::mutate(method = forcats::fct_recode(method,
                                                "stereo-BRUVs" = "BRUVs",
-                                               #"stereo-BRUVs" = "BRUVS",
+                                               # "stereo-BRUVs" = "BRUVS",
                                                "stereo-DOVs" = "DOVs",
                                                "stereo-ROVs" = "ROVs",
                                                "UVC" = "UVC")) %>%
@@ -393,9 +420,9 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::filter(!family %in% c("Unknown", NA)) %>%
     dplyr::mutate(species = dplyr::if_else(is.na(species), "spp", species)) %>%
     dplyr::mutate(genus = dplyr::if_else(is.na(genus), family, genus)) %>%
-    dplyr::mutate(species = dplyr::if_else(species == "spp.", "spp", species)) %>% #ngari capes Pseudocaranx spp old data
-    dplyr::mutate(genus = dplyr::if_else(genus %in% "Unknown", family, genus))%>%
-    dplyr::filter(!campaignid %in% c("2021-05_JurienBay.MP.Monitoring_UVC"))
+    dplyr::mutate(species = dplyr::if_else(species == "spp.", "spp", species)) %>% # Ngari capes Pseudocaranx spp old data
+    dplyr::mutate(genus = dplyr::if_else(genus %in% "Unknown", family, genus)) %>%
+    dplyr::semi_join(include) # Filter to only rows in the metadata (this removes some campaigns/samples)
 
   unique(count$campaignid)
   unique(count$method)
@@ -451,20 +478,19 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::mutate(species = dplyr::if_else(is.na(species), "spp", species)) %>%
     dplyr::mutate(genus = dplyr::if_else(is.na(genus), family, genus)) %>%
     dplyr::mutate(species = dplyr::if_else(species == "spp.", "spp", species)) %>% #ngari capes Pseudocaranx spp old data
-    dplyr::mutate(genus = dplyr::if_else(genus %in% "Unknown", family, genus))%>% dplyr::filter(!campaignid %in% c("2021-05_JurienBay.MP.Monitoring_UVC"))
+    dplyr::mutate(genus = dplyr::if_else(genus %in% "Unknown", family, genus)) %>%
+    dplyr::semi_join(include) # Filter to only rows in the metadata (this removes some campaigns/samples)
 
 
   names(length)
 
   ### ► EventMeasure data ----
-  em_campaigns <- list.files(path = paste(data_dir,"/", sep = ""), recursive = T, pattern = "_Lengths.txt|_Lengths.TXT", full.names = T) %>%
+  em_campaigns <- list.files(path = paste(data_dir, "/", sep = ""), recursive = T, pattern = "_Lengths.txt|_Lengths.TXT", full.names = T) %>%
     purrr::map_df(~ read_dbca_files_txt(., data_dir = data_dir)) %>%
     dplyr::mutate(campaignid = stringr::str_replace_all(.$campaignid, c("_Lengths.txt" = "",
                                                                         "_Lengths.TXT" = ""))) %>%
     dplyr::distinct(campaignid) %>%
-    dplyr::filter(!campaignid %in% c("2021-05_JurienBay.MP.Monitoring_UVC")) %>%
-    dplyr::pull("campaignid") #%>%
-    #dplyr::glimpse()
+    dplyr::pull(campaignid)
 
   # Read in points ----
   points <- data.frame()
@@ -505,8 +531,8 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
                                                "stereo-BRUVs" = "BRUVs",
                                                #"stereo-BRUVs" = "BRUVS",
                                                "stereo-DOVs" = "DOVs",
-                                               "stereo-ROVs" = "ROVs",
-                                               "UVC" = "UVC")) %>%
+                                               "stereo-ROVs" = "ROVs" # , "UVC" = "UVC"
+                                               )) %>%
 
     # Attempt to partially tidy the data ---
     dplyr::filter(!family %in% c("Unknown", NA)) %>%
@@ -514,8 +540,11 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::mutate(species = dplyr::if_else(is.na(species), "spp", species)) %>%
     dplyr::mutate(genus = dplyr::if_else(is.na(genus), family, genus)) %>%
     dplyr::mutate(genus = dplyr::if_else(genus %in% "Unknown", family, genus)) %>%
-    dplyr::mutate(species = dplyr::if_else(species == "spp.", "spp", species)) %>% #ngari capes Pseudocaranx spp old data
-    dplyr::mutate(sample = stringr::str_replace_all(.$sample, "SIMP_20200323_PP_DOV_3.", "SIMP_20200323_PP_DOV_3"))%>% dplyr::filter(!campaignid %in% c("2021-05_JurienBay.MP.Monitoring_UVC")) # to fix mistake
+    dplyr::mutate(species = dplyr::if_else(species == "spp.", "spp", species)) %>% # ngari capes Pseudocaranx spp old data
+    dplyr::mutate(sample = stringr::str_replace_all(.$sample, "SIMP_20200323_PP_DOV_3.", "SIMP_20200323_PP_DOV_3")) %>%
+    dplyr::semi_join(include)
+    # dplyr::filter(!campaignid %in% c("2021-05_JurienBay.MP.Monitoring_UVC",
+    #                                  "DR2024-02_CSIRO_Ningaloo_stereoBRUVs"))
 
   unique(points$campaignid) %>% sort()
 
@@ -559,10 +588,12 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
                                                "stereo-BRUVs" = "BRUVs",
                                                #"stereo-BRUVs" = "BRUVS",
                                                "stereo-DOVs" = "DOVs",
-                                               "stereo-ROVs" = "ROVs",
-                                               "UVC" = "UVC")) %>%
-    dplyr::mutate(sample = stringr::str_replace_all(.$sample, "SIMP_20200323_PP_DOV_3.", "SIMP_20200323_PP_DOV_3"))%>%
-    dplyr::filter(!campaignid %in% c("2021-05_JurienBay.MP.Monitoring_UVC"))  %>% # to fix mistake
+                                               "stereo-ROVs" = "ROVs" #, "UVC" = "UVC"
+                                               )) %>%
+    dplyr::mutate(sample = stringr::str_replace_all(.$sample, "SIMP_20200323_PP_DOV_3.", "SIMP_20200323_PP_DOV_3")) %>%
+    dplyr::semi_join(include) %>%
+    # dplyr::filter(!campaignid %in% c("2021-05_JurienBay.MP.Monitoring_UVC",
+    #                                  "DR2024-02_CSIRO_Ningaloo_stereoBRUVs"))
     dplyr::filter(!is.na(number))
 
   test <- length_threed_points %>%
@@ -581,16 +612,29 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
   test <- dplyr::anti_join(length, metadata) %>%
     dplyr::distinct(campaignid, sample) # 0 samples
 
-  # samples not in count
+  # samples not in count (e.g. 0 fish)
   test <- dplyr::anti_join(metadata, count)%>%
-    dplyr::filter(!campaignid %in% c(em_campaigns)) # 144 samples without fish? does that make sense
+    dplyr::filter(!campaignid %in% c(em_campaigns))
 
   numbers <- test %>%
     dplyr::group_by(campaignid) %>%
     dplyr::summarise(n = dplyr::n())
 
+  # Metadata that doesn't have a match in points (EM files), but should do ?
+  test <- dplyr::anti_join(metadata, points) %>%
+    dplyr::filter(campaignid %in% c(em_campaigns)) %>%
+    dplyr::filter(!successful_count %in% "No",
+                  method %in% "stereo-BRUVs")
+
+  test <- dplyr::anti_join(metadata, points) %>%
+    dplyr::filter(campaignid %in% c(em_campaigns)) %>%
+    dplyr::filter(!successful_count %in% "No",
+                  !method %in% "stereo-BRUVs")
+  unique(test$campaignid)
+
   test <- dplyr::anti_join(metadata, points, by = c("marine_park", "method", "campaignid", "sample")) %>%
     dplyr::filter(campaignid %in% c(em_campaigns))
+  unique(test$campaignid)
 
   ## _______________________________________________________ ----
   ##                     COMPLETE LENGTH DATA                ----
@@ -615,13 +659,11 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
   complete_length <- length %>%
     dplyr::bind_rows(length_threed_points) %>%
     dplyr::mutate(number = 1) %>%
-
     dplyr::left_join(., synonyms) %>%
     dplyr::mutate(genus = ifelse(!is.na(genus_correct), genus_correct, genus)) %>%
     dplyr::mutate(species = ifelse(!is.na(species_correct), species_correct, species)) %>%
     dplyr::mutate(family = ifelse(!is.na(family_correct), family_correct, family)) %>%
     dplyr::select(-c(family_correct, genus_correct, species_correct)) %>%
-
     dplyr::full_join(metadata) %>%
     tidyr::complete(tidyr::nesting(marine_park, method, campaignid, sample), tidyr::nesting(family, genus, species)) %>%
     tidyr::replace_na(list(number = 0)) %>%
@@ -631,7 +673,6 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     # dplyr::left_join(common_names) %>%
     # dplyr::mutate(scientific_name = paste0(scientific_name, " (", australian_common_name, ")")) %>%
     dplyr::mutate(id = paste(campaignid, sample)) %>%
-
     # Attempt to partially tidy the data ---
     dplyr::filter(!family %in% c("Unknown", NA)) %>%
     dplyr::mutate(species = dplyr::if_else(is.na(species), "spp", species)) %>%
@@ -641,10 +682,31 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::left_join(common_names) %>%
     dplyr::mutate(scientific_name = paste0(scientific_name, " (", australian_common_name, ")"))
 
+  # Create a tidy length (not completed) file to save out for general iLab use
+  tidy_length <- length %>%
+    dplyr::bind_rows(length_threed_points) %>%
+    dplyr::mutate(number = 1) %>%
+    dplyr::left_join(., synonyms) %>%
+    dplyr::mutate(genus = ifelse(!is.na(genus_correct), genus_correct, genus)) %>%
+    dplyr::mutate(species = ifelse(!is.na(species_correct), species_correct, species)) %>%
+    dplyr::mutate(family = ifelse(!is.na(family_correct), family_correct, family)) %>%
+    dplyr::select(-c(family_correct, genus_correct, species_correct)) %>%
+    dplyr::left_join(metadata) %>%
+    dplyr::group_by(marine_park, campaignid, method, sample, family, genus, species, length) %>%
+    dplyr::summarise(number = sum(number)) %>%
+    dplyr::select(marine_park, campaignid, method, sample, family, genus, species, number, length) %>%
+    dplyr::filter(!family %in% c("Unknown", NA)) %>%
+    dplyr::mutate(species = dplyr::if_else(is.na(species), "spp", species)) %>%
+    dplyr::mutate(genus = dplyr::if_else(is.na(genus), family, genus)) %>%
+    dplyr::mutate(genus = dplyr::if_else(genus %in% "Unknown", family, genus))
+
+  # Save out the tidy length data to share with people
+  # Consider changing the location and name of the saved file
+  write.csv(tidy_length, file.path(iLab::get_dir("iLab_fish", sub.folder = "!Essential_Files/All_Data"), "length.csv"),
+            row.names = F)
+
   length(unique(complete_length$id))
   length(unique(complete_length$scientific_name))
-
-  1126 * 9902
 
   complete_length$marine_park <- forcats::fct_relevel(complete_length$marine_park, c(unique(lats$marine_park)))
 
@@ -671,9 +733,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::mutate(species = dplyr::if_else(is.na(species), "spp", species)) %>%
     dplyr::mutate(genus = dplyr::if_else(is.na(genus), family, genus)) %>%
     dplyr::mutate(genus = dplyr::if_else(genus %in% "Unknown", family, genus)) %>%
-
     dplyr::mutate(number = as.numeric(number)) %>%
-
     dplyr::group_by(marine_park, campaignid, method, sample, family, genus, species) %>%
     dplyr::summarise(maxn = sum(number)) %>%
     dplyr::ungroup() %>%
@@ -682,7 +742,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::filter(!method %in% c("stereo-BRUVs")) %>%
     dplyr::filter(campaignid %in% c(em_campaigns)) %>%
     dplyr::as_data_frame()#%>%
-    #dplyr::glimpse()
+  #dplyr::glimpse()
 
   #unique(dov_abundance$campaignid)
   # 2017-04_Shoalwater.MP.Monitoring_stereoDOVs
@@ -764,6 +824,18 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::full_join(metadata) %>%
     dplyr::filter(!species_key %in% "NANANA")
 
+  # Save out the tidy abundance data to share with people
+  # Consider changing the location and name of the saved file
+
+  tidy_count <- dplyr::bind_rows(maxn, count_summary, dov_abundance) %>% # 197022 rows
+    dplyr::left_join(metadata) %>%
+    dplyr::filter(!scientific_name %in% "NA NA",
+                  maxn > 0) %>% # Need to check why there are some zeros!
+    dplyr::select(marine_park, campaignid, sample, method, family, genus, species, count = maxn)
+
+  write.csv(tidy_count, file.path(iLab::get_dir("iLab_fish", sub.folder = "!Essential_Files/All_Data"), "count.csv"),
+            row.names = F)
+
   length(unique(abundance$id)) # 10691
   length(unique(abundance$species_key)) # 1258 species
   #1258 * 10691 # = 11,842,792 (correct number of rows)
@@ -787,7 +859,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::group_by(marine_park, method, campaignid, sample) %>%
     dplyr::summarise(lengths = sum(number))
 
-  missing_metadata <- dplyr::anti_join(complete_length_summary, metadata) # One with a random dot on the end
+  missing_metadata <- dplyr::anti_join(complete_length_summary, metadata) # None
 
   missing_fish <- dplyr::anti_join(metadata, complete_length_summary) # None
 
@@ -795,7 +867,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::group_by(marine_park, method, campaignid, sample) %>%
     dplyr::summarise(abundance = sum(maxn))
 
-  missing_metadata <- dplyr::anti_join(abundance_summary, metadata) # One with a random dot on the end
+  missing_metadata <- dplyr::anti_join(abundance_summary, metadata) # None
 
   missing_fish <- dplyr::anti_join(metadata, abundance_summary) # None
 
@@ -841,7 +913,6 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
   length(unique(fished_abundance$id)) # 7677
   unique(fished_abundance$marine_park)
   unique(metadata$marine_park)
-
 
   fished_all_abundance <- dplyr::semi_join(abundance, all_species_to_keep) %>%
     dplyr::left_join(all_species_to_keep) %>%
@@ -931,8 +1002,6 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
 
   # CTI Metric ----
 
-  library(plotrix)
-
   cti_site <- abundance %>%
     dplyr::filter(maxn > 0) %>%
     dplyr::mutate(maxnlog = log10(maxn+1)) %>%
@@ -946,14 +1015,14 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::ungroup() %>%
     dplyr::mutate(mean_cti = total_cti/total_maxn) %>%
     #dplyr::filter(mean_cti > 0) %>%
-    dplyr::mutate(year = stringr::str_sub(campaignid, 0, 4))
+    dplyr::mutate(year = stringr::str_extract(campaignid, "\\d{4}")) # Updated here, one campaignID was breaking this
 
   cti_park <- cti_site %>%
     tidyr::drop_na(mean_cti) %>%
     dplyr::group_by(marine_park, method, campaignid) %>%
-    dplyr::summarise(n = n(), cti = mean(mean_cti), se = plotrix::std.error(mean_cti, na.rm = TRUE), sd = sd(mean_cti, na.rm = TRUE)) %>%
+    dplyr::summarise(n = dplyr::n(), cti = mean(mean_cti), se = plotrix::std.error(mean_cti, na.rm = TRUE), sd = sd(mean_cti, na.rm = TRUE)) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(year = stringr::str_sub(campaignid, 0, 4))
+    dplyr::mutate(year = stringr::str_extract(campaignid, "\\d{4}")) # Updated here, one campaignID was breaking this
 
   # TARGET SPECIES MASS Metric ----
 
@@ -961,8 +1030,8 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::distinct(campaignid)
 
   count_temp <- count %>%
-    group_by(campaignid, method, sample, transect, family, genus, species) %>%
-    summarise(count = sum(count))
+    dplyr::group_by(campaignid, method, sample, transect, family, genus, species) %>%
+    dplyr::summarise(count = sum(count))
 
   count_threed <- dplyr::left_join(count_campaigns, complete_length) %>%
     dplyr::filter(number > 0) %>%
@@ -980,12 +1049,12 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
 
   target_mass_length <- dplyr::left_join(fished_all_species_dd, complete_length, by = "scientific_name") %>%
     dplyr::filter(number > 0) %>%
-    dplyr::mutate(length = if_else(is.na(length), 0, length)) %>%
+    dplyr::mutate(length = dplyr::if_else(is.na(length), 0, length)) %>%
     dplyr::filter(length > 0)
 
   target_medians <- target_mass_length <- dplyr::left_join(fished_all_species_dd, complete_length, by = "scientific_name") %>%
     dplyr::filter(number > 0) %>%
-    dplyr::mutate(length = if_else(is.na(length), 0, length)) %>%
+    dplyr::mutate(length = dplyr::if_else(is.na(length), 0, length)) %>%
     dplyr::filter(length > 0) %>%
     dplyr::group_by(campaignid, status, scientific_name) %>%
     dplyr::summarise(med_length = median(length)) %>%
@@ -999,7 +1068,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
 
   target_mass_threed <- dplyr::left_join(fished_all_species_dd, complete_length, by = "scientific_name") %>%
     dplyr::filter(number > 0) %>%
-    dplyr::mutate(length = if_else(is.na(length), 0, length)) %>%
+    dplyr::mutate(length = dplyr::if_else(is.na(length), 0, length)) %>%
     dplyr::filter(length == 0) %>%
     dplyr::select(!length) %>%
     dplyr::mutate(campaignstatus = paste0(campaignid, status, scientific_name)) %>%
@@ -1014,11 +1083,10 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::filter(global_region == "Australia") %>%
     dplyr::filter(grepl('North-west|South-west', marine_region)) %>%
     dplyr::mutate(marine_region_mass = ifelse(grepl('North-west', marine_region) & grepl('South-west', marine_region), "WA",
-                                  ifelse(grepl('North-west', marine_region), "North-west",
-                                         ifelse(grepl('South-west', marine_region), "South-west", NA))),
+                                              ifelse(grepl('North-west', marine_region), "North-west",
+                                                     ifelse(grepl('South-west', marine_region), "South-west", NA))),
                   scientific_name = paste0(scientific_name, " (", australian_common_name, ")")) %>%
-    dplyr::filter(!species == "spp") %>%
-    dplyr::select(scientific_name, species, fb_length_weight_measure, fb_a, fb_b, fb_a_ll, fb_b_ll)
+    dplyr::filter(!species == "spp")
 
   B20_mass_values <- CE.LH %>%
     dplyr::group_by(genus, marine_region_mass) %>%
@@ -1030,17 +1098,20 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
 
   B20_mass <- complete_length %>%
     dplyr::filter(length >= 200) %>%
-    dplyr::left_join(CE.LH, by = "scientific_name") %>%
-    mutate(length.cm = length/10) %>%
-    mutate(adjlength=(length.cm*fb_b_ll)+fb_a_ll)%>%
-    mutate(adjlength=as.numeric(adjlength))%>%
-    mutate(biomass.g=(adjlength^fb_b)*fb_a*number)%>%
-    mutate(biomass.kg = biomass.g/1000) %>%
-    mutate(biomass.kg = round(biomass.kg, 2)) %>%
-    mutate(biomass.g = round(biomass.g, 2)) %>%
-    mutate(length = as.numeric(length))
-    # select(c(-FB.Max,-AdjLength, -aLL, -bLL, -a, -b, -Length.cm)) %>%
-    # relocate(Genus_species, .before = Family)
+    dplyr::left_join(CE.LH %>%
+                       dplyr::select(scientific_name, species, fb_length_weight_measure,
+                                     fb_a, fb_b, fb_a_ll, fb_b_ll),
+                     by = "scientific_name") %>%
+    dplyr::mutate(length.cm = length/10) %>%
+    dplyr::mutate(adjlength = (length.cm*fb_b_ll)+fb_a_ll)%>%
+    dplyr::mutate(adjlength = as.numeric(adjlength))%>%
+    dplyr::mutate(biomass.g = (adjlength^fb_b)*fb_a*number)%>%
+    dplyr::mutate(biomass.kg = biomass.g/1000) %>%
+    dplyr::mutate(biomass.kg = round(biomass.kg, 2)) %>%
+    dplyr::mutate(biomass.g = round(biomass.g, 2)) %>%
+    dplyr::mutate(length = as.numeric(length))
+  # select(c(-FB.Max,-AdjLength, -aLL, -bLL, -a, -b, -Length.cm)) %>%
+  # relocate(Genus_species, .before = Family)
 
 
   ## _______________________________________________________ ----
@@ -1058,98 +1129,143 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
 
   fished_complete_length <- dplyr::semi_join(complete_length, fished_species)
 
-  fished_all_species <- fished_all_species %>% mutate(scientific_name = paste0(scientific_name, " (", australian_common_name, ")"))
+  fished_all_species <- fished_all_species %>% dplyr::mutate(scientific_name = paste0(scientific_name, " (", australian_common_name, ")"))
   fished_all_complete_length <- dplyr::semi_join(complete_length, fished_all_species) %>%
     dplyr::filter(number > 0)
 
-  state_mp <- sf::st_read(here::here("inst/data/spatial/WA_MPA_2018.shp"))
+  # state_mp <- sf::st_read(here::here("inst/data/spatial/WA_MPA_2018.shp")) # Gets overwritten anyways
 
-  wampa  <- sf::st_read(here::here("inst/data/spatial/WA_MPA_2020_SP.shp"))                          # all wa mpas
-  # simplify state parks names
-  wampa$waname <- gsub("( \\().+(\\))", "", wampa$ZONE_TYPE)
-  wampa$waname <- gsub(" [1-4]", "", wampa$waname)
-  # ab_mpa$waname[ab_mpa$ZONE_TYPE == unique(ab_mpa$ZONE_TYPE)[14]] <-
-  #   c("Special Purpose Zone\n(Habitat Protection)")
+  #____________________________________________________________________________#
+  # Old code chunk to get marine parks
+  # Replace with newer shapefile - leave old version in case some columns are necessary
 
-  # TODO add Rottnest
+  # wampa  <- sf::st_read(here::here("inst/data/spatial/WA_MPA_2020_SP.shp"))                          # all wa mpas
+  # # simplify state parks names
+  # wampa$waname <- gsub("( \\().+(\\))", "", wampa$ZONE_TYPE)
+  # wampa$waname <- gsub(" [1-4]", "", wampa$waname)
+  # # ab_mpa$waname[ab_mpa$ZONE_TYPE == unique(ab_mpa$ZONE_TYPE)[14]] <-
+  # #   c("Special Purpose Zone\n(Habitat Protection)")
+  #
+  # # TODO add Rottnest
+  #
+  # wampa$waname[wampa$NAME == "Hamelin Pool"]     <- "Marine Nature Reserve"
+  # wampa$waname[wampa$NAME == "Abrolhos Islands"] <- "Fish Habitat Protection Area"
+  #
+  # wampa$waname <- dplyr::recode(wampa$waname,
+  #                               "General Use" = "General Use",
+  #                               "Special Purpose Zone (Shore Based Activities)" =
+  #                                 "Special Purpose Zone\n(Shore Based Activities)",
+  #                               "Special Purpose Zone (Seagrass Protection) (IUCN IV)" = "Special Purpose Zone",
+  #                               "MMA" = "Marine Management Area",
+  #                               "MP" = "Marine Park",
+  #                               "Special Purpose Zone" = "Special Purpose",
+  #                               "Sanctuary Zone" = "Sanctuary (no-take)",
+  #                               "General Use Zone" = "General Use",
+  #                               "Recreation Area" = "Recreation",
+  #                               "Sanctuary Area" = "Sanctuary (no-take)",
+  #                               "Recreation Zone" = "Recreation",
+  #                               "Conservation Area" = "Conservation (no-take)",
+  #                               "General Use Area" = "General Use",
+  #
+  # )
+  #
+  # wampa <- wampa %>% dplyr::filter(!waname %in% c("Unassigned", "Marine Management Area", "Marine Nature Reserve", "Fish Habitat Protection Area", "Marine Park")) # TODO will need to include marine park soon
+  # # unique(test$NAME)
+  #
+  # unique(wampa$waname)
+  #
+  #
+  # # # filter out unassigned and unclassified
+  # # state_mp <- state_mp[!state_mp$ZONE_TYPE %in% c("Unassigned (IUCN IA)", "Unassigned (IUCN II)", "Unassigned (IUCN III)", "Unassigned (IUCN IV)", "Unassigned (IUCN VI)", "MMA (Unclassified) (IUCN VI)", "MP (Unclassified) (IUCN VI)"), ]
+  # # state_mp$zone <- stringr::str_replace_all(state_mp$ZONE_TYPE, c("[^[:alnum:]]" = " "))
+  # # state_mp$zone <- stringr::str_replace_all(state_mp$zone, c(
+  # #   "Conservation Area  IUCN IA " = "Conservation (no-take)",
+  # #   "General Use  IUCN II " = "General Use",
+  # #   "General Use Area  IUCN VI " = "General Use",
+  # #   "General Use Zone  IUCN II " = "General Use",
+  # #   "Recreation Area  IUCN II " = "Recreation",
+  # #   "Recreation Zone  IUCN II " = "Recreation",
+  # #   "Sanctuary Area  IUCN VI " = "Sanctuary (no-take)",
+  # #   "Sanctuary Zone  IUCN IA " = "Sanctuary (no-take)",
+  # #   "Special Purpose Zone  Aquaculture   IUCN VI " = "Special Purpose",
+  # #   "Special Purpose Zone  Benthic Protection   IUCN IV " = "Special Purpose",
+  # #   "Special Purpose Zone  Dugong Protection   IUCN IV " = "Special Purpose",
+  # #   "Special Purpose Zone  Habitat Protection   IUCN IV " = "Special Purpose",
+  # #   "Special Purpose Zone  Pearling   IUCN VI " = "Special Purpose",
+  # #   "Special Purpose Zone  Puerulus   IUCN IA " = "Special Purpose",
+  # #   "Special Purpose Zone  Scientific Reference   IUCN II " = "Special Purpose",
+  # #   "Special Purpose Zone  Scientific Reference   IUCN VI " = "Special Purpose",
+  # #   "Special Purpose Zone  Seagrass Protection   IUCN IV " = "Special Purpose",
+  # #   "Special Purpose Zone  Shore Based Activities   IUCN II " = "Special Purpose",
+  # #   "Special Purpose Zone  Wildlife Conservation   IUCN VI " = "Special Purpose",
+  # #   "Special Purpose Zone  Wildlife Viewing and Protection   IUCN IV " = "Special Purpose",
+  # #   "Special Purpose Zone 1  Shore based Activities   IUCN II " = "Special Purpose",
+  # #   "Special Purpose Zone 2  Shore based Activities   IUCN II " = "Special Purpose",
+  # #   "Special Purpose Zone 3  Shore based Activities   IUCN II " = "Special Purpose",
+  # #   "Special Purpose Zone 3  Shore based Activities   IUCN VI " = "Special Purpose",
+  # #   "Special Purpose Zone 4  Shore based Activities   IUCN II " = "Special Purpose"
+  # # ))
+  #
+  # state_mp <- wampa
+  # state_mp$zone <- as.factor(state_mp$waname)
+  # state_mp$zone <- forcats::fct_relevel(
+  #   state_mp$zone,
+  #   "Conservation (no-take)",
+  #   "Sanctuary (no-take)",
+  #   "Recreation",
+  #   "General Use",
+  #   "Special Purpose"
+  # )
+  #
+  # state_pal <- leaflet::colorFactor(c(
+  #   "#bfaf02", # conservation
+  #   "#7bbc63", # sanctuary = National Park
+  #   "#fdb930", # recreation
+  #   "#b9e6fb", # general use
+  #   "#ccc1d6" # special purpose
+  # ), state_mp$zone)
 
-  wampa$waname[wampa$NAME == "Hamelin Pool"]     <- "Marine Nature Reserve"
-  wampa$waname[wampa$NAME == "Abrolhos Islands"] <- "Fish Habitat Protection Area"
+  # state_mp <- sf::st_read(here::here('inst/data/spatial/western-australia_marine-parks-all.shp')) %>%
+  #   dplyr::filter(epbc == "State") %>%
+  #   dplyr::mutate(zone = dplyr::case_when(stringr::str_detect(zone_type, "(?i)Special") ~ "Special Purpose",
+  #                                         stringr::str_detect(zone_type, "(?i)Recreation") ~ "Recreation",
+  #                                         stringr::str_detect(zone_type, "(?i)General") ~ "General Use",
+  #                                         stringr::str_detect(zone_type, "(?i)Sanctuary") ~ "Sanctuary (no-take)",
+  #                                         stringr::str_detect(zone_type, stringr::fixed("Conservation Area (IUCN IA)")) ~ "Conservation (no-take)",
+  #                                         .default = "check")) %>%
+  #   dplyr::filter(!zone %in% "check") # Remove everything that doesn't fit this pattern, may have to update later
 
-  wampa$waname <- dplyr::recode(wampa$waname,
-                                "General Use" = "General Use",
-                                "Special Purpose Zone (Shore Based Activities)" =
-                                  "Special Purpose Zone\n(Shore Based Activities)",
-                                "Special Purpose Zone (Seagrass Protection) (IUCN IV)" = "Special Purpose Zone",
-                                "MMA" = "Marine Management Area",
-                                "MP" = "Marine Park",
-                                "Special Purpose Zone" = "Special Purpose",
-                                "Sanctuary Zone" = "Sanctuary (no-take)",
-                                "General Use Zone" = "General Use",
-                                "Recreation Area" = "Recreation",
-                                "Sanctuary Area" = "Sanctuary (no-take)",
-                                "Recreation Zone" = "Recreation",
-                                "Conservation Area" = "Conservation (no-take)",
-                                "General Use Area" = "General Use",
+  state_mp <- sf::st_read(here::here('inst/data/spatial/western-australia_marine-parks_all.gpkg')) %>%
+    dplyr::filter(agency == "DBCA") %>%
+    dplyr::mutate(zone = dplyr::case_when(stringr::str_detect(zone, "SP ") ~ "Special Purpose",
+                                          stringr::str_detect(zone, "Habitat Protection") ~ "Special Purpose", # Check this
+                                          stringr::str_detect(zone, "(?i)Recreation") ~ "Recreation",
+                                          stringr::str_detect(zone, "(?i)General") ~ "General Use",
+                                          stringr::str_detect(zone, "(?i)Sanctuary") ~ "Sanctuary (no-take)",
+                                          stringr::str_detect(zone, "Conservation Area") ~ "Conservation (no-take)",
+                                          .default = "check")) %>%
+    dplyr::mutate(zone = dplyr::case_when(zone %in% "check" & name %in% "Muiron Islands" ~ "General Use",
+                                          zone %in% "check" & name %in% "Hamelin Pool" ~ "Sanctuary (no-take)",
+                                          zone %in% "check" & name %in% "Barrow Island" ~ "General Use",
+                                          .default = zone)) %>%
+    sf::st_cast("POLYGON")
 
+  state_mp$zone <- forcats::fct_relevel(state_mp$zone,
+                                        "Conservation (no-take)",
+                                        "Sanctuary (no-take)",
+                                        "Recreation",
+                                        "General Use",
+                                        "Special Purpose"
   )
-
-  wampa <- wampa %>% dplyr::filter(!waname %in% c("Unassigned", "Marine Management Area", "Marine Nature Reserve", "Fish Habitat Protection Area", "Marine Park")) # TODO will need to include marine park soon
-  # unique(test$NAME)
-
-  unique(wampa$waname)
-
-
-  # # filter out unassigned and unclassified
-  # state_mp <- state_mp[!state_mp$ZONE_TYPE %in% c("Unassigned (IUCN IA)", "Unassigned (IUCN II)", "Unassigned (IUCN III)", "Unassigned (IUCN IV)", "Unassigned (IUCN VI)", "MMA (Unclassified) (IUCN VI)", "MP (Unclassified) (IUCN VI)"), ]
-  # state_mp$zone <- stringr::str_replace_all(state_mp$ZONE_TYPE, c("[^[:alnum:]]" = " "))
-  # state_mp$zone <- stringr::str_replace_all(state_mp$zone, c(
-  #   "Conservation Area  IUCN IA " = "Conservation (no-take)",
-  #   "General Use  IUCN II " = "General Use",
-  #   "General Use Area  IUCN VI " = "General Use",
-  #   "General Use Zone  IUCN II " = "General Use",
-  #   "Recreation Area  IUCN II " = "Recreation",
-  #   "Recreation Zone  IUCN II " = "Recreation",
-  #   "Sanctuary Area  IUCN VI " = "Sanctuary (no-take)",
-  #   "Sanctuary Zone  IUCN IA " = "Sanctuary (no-take)",
-  #   "Special Purpose Zone  Aquaculture   IUCN VI " = "Special Purpose",
-  #   "Special Purpose Zone  Benthic Protection   IUCN IV " = "Special Purpose",
-  #   "Special Purpose Zone  Dugong Protection   IUCN IV " = "Special Purpose",
-  #   "Special Purpose Zone  Habitat Protection   IUCN IV " = "Special Purpose",
-  #   "Special Purpose Zone  Pearling   IUCN VI " = "Special Purpose",
-  #   "Special Purpose Zone  Puerulus   IUCN IA " = "Special Purpose",
-  #   "Special Purpose Zone  Scientific Reference   IUCN II " = "Special Purpose",
-  #   "Special Purpose Zone  Scientific Reference   IUCN VI " = "Special Purpose",
-  #   "Special Purpose Zone  Seagrass Protection   IUCN IV " = "Special Purpose",
-  #   "Special Purpose Zone  Shore Based Activities   IUCN II " = "Special Purpose",
-  #   "Special Purpose Zone  Wildlife Conservation   IUCN VI " = "Special Purpose",
-  #   "Special Purpose Zone  Wildlife Viewing and Protection   IUCN IV " = "Special Purpose",
-  #   "Special Purpose Zone 1  Shore based Activities   IUCN II " = "Special Purpose",
-  #   "Special Purpose Zone 2  Shore based Activities   IUCN II " = "Special Purpose",
-  #   "Special Purpose Zone 3  Shore based Activities   IUCN II " = "Special Purpose",
-  #   "Special Purpose Zone 3  Shore based Activities   IUCN VI " = "Special Purpose",
-  #   "Special Purpose Zone 4  Shore based Activities   IUCN II " = "Special Purpose"
-  # ))
-
-  state_mp <- wampa
-  state_mp$zone <- as.factor(state_mp$waname)
-  state_mp$zone <- forcats::fct_relevel(
-    state_mp$zone,
-    "Conservation (no-take)",
-    "Sanctuary (no-take)",
-    "Recreation",
-    "General Use",
-    "Special Purpose"
-  )
+  levels(state_mp$zone)
 
   state_pal <- leaflet::colorFactor(c(
     "#bfaf02", # conservation
-    "#7bbc63", # sanctuary = National Park
+    "#7bbc63", # sanctuary
     "#fdb930", # recreation
     "#b9e6fb", # general use
     "#ccc1d6" # special purpose
   ), state_mp$zone)
-
 
   # spatial.data <- state_mp@data
 
@@ -1229,6 +1345,10 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::group_by(marine_park, method, year, status, metric, dbca_zone, gazetted, re_zoned) %>% # removed complete after meeting with Jordan 6th Nov 2023
     dplyr::summarise(mean = mean(value), se = mpaviewer::se(value)) %>%
     dplyr::ungroup()
+
+  test <- ta_sr_zone %>%
+    dplyr::group_by(marine_park, method, year, metric, dbca_zone, gazetted, re_zoned) %>%
+    dplyr::summarise(n = dplyr::n())
 
   ta_sr_zone <- data.table::data.table(ta_sr_zone)
 
@@ -1528,7 +1648,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
 #' @title S3 print method for 'mpa_data'.
 #' @description Prints a short representation of mpa_data returned by
 #' `generate_data`.
-#' @param x An object of class `mpa_data` as returned by `generate_data`.
+#' @param mpa_data An object of class `mpa_data` as returned by `generate_data`.
 #' @param ... Extra parameters for `print`
 #' @export
 #' @family included
@@ -1551,4 +1671,3 @@ print.mpa_data <- function(mpa_data, ...) {
   )
   invisible(mpa_data)
 }
-
