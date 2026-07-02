@@ -1442,7 +1442,7 @@ generate_plots <- function() {
 
       species_above_zero <- temp2 %>%
         dplyr::group_by(scientific_name) %>%
-        dplyr::filter(total > 20) %>%
+        dplyr::filter(total > 10) %>%
         dplyr::ungroup()
 
       for(species in unique(species_above_zero$scientific_name)){
