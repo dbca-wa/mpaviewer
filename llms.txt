@@ -108,12 +108,16 @@ The commands to deploy a new version are in `dev/03_deploy.R`.
   : Add a legend to a Leaflet map
 - [`add_legend_ta()`](https://dbca-wa.github.io/mpaviewer/reference/add_legend_ta.md)
   : Add a legend to a Leaflet map
+- [`consolidate_data()`](https://dbca-wa.github.io/mpaviewer/reference/consolidate_data.md)
+  : Consolidate all data to a single set of files
+- [`copy_data()`](https://dbca-wa.github.io/mpaviewer/reference/copy_data.md)
+  : Copy data to use within DBCA sharepoint folders
 - [`download_data()`](https://dbca-wa.github.io/mpaviewer/reference/download_data.md)
   : Download the application data file mpa_data.rds from CKAN
 - [`download_source_data()`](https://dbca-wa.github.io/mpaviewer/reference/download_source_data.md)
   : Download source data files from CKAN to the local data directory
 - [`generate_data()`](https://dbca-wa.github.io/mpaviewer/reference/generate_data.md)
-  : Generate one data object to use in server.R
+  : Generate one data object to use in server
 - [`generate_plots()`](https://dbca-wa.github.io/mpaviewer/reference/generate_plots.md)
   : Generate plots to display in the dashboard
 - [`ggplot_mpatheme()`](https://dbca-wa.github.io/mpaviewer/reference/ggplot_mpatheme.md)

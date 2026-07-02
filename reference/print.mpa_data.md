@@ -11,10 +11,10 @@ print(mpa_data, ...)
 
 ## Arguments
 
+- mpa_data:
+
+  An object of class `mpa_data` as returned by `generate_data`.
+
 - ...:
 
   Extra parameters for `print`
-
-- x:
-
-  An object of class `mpa_data` as returned by `generate_data`.

@@ -12,20 +12,13 @@ googledrive_download_data(raw_dir, project_dir)
 
 ## Arguments
 
-- ckan_url:
+- raw_dir:
 
-  The data catalogue URL, default: `Sys.getenv("CKAN_URL")` or the
-  current DBCA CKAN server.
+  A local directory to download files to.
 
-- data_rid:
+- project_dir:
 
-  The resource ID of the data file, default:
-  `Sys.getenv("MPAVIEWER_RID")` or the current resource ID.
-
-- data_dir:
-
-  A local directory to download files to, default:
-  `here::here("inst/data")`.
+  A local directory containing the Github repository.
 
 ## Value
 

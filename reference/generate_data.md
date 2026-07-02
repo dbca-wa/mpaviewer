@@ -1,6 +1,6 @@
-# Generate one data object to use in server.R
+# Generate one data object to use in server
 
-Generate one data object to use in server.R
+Generate one data object to use in server
 
 ## Usage
 
@@ -13,6 +13,10 @@ generate_data(
 ```
 
 ## Arguments
+
+- raw_dir:
+
+  File path to load data from
 
 - save:
 
