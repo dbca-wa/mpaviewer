@@ -29,7 +29,8 @@ generate_plots <- function() {
            "SP Habitat Protection"    = "#CAC3D5",
            "Shore Based Activities"   = "#231D1D",
            "SP Wildlife Conservation" = "#7C7CB8",
-           "SP Wildlife Viewing"      = "#7C7CB8")
+           "SP Wildlife Viewing"      = "#7C7CB8",
+           "Proposed Marine Park"     = "#BBE3EF")
 
   # BEGIN PLOTTING ----
   # FISH PLOTS ----

@@ -121,16 +121,16 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
   # Need to update this sheet if we want to include temporal plots for any of the new data added
   complete_sites <- googlesheets4::read_sheet(dbca_googlesheet_url, sheet = "temporal_years_sites") %>%
     CheckEM::clean_names() %>%
-    dplyr::mutate(year = strsplit(as.character(include_years), split = ", "))%>%
+    dplyr::mutate(year = strsplit(as.character(include_years), split = ", ")) %>%
     tidyr::unnest(year) %>%
-    dplyr::mutate(site = strsplit(as.character(include_sites), split = ", "))%>%
+    dplyr::mutate(site = strsplit(as.character(include_sites), split = ", ")) %>%
     tidyr::unnest(site) %>%
     dplyr::distinct() %>%
     dplyr::mutate(year = as.numeric(year)) %>%
     dplyr::select(marine_park, method, year, site) %>%
     dplyr::mutate(complete = "Consistently sampled")
 
-  # Just marine parks and methods that have been consistently sampled
+  # Just marine parks and methods that have been consistently sampled at some point in time
   # To use for temporal plots
   complete_needed_campaigns <- complete_sites %>%
     dplyr::distinct(marine_park, method) %>%
@@ -323,12 +323,18 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
                                         stringr::str_detect(dbca_zone, "Outside") ~ "Outside Park",
                                         is.na(dbca_zone) ~ "Proposed Marine Park", # Just Exmouth Gulf, need to see what this does later
                                         .default = dbca_zone)) %>%
+    dplyr::filter(!c(dbca_zone %in% "Outside Park" & marine_park %in% c("Shark Bay Marine Park", "Montebello Islands Marine Park"))) %>% # CS added after discussion with RE & TS
     dplyr::select(marine_park, method, campaignid, sample, latitude_dd, longitude_dd, date_time,
                   location, status, site,
                   successful_count, successful_length,
                   depth_m, observer_count,
                   year,
                   gazetted, re_zoned, complete, dbca_zone, dbca_sanctuary) # Trying to remove columns to save space/time to load the app
+
+  test <- metadata %>%
+    dplyr::filter(complete %in% "Intermittently sampled") %>%
+    dplyr::distinct(marine_park, method, campaignid)
+
 
   # Save out the tidy metadata to share with people
   # Consider changing the location and name of the saved file
@@ -667,7 +673,7 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::full_join(metadata) %>%
     tidyr::complete(tidyr::nesting(marine_park, method, campaignid, sample), tidyr::nesting(family, genus, species)) %>%
     tidyr::replace_na(list(number = 0)) %>%
-    dplyr::select(marine_park, campaignid, method, sample, family, genus, species, number, length) %>%
+    dplyr::select(marine_park, campaignid, method, sample, family, genus, species, number, length = length_mm) %>%
     dplyr::left_join(metadata) %>%
     # dplyr::mutate(scientific_name = paste(genus, species, sep = " ")) %>%
     # dplyr::left_join(common_names) %>%
@@ -680,7 +686,12 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::mutate(genus = dplyr::if_else(genus %in% "Unknown", family, genus)) %>%
     dplyr::mutate(scientific_name = paste(genus, species, sep = " ")) %>%
     dplyr::left_join(common_names) %>%
-    dplyr::mutate(scientific_name = paste0(scientific_name, " (", australian_common_name, ")"))
+    dplyr::mutate(scientific_name = paste0(scientific_name, " (", australian_common_name, ")")) %>%
+    # Filter out non-fishes
+    dplyr::filter(!family %in% c("Cheloniidae", "Delphinidae", "Dolphin", "Elapidae",
+                                 "Elapidae: Hydrophiinae", "Hydrophiidae", "Hydrophiinae",
+                                 "Hydrophyiidae", "Octopodidae", "Octopus", "Sepiidae",
+                                 "Turtle"))
 
   # Create a tidy length (not completed) file to save out for general iLab use
   tidy_length <- length %>%
@@ -692,13 +703,22 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::mutate(family = ifelse(!is.na(family_correct), family_correct, family)) %>%
     dplyr::select(-c(family_correct, genus_correct, species_correct)) %>%
     dplyr::left_join(metadata) %>%
-    dplyr::group_by(marine_park, campaignid, method, sample, family, genus, species, length) %>%
+    dplyr::group_by(marine_park, campaignid, method, sample, family, genus, species, length_mm) %>%
     dplyr::summarise(number = sum(number)) %>%
-    dplyr::select(marine_park, campaignid, method, sample, family, genus, species, number, length) %>%
+    dplyr::select(marine_park, campaignid, method, sample, family, genus, species, number, length = length_mm) %>%
     dplyr::filter(!family %in% c("Unknown", NA)) %>%
     dplyr::mutate(species = dplyr::if_else(is.na(species), "spp", species)) %>%
     dplyr::mutate(genus = dplyr::if_else(is.na(genus), family, genus)) %>%
-    dplyr::mutate(genus = dplyr::if_else(genus %in% "Unknown", family, genus))
+    dplyr::mutate(genus = dplyr::if_else(genus %in% "Unknown", family, genus)) %>%
+    # Filter out non-fishes
+    dplyr::filter(!family %in% c("Cheloniidae", "Delphinidae", "Dolphin", "Elapidae",
+                                 "Elapidae: Hydrophiinae", "Hydrophiidae", "Hydrophiinae",
+                                 "Hydrophyiidae", "Octopodidae", "Octopus", "Sepiidae",
+                                 "Turtle"))
+
+  test <- tidy_length %>%
+    dplyr::filter(campaignid %in% "2024-02_NgariCapes.MP.Monitoring_stereoBRUVs") %>%
+    dplyr::glimpse()
 
   # Save out the tidy length data to share with people
   # Consider changing the location and name of the saved file
@@ -720,8 +740,6 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
 
   # stereo-DOV abundance from 3D points and lengths
   dov_abundance <- length_threed_points %>%
-    # dplyr::filter(!method %in% c("stereo-BRUVs")) %>%
-
     dplyr::left_join(., synonyms) %>%
     dplyr::mutate(genus = ifelse(!is.na(genus_correct), genus_correct, genus)) %>%
     dplyr::mutate(species = ifelse(!is.na(species_correct), species_correct, species)) %>%
@@ -822,7 +840,12 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::mutate(id = paste(campaignid, sample, method, sep = "_")) %>% # These are just for checking the number of rows
     dplyr::mutate(species_key = paste0(family, genus, species)) %>% # These are just for checking the number of rows
     dplyr::full_join(metadata) %>%
-    dplyr::filter(!species_key %in% "NANANA")
+    dplyr::filter(!species_key %in% "NANANA") %>%
+    # Filter out non-fishes
+    dplyr::filter(!family %in% c("Cheloniidae", "Delphinidae", "Dolphin", "Elapidae",
+                                 "Elapidae: Hydrophiinae", "Hydrophiidae", "Hydrophiinae",
+                                 "Hydrophyiidae", "Octopodidae", "Octopus", "Sepiidae",
+                                 "Turtle"))
 
   # Save out the tidy abundance data to share with people
   # Consider changing the location and name of the saved file
@@ -831,7 +854,12 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::left_join(metadata) %>%
     dplyr::filter(!scientific_name %in% "NA NA",
                   maxn > 0) %>% # Need to check why there are some zeros!
-    dplyr::select(marine_park, campaignid, sample, method, family, genus, species, count = maxn)
+    dplyr::select(marine_park, campaignid, sample, method, family, genus, species, count = maxn)  %>%
+    # Filter out non-fishes
+    dplyr::filter(!family %in% c("Cheloniidae", "Delphinidae", "Dolphin", "Elapidae",
+                                 "Elapidae: Hydrophiinae", "Hydrophiidae", "Hydrophiinae",
+                                 "Hydrophyiidae", "Octopodidae", "Octopus", "Sepiidae",
+                                 "Turtle"))
 
   write.csv(tidy_count, file.path(iLab::get_dir("iLab_fish", sub.folder = "!Essential_Files/All_Data"), "count.csv"),
             row.names = F)

@@ -147,7 +147,7 @@ raw_dir     <- iLab::get_dir("iLab_fish", sub.folder = "!Essential_Files/Dashboa
 project_dir <- getwd()
 
 # Step 2. Copy all internal data from campaign sharepoint folders into dashboard data folder ----
-# mpaviewer::copy_data(dir = iLab::get_dir("iLab_fish"))
+mpaviewer::copy_data(dir = iLab::get_dir("iLab_fish"))
 
 # Step 3. Download all data from GoogleDrive (only run this section if it has been updated) ----
 # Not sure about this section, the file doesn't exist so this won't run
@@ -156,7 +156,7 @@ project_dir <- getwd()
 # source(paste0(project_dir, "/R/projectfolder_data_download.R"))
 
 # Step 4. Generate new summarised data ----
-# mpaviewer::generate_data(raw_dir = raw_dir)
+mpaviewer::generate_data(raw_dir = raw_dir)
 
 # Step 5. Generate new plots ----
 mpaviewer:::generate_plots()
