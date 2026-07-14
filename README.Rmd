@@ -1,5 +1,8 @@
 ---
 output: github_document
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -16,66 +19,94 @@ knitr::opts_chunk$set(
 # mpaviewer
 
 <!-- badges: start -->
-[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![Package checks](https://github.com/dbca-wa/mpaviewer/workflows/R-CMD-check/badge.svg)](https://github.com/dbca-wa/mpaviewer/actions)
-[![Docker app](https://github.com/dbca-wa/mpaviewer/actions/workflows/docker.yaml/badge.svg)](https://github.com/dbca-wa/mpaviewer/actions/workflows/docker.yaml)
-[![Docker data](https://github.com/dbca-wa/mpaviewer/actions/workflows/docker_cron.yaml/badge.svg)](https://github.com/dbca-wa/mpaviewer/actions/workflows/docker_cron.yaml)
+
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![Package
+checks](https://github.com/dbca-wa/mpaviewer/workflows/R-CMD-check/badge.svg)](https://github.com/dbca-wa/mpaviewer/actions)
+[![Docker
+app](https://github.com/dbca-wa/mpaviewer/actions/workflows/docker.yaml/badge.svg)](https://github.com/dbca-wa/mpaviewer/actions/workflows/docker.yaml)
+[![Docker
+data](https://github.com/dbca-wa/mpaviewer/actions/workflows/docker_cron.yaml/badge.svg)](https://github.com/dbca-wa/mpaviewer/actions/workflows/docker_cron.yaml)
 [![Docs](https://github.com/dbca-wa/mpaviewer/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/dbca-wa/mpaviewer/actions/workflows/pkgdown.yaml)
+
 <!-- badges: end -->
 
-[mpaviewer](https://mpaviewer.dbca.wa.gov.au/) is a dashboard of marine monitoring data for DBCA staff.
+[mpaviewer](https://mpaviewer.dbca.wa.gov.au/) is a dashboard of marine
+monitoring data for DBCA staff.
 
 ## Architecture
-* Data is loaded from a locally saved `.rds` file, or freshly loaded from
-  Google Drive or the DBCA data catalogue (and then saved as `.rds`).
-  The locally saved file lives on a persistent volume.
+
+- Data is loaded from a locally saved `.rds` file, or freshly loaded
+  from Google Drive or the DBCA data catalogue (and then saved as
+  `.rds`). The locally saved file lives on a persistent volume.
 
 ## Data
-The dashboard runs off a single `mpa_data.rds` R save file which is produced
-from a range of source data files (CSV, TXT, SHP).
 
-Archived on the DBCA data catalogue as dataset [mpaviewer](https://data.dbca.wa.gov.au/dataset/mpaviewer) are:
-* A link to a Google Drive folder which contains a copy of source data files
-  in the folder/file/data structure expected by `mpaviewer::generate_data()`.
-* Links to the deployed dashboard and this GitHub code repository
-* The mpaviewer data file `mpa_data.rds` at a specific resource ID expected by
-  `mpaviewer::download_data()`.
+**Data is currently not being saved or updated on the DBCA data
+catalogue as detailed below. Google drive is not being used for data
+storage (other than storage of overarching information e.g. sample site
+inclusion) - all data is stored on the Marine Science SharePoint.**
 
-### Update source data  
+The dashboard runs off a single `mpa_data.rds` R save file which is
+produced from a range of source data files (CSV, TXT, SHP).
+
+Archived on the DBCA data catalogue as dataset
+[mpaviewer](https://data.dbca.wa.gov.au/dataset/mpaviewer) are: \* A
+link to a Google Drive folder which contains a copy of source data files
+in the folder/file/data structure expected by
+`mpaviewer::generate_data()`. \* Links to the deployed dashboard and
+this GitHub code repository \* The mpaviewer data file `mpa_data.rds` at
+a specific resource ID expected by `mpaviewer::download_data()`.
+
+### Update source data
+
 Data owners can update the Google Drive folder with new data.
 
 ### Generate dashboard data
-Whenever the source data was updated, an analyst must download the contents
-of the Google Drive folder "mpaviewer" into the directory `inst/data` of a local 
-clone of the mpaviewer codebase and run `mpaviewer::generate_data()`, then upload
-the data file `mpa_data.rds` to the DBCA data catalogue.
+
+Whenever the source data was updated, an analyst must download the
+contents of the Google Drive folder "mpaviewer" into the directory
+`inst/data` of a local clone of the mpaviewer codebase and run
+`mpaviewer::generate_data()`, then upload the data file `mpa_data.rds`
+to the DBCA data catalogue.
 
 ### Update the dashboard with new data
-A [Docker container for ETL](https://github.com/dbca-wa/mpaviewer/pkgs/container/mpaviewer_cron) 
-periodically executes a script to download source data and process it into the application data.
 
-Until the source data files are all available from the DBCA Data Catalogue,
-the container simply downloads the pre-processed data file `mpa_data.rds` from 
-the DBCA data catalogue.
+A [Docker container for
+ETL](https://github.com/dbca-wa/mpaviewer/pkgs/container/mpaviewer_cron)
+periodically executes a script to download source data and process it
+into the application data.
+
+Until the source data files are all available from the DBCA Data
+Catalogue, the container simply downloads the pre-processed data file
+`mpa_data.rds` from the DBCA data catalogue.
 
 ## Development
-`mpaviewer` is an RShiny app using 
-[Shiny modules](https://shiny.rstudio.com/articles/modules.html), 
-developed using [`golem`](https://mastering-shiny.org/scaling-modules.html).
+
+`mpaviewer` is an RShiny app using [Shiny
+modules](https://shiny.rstudio.com/articles/modules.html), developed
+using [`golem`](https://mastering-shiny.org/scaling-modules.html).
 
 The commands to develop new functionality are in `dev/02_dev.R`.
 
-* Create a GH issue for each task, keep it as small and self-contained as possible.
-* Work on one issue at a time.
-* Once R CMD Check passes and all build errors and warnings are addressed, 
-  commit changes.
-* Write descriptive and well-formed commit messages and reference the GH issue.
-* Push and see whether the R CMD Check GH action passes.
-* Bonus points: Build and run the Docker image locally. If that's not an option,
-  at least make sure that any new package dependencies are added to the Dockerfile.
+- Create a GH issue for each task, keep it as small and self-contained
+  as possible.
+- Work on one issue at a time.
+- Once R CMD Check passes and all build errors and warnings are
+  addressed, commit changes.
+- Write descriptive and well-formed commit messages and reference the GH
+  issue.
+- Push and see whether the R CMD Check GH action passes.
+- Bonus points: Build and run the Docker image locally. If that's not an
+  option, at least make sure that any new package dependencies are added
+  to the Dockerfile.
 
 ## Release
-Once app and Docker image work, create a new version, tag, and push the tag.
+
+Once app and Docker image work, create a new version, tag, and push the
+tag.
+
 ```{r eval=FALSE}
 styler::style_pkg()
 spelling::spell_check_package()
@@ -94,10 +125,11 @@ system(glue::glue("git tag -a v{v} -m 'v{v}' && git push && git push --tags"))
 ```
 
 ## Deployment
-GitHub Actions are configured to build a new Docker image for every tag starting
-with "v", such as "v1.0.0".
-The images are pushed to the GitHub container registry `ghcr.io`.
-The DBCA maintainer of `mpaviewer` then updates the tag number (e.g. `1.0.0`)
-in the image run by Kubernetes, which will trigger a hot reload of the image.
+
+GitHub Actions are configured to build a new Docker image for every tag
+starting with "v", such as "v1.0.0". The images are pushed to the GitHub
+container registry `ghcr.io`. The DBCA maintainer of `mpaviewer` then
+updates the tag number (e.g. `1.0.0`) in the image run by Kubernetes,
+which will trigger a hot reload of the image.
 
 The commands to deploy a new version are in `dev/03_deploy.R`.

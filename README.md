@@ -14,6 +14,7 @@ app](https://github.com/dbca-wa/mpaviewer/actions/workflows/docker.yaml/badge.sv
 [![Docker
 data](https://github.com/dbca-wa/mpaviewer/actions/workflows/docker_cron.yaml/badge.svg)](https://github.com/dbca-wa/mpaviewer/actions/workflows/docker_cron.yaml)
 [![Docs](https://github.com/dbca-wa/mpaviewer/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/dbca-wa/mpaviewer/actions/workflows/pkgdown.yaml)
+
 <!-- badges: end -->
 
 [mpaviewer](https://mpaviewer.dbca.wa.gov.au/) is a dashboard of marine
@@ -21,11 +22,16 @@ monitoring data for DBCA staff.
 
 ## Architecture
 
--   Data is loaded from a locally saved `.rds` file, or freshly loaded
-    from Google Drive or the DBCA data catalogue (and then saved as
-    `.rds`). The locally saved file lives on a persistent volume.
+- Data is loaded from a locally saved `.rds` file, or freshly loaded
+  from Google Drive or the DBCA data catalogue (and then saved as
+  `.rds`). The locally saved file lives on a persistent volume.
 
 ## Data
+
+**Data is currently not being saved or updated on the DBCA data
+catalogue as detailed below. Google drive is not being used for data
+storage (other than storage of overarching information e.g. sample site
+inclusion) - all data is stored on the Marine Science SharePoint.**
 
 The dashboard runs off a single `mpa_data.rds` R save file which is
 produced from a range of source data files (CSV, TXT, SHP).
@@ -69,17 +75,17 @@ using [`golem`](https://mastering-shiny.org/scaling-modules.html).
 
 The commands to develop new functionality are in `dev/02_dev.R`.
 
--   Create a GH issue for each task, keep it as small and self-contained
-    as possible.
--   Work on one issue at a time.
--   Once R CMD Check passes and all build errors and warnings are
-    addressed, commit changes.
--   Write descriptive and well-formed commit messages and reference the
-    GH issue.
--   Push and see whether the R CMD Check GH action passes.
--   Bonus points: Build and run the Docker image locally. If that’s not
-    an option, at least make sure that any new package dependencies are
-    added to the Dockerfile.
+- Create a GH issue for each task, keep it as small and self-contained
+  as possible.
+- Work on one issue at a time.
+- Once R CMD Check passes and all build errors and warnings are
+  addressed, commit changes.
+- Write descriptive and well-formed commit messages and reference the GH
+  issue.
+- Push and see whether the R CMD Check GH action passes.
+- Bonus points: Build and run the Docker image locally. If that’s not an
+  option, at least make sure that any new package dependencies are added
+  to the Dockerfile.
 
 ## Release
 
