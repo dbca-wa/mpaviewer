@@ -52,6 +52,7 @@
 </h1></div>
 <!-- badges: start -->
 
+<!-- badges: end -->
 <p><a href="https://mpaviewer.dbca.wa.gov.au/" class="external-link">mpaviewer</a> is a dashboard of marine monitoring data for DBCA staff.</p>
 <div class="section level2">
 <h2 id="architecture">Architecture<a class="anchor" aria-label="anchor" href="#architecture"></a>
@@ -63,6 +64,7 @@
 <div class="section level2">
 <h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
 </h2>
+<p><strong>Data is currently not being saved or updated on the DBCA data catalogue as detailed below. Google drive is not being used for data storage (other than storage of overarching information e.g. sample site inclusion) - all data is stored on the Marine Science SharePoint.</strong></p>
 <p>The dashboard runs off a single <code>mpa_data.rds</code> R save file which is produced from a range of source data files (CSV, TXT, SHP).</p>
 <p>Archived on the DBCA data catalogue as dataset <a href="https://data.dbca.wa.gov.au/dataset/mpaviewer" class="external-link">mpaviewer</a> are: * A link to a Google Drive folder which contains a copy of source data files in the folder/file/data structure expected by <code><a href="reference/generate_data.html">mpaviewer::generate_data()</a></code>. * Links to the deployed dashboard and this GitHub code repository * The mpaviewer data file <code>mpa_data.rds</code> at a specific resource ID expected by <code><a href="reference/download_data.html">mpaviewer::download_data()</a></code>.</p>
 <div class="section level3">
@@ -174,7 +176,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

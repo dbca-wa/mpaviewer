@@ -11,6 +11,11 @@ monitoring data for DBCA staff.
 
 ## Data
 
+**Data is currently not being saved or updated on the DBCA data
+catalogue as detailed below. Google drive is not being used for data
+storage (other than storage of overarching information e.g. sample site
+inclusion) - all data is stored on the Marine Science SharePoint.**
+
 The dashboard runs off a single `mpa_data.rds` R save file which is
 produced from a range of source data files (CSV, TXT, SHP).
 
