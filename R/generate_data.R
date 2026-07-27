@@ -146,6 +146,8 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
 
   park_labels <- data.table::data.table(park_labels)
 
+  # Is the below target species sheet created manually?
+  # CS has manually added species. Seems to be some weird choices on the existing target species
   fished_species <- googlesheets4::read_sheet(dbca_googlesheet_url, sheet = "target_species") %>%
     CheckEM::clean_names() %>%
     dplyr::filter(label == "Highly retained")
@@ -915,13 +917,16 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::mutate(scientific_name = paste0(genus, " ", species, " (", australian_common_name, ")")) %>%
     dplyr::select(family, genus, species, scientific_name, report_as)
 
+  test <- fished_species %>%
+    dplyr::add_count(dplyr::across(dplyr::everything())) %>%
+    dplyr::filter(n > 1)
+
   fished_abundance <- dplyr::semi_join(abundance, fished_species) %>%
     dplyr::left_join(fished_species) %>%
     dplyr::select(-c(family, scientific_name)) %>%
     tidyr::separate(report_as, into = c("genus", "species")) %>%
     dplyr::left_join(common_names) %>%
     dplyr::mutate(scientific_name = paste0(genus, " ", species, " (", australian_common_name, ") ",label)) %>%
-    # dplyr::filter(maxn > 0) # NOTE REMEMBER TO TURN OFFF!!!!!
     dplyr::group_by(marine_park, campaignid, method, sample, family, genus, species, scientific_name, id, species_key) %>%
     dplyr::summarise(total_abundance = sum(maxn)) %>%
     dplyr::ungroup() %>%
@@ -929,16 +934,16 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::select(marine_park, campaignid, sample, total_abundance, method, family, genus, species, scientific_name) %>%
     tidyr::complete(tidyr::nesting(marine_park, campaignid, sample, method), tidyr::nesting(family, genus, species, scientific_name)) %>%
     tidyr::replace_na(list(total_abundance = 0)) %>%
-    dplyr::full_join(metadata) %>%
-    dplyr::filter(!is.na(scientific_name)) %>%
+    dplyr::full_join(metadata) %>% # Joins back metadata columns, does not add rows
+    dplyr::filter(!is.na(scientific_name)) %>% # Removes rows
     dplyr::mutate(id = paste(campaignid, sample, method, sep = "_")) %>% # These are just for checking the number of rows
     dplyr::mutate(species_key = paste0(family, genus, species)) %>% # These are just for checking the number of rows
     # Need to only keep the species that are targeted in that marine park
-    dplyr::semi_join(species_to_keep)
+    dplyr::semi_join(species_to_keep) # This filter removes some samples which could be an issue
 
   names(fished_abundance) %>% sort()
 
-  length(unique(fished_abundance$id)) # 7677
+  length(unique(fished_abundance$id)) # 10303
   unique(fished_abundance$marine_park)
   unique(metadata$marine_park)
 
@@ -948,7 +953,6 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     tidyr::separate(report_as, into = c("genus", "species")) %>%
     dplyr::left_join(common_names) %>%
     dplyr::mutate(scientific_name = paste0(genus, " ", species, " (", australian_common_name, ")")) %>%
-    # dplyr::filter(maxn > 0) # NOTE REMEMBER TO TURN OFFF!!!!!
     dplyr::group_by(marine_park, campaignid, method, sample, family, genus, species, scientific_name, id, species_key) %>%
     dplyr::summarise(total_abundance = sum(maxn)) %>%
     dplyr::ungroup() %>%
@@ -965,13 +969,10 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
 
   names(fished_all_abundance) %>% sort()
 
-  length(unique(fished_all_abundance$id)) # 7677
+  length(unique(fished_all_abundance$id)) # 10303 - matches sampling effort
+  # ID is the unique method/campaign/sample combinations
   unique(fished_all_abundance$marine_park)
   unique(metadata$marine_park)
-  #
-  #   test <- fished_abundance %>%
-  #     dplyr::group_by(marine_park, scientific_name) %>%
-  #     dplyr::summarise(n = dplyr::n())
 
   # The correct number of rows is not easy to calculate - due to number of species being different for each marine park
   fished_summed <- fished_abundance %>%
@@ -988,8 +989,33 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::select(marine_park, campaignid, sample, total_abundance, method) %>%
     dplyr::full_join(metadata)
 
-  # If there are any NAs the marine park is missing from the life history sheet
-  # test <- fished_summed %>% dplyr::filter(is.na(total_abundance))
+  ##############################################################################
+  # Calculate an unfished/non-target assemblage to add to the dashboard
+
+  unfished_abundance <- dplyr::anti_join(abundance, all_species_to_keep) %>%
+    dplyr::left_join(all_species_to_keep) %>%
+    dplyr::left_join(common_names) %>%
+    dplyr::mutate(scientific_name = paste0(genus, " ", species, " (", australian_common_name, ")")) %>%
+    dplyr::group_by(marine_park, campaignid, method, sample, family, genus, species, scientific_name, id, species_key) %>%
+    dplyr::summarise(total_abundance = sum(maxn)) %>%
+    dplyr::ungroup() %>%
+    dplyr::full_join(metadata) %>%
+    dplyr::select(marine_park, campaignid, sample, total_abundance, method, family, genus, species, scientific_name) %>%
+    tidyr::complete(tidyr::nesting(marine_park, campaignid, sample, method), tidyr::nesting(family, genus, species, scientific_name)) %>%
+    tidyr::replace_na(list(total_abundance = 0)) %>%
+    dplyr::full_join(metadata) %>%
+    dplyr::filter(!is.na(scientific_name)) %>%
+    dplyr::mutate(id = paste(campaignid, sample, method, sep = "_")) %>% # These are just for checking the number of rows
+    dplyr::mutate(species_key = paste0(family, genus, species))
+
+  unfished_summed <- unfished_abundance %>%
+    dplyr::group_by(marine_park, campaignid, method, sample) %>%
+    dplyr::summarise(total_abundance = sum(total_abundance)) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(marine_park, campaignid, sample, total_abundance, method) %>%
+    dplyr::full_join(metadata)
+
+  ##############################################################################
 
   trophic_abundance <- dplyr::left_join(abundance, trophic_groups) %>%
     tidyr::replace_na(list(trophic_group = "Unknown")) %>%
@@ -1027,6 +1053,29 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::select(marine_park, campaignid, sample, species_richness, method) %>%
     dplyr::full_join(metadata) %>%
     tidyr::replace_na(list(species_richness = 0))
+
+  ##############################################################################
+  # Add in a shark and ray abundance metric
+
+  shark_abundance <- abundance %>%
+    dplyr::left_join(CheckEM::australia_life_history %>% dplyr::select(class, family, genus, species)) %>%
+    dplyr::filter(class %in% "Elasmobranchii") %>%
+    dplyr::glimpse()
+
+  # There are some that are not joining properly with the life history sheet
+  # Need to check these later as a few are sharks
+  test <- abundance %>%
+    dplyr::left_join(CheckEM::australia_life_history %>% dplyr::select(class, family, genus, species)) %>%
+    dplyr::filter(is.na(class)) %>%
+    dplyr::distinct(family, genus, species)
+
+  # shark_total_abundance <- shark_abundance %>%
+  #   dplyr::group_by(marine_park, campaignid, method, sample) %>%
+  #   dplyr::summarise(total_abundance = sum(maxn)) %>%
+  #   dplyr::ungroup() %>%
+  #   dplyr::select(marine_park, campaignid, sample, total_abundance, method)
+
+  ##############################################################################
 
   # CTI Metric ----
 
@@ -1090,10 +1139,6 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::ungroup() %>%
     dplyr::select(campaignstatus, med_length)
 
-  # test <- target_mass_length %>%
-  #   dplyr::group_by(campaignid, status, scientific_name) %>%
-  #   dplyr::distinct()
-
   target_mass_threed <- dplyr::left_join(fished_all_species_dd, complete_length, by = "scientific_name") %>%
     dplyr::filter(number > 0) %>%
     dplyr::mutate(length = dplyr::if_else(is.na(length), 0, length)) %>%
@@ -1102,44 +1147,40 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::mutate(campaignstatus = paste0(campaignid, status, scientific_name)) %>%
     dplyr::left_join(., target_medians, by = "campaignstatus")
 
-  # dplyr::if_else(nrow(target_medians)==nrow(), "GOOD - Number of target species matches number of medians", "NO GOOD - Number of target species DOES NOT match number of medians")
-
   # Mass for B20 Metric ----
-
-  CE.LH <- readRDS(url("https://github.com/GlobalArchiveManual/CheckEM/raw/main/annotation-schema/output/fish/schema/australia_life-history.RDS")) %>%
-    #filter to Australia
-    dplyr::filter(global_region == "Australia") %>%
-    dplyr::filter(grepl('North-west|South-west', marine_region)) %>%
-    dplyr::mutate(marine_region_mass = ifelse(grepl('North-west', marine_region) & grepl('South-west', marine_region), "WA",
-                                              ifelse(grepl('North-west', marine_region), "North-west",
-                                                     ifelse(grepl('South-west', marine_region), "South-west", NA))),
-                  scientific_name = paste0(scientific_name, " (", australian_common_name, ")")) %>%
-    dplyr::filter(!species == "spp")
-
-  B20_mass_values <- CE.LH %>%
-    dplyr::group_by(genus, marine_region_mass) %>%
-    dplyr::summarise(fb_a = mean(fb_a), fb_b = mean(fb_b), fb_a_ll = mean(fb_b_ll), fb_b_ll = mean(fb_b_ll)) %>%
-    dplyr::ungroup() %>%
-    dplyr::filter(!fb_a == is.na(fb_a)) %>%
-    dplyr::mutate(species = "spp",
-                  scientific_name = paste0(genus, " ", species, " (NA)"))
-
-  B20_mass <- complete_length %>%
-    dplyr::filter(length >= 200) %>%
-    dplyr::left_join(CE.LH %>%
-                       dplyr::select(scientific_name, species, fb_length_weight_measure,
-                                     fb_a, fb_b, fb_a_ll, fb_b_ll),
-                     by = "scientific_name") %>%
-    dplyr::mutate(length.cm = length/10) %>%
-    dplyr::mutate(adjlength = (length.cm*fb_b_ll)+fb_a_ll)%>%
-    dplyr::mutate(adjlength = as.numeric(adjlength))%>%
-    dplyr::mutate(biomass.g = (adjlength^fb_b)*fb_a*number)%>%
-    dplyr::mutate(biomass.kg = biomass.g/1000) %>%
-    dplyr::mutate(biomass.kg = round(biomass.kg, 2)) %>%
-    dplyr::mutate(biomass.g = round(biomass.g, 2)) %>%
-    dplyr::mutate(length = as.numeric(length))
-  # select(c(-FB.Max,-AdjLength, -aLL, -bLL, -a, -b, -Length.cm)) %>%
-  # relocate(Genus_species, .before = Family)
+  # This section is not currently being used
+  # CE.LH <- readRDS(url("https://github.com/GlobalArchiveManual/CheckEM/raw/main/annotation-schema/output/fish/schema/australia_life-history.RDS")) %>%
+  #   #filter to Australia
+  #   dplyr::filter(global_region == "Australia") %>%
+  #   dplyr::filter(grepl('North-west|South-west', marine_region)) %>%
+  #   dplyr::mutate(marine_region_mass = ifelse(grepl('North-west', marine_region) & grepl('South-west', marine_region), "WA",
+  #                                             ifelse(grepl('North-west', marine_region), "North-west",
+  #                                                    ifelse(grepl('South-west', marine_region), "South-west", NA))),
+  #                 scientific_name = paste0(scientific_name, " (", australian_common_name, ")")) %>%
+  #   dplyr::filter(!species == "spp")
+  #
+  # B20_mass_values <- CE.LH %>%
+  #   dplyr::group_by(genus, marine_region_mass) %>%
+  #   dplyr::summarise(fb_a = mean(fb_a), fb_b = mean(fb_b), fb_a_ll = mean(fb_b_ll), fb_b_ll = mean(fb_b_ll)) %>%
+  #   dplyr::ungroup() %>%
+  #   dplyr::filter(!fb_a == is.na(fb_a)) %>%
+  #   dplyr::mutate(species = "spp",
+  #                 scientific_name = paste0(genus, " ", species, " (NA)"))
+  #
+  # B20_mass <- complete_length %>%
+  #   dplyr::filter(length >= 200) %>%
+  #   dplyr::left_join(CE.LH %>%
+  #                      dplyr::select(scientific_name, species, fb_length_weight_measure,
+  #                                    fb_a, fb_b, fb_a_ll, fb_b_ll),
+  #                    by = "scientific_name") %>%
+  #   dplyr::mutate(length.cm = length/10) %>%
+  #   dplyr::mutate(adjlength = (length.cm*fb_b_ll)+fb_a_ll)%>%
+  #   dplyr::mutate(adjlength = as.numeric(adjlength))%>%
+  #   dplyr::mutate(biomass.g = (adjlength^fb_b)*fb_a*number)%>%
+  #   dplyr::mutate(biomass.kg = biomass.g/1000) %>%
+  #   dplyr::mutate(biomass.kg = round(biomass.kg, 2)) %>%
+  #   dplyr::mutate(biomass.g = round(biomass.g, 2)) %>%
+  #   dplyr::mutate(length = as.numeric(length))
 
 
   ## _______________________________________________________ ----
@@ -1160,108 +1201,6 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
   fished_all_species <- fished_all_species %>% dplyr::mutate(scientific_name = paste0(scientific_name, " (", australian_common_name, ")"))
   fished_all_complete_length <- dplyr::semi_join(complete_length, fished_all_species) %>%
     dplyr::filter(number > 0)
-
-  # state_mp <- sf::st_read(here::here("inst/data/spatial/WA_MPA_2018.shp")) # Gets overwritten anyways
-
-  #____________________________________________________________________________#
-  # Old code chunk to get marine parks
-  # Replace with newer shapefile - leave old version in case some columns are necessary
-
-  # wampa  <- sf::st_read(here::here("inst/data/spatial/WA_MPA_2020_SP.shp"))                          # all wa mpas
-  # # simplify state parks names
-  # wampa$waname <- gsub("( \\().+(\\))", "", wampa$ZONE_TYPE)
-  # wampa$waname <- gsub(" [1-4]", "", wampa$waname)
-  # # ab_mpa$waname[ab_mpa$ZONE_TYPE == unique(ab_mpa$ZONE_TYPE)[14]] <-
-  # #   c("Special Purpose Zone\n(Habitat Protection)")
-  #
-  # # TODO add Rottnest
-  #
-  # wampa$waname[wampa$NAME == "Hamelin Pool"]     <- "Marine Nature Reserve"
-  # wampa$waname[wampa$NAME == "Abrolhos Islands"] <- "Fish Habitat Protection Area"
-  #
-  # wampa$waname <- dplyr::recode(wampa$waname,
-  #                               "General Use" = "General Use",
-  #                               "Special Purpose Zone (Shore Based Activities)" =
-  #                                 "Special Purpose Zone\n(Shore Based Activities)",
-  #                               "Special Purpose Zone (Seagrass Protection) (IUCN IV)" = "Special Purpose Zone",
-  #                               "MMA" = "Marine Management Area",
-  #                               "MP" = "Marine Park",
-  #                               "Special Purpose Zone" = "Special Purpose",
-  #                               "Sanctuary Zone" = "Sanctuary (no-take)",
-  #                               "General Use Zone" = "General Use",
-  #                               "Recreation Area" = "Recreation",
-  #                               "Sanctuary Area" = "Sanctuary (no-take)",
-  #                               "Recreation Zone" = "Recreation",
-  #                               "Conservation Area" = "Conservation (no-take)",
-  #                               "General Use Area" = "General Use",
-  #
-  # )
-  #
-  # wampa <- wampa %>% dplyr::filter(!waname %in% c("Unassigned", "Marine Management Area", "Marine Nature Reserve", "Fish Habitat Protection Area", "Marine Park")) # TODO will need to include marine park soon
-  # # unique(test$NAME)
-  #
-  # unique(wampa$waname)
-  #
-  #
-  # # # filter out unassigned and unclassified
-  # # state_mp <- state_mp[!state_mp$ZONE_TYPE %in% c("Unassigned (IUCN IA)", "Unassigned (IUCN II)", "Unassigned (IUCN III)", "Unassigned (IUCN IV)", "Unassigned (IUCN VI)", "MMA (Unclassified) (IUCN VI)", "MP (Unclassified) (IUCN VI)"), ]
-  # # state_mp$zone <- stringr::str_replace_all(state_mp$ZONE_TYPE, c("[^[:alnum:]]" = " "))
-  # # state_mp$zone <- stringr::str_replace_all(state_mp$zone, c(
-  # #   "Conservation Area  IUCN IA " = "Conservation (no-take)",
-  # #   "General Use  IUCN II " = "General Use",
-  # #   "General Use Area  IUCN VI " = "General Use",
-  # #   "General Use Zone  IUCN II " = "General Use",
-  # #   "Recreation Area  IUCN II " = "Recreation",
-  # #   "Recreation Zone  IUCN II " = "Recreation",
-  # #   "Sanctuary Area  IUCN VI " = "Sanctuary (no-take)",
-  # #   "Sanctuary Zone  IUCN IA " = "Sanctuary (no-take)",
-  # #   "Special Purpose Zone  Aquaculture   IUCN VI " = "Special Purpose",
-  # #   "Special Purpose Zone  Benthic Protection   IUCN IV " = "Special Purpose",
-  # #   "Special Purpose Zone  Dugong Protection   IUCN IV " = "Special Purpose",
-  # #   "Special Purpose Zone  Habitat Protection   IUCN IV " = "Special Purpose",
-  # #   "Special Purpose Zone  Pearling   IUCN VI " = "Special Purpose",
-  # #   "Special Purpose Zone  Puerulus   IUCN IA " = "Special Purpose",
-  # #   "Special Purpose Zone  Scientific Reference   IUCN II " = "Special Purpose",
-  # #   "Special Purpose Zone  Scientific Reference   IUCN VI " = "Special Purpose",
-  # #   "Special Purpose Zone  Seagrass Protection   IUCN IV " = "Special Purpose",
-  # #   "Special Purpose Zone  Shore Based Activities   IUCN II " = "Special Purpose",
-  # #   "Special Purpose Zone  Wildlife Conservation   IUCN VI " = "Special Purpose",
-  # #   "Special Purpose Zone  Wildlife Viewing and Protection   IUCN IV " = "Special Purpose",
-  # #   "Special Purpose Zone 1  Shore based Activities   IUCN II " = "Special Purpose",
-  # #   "Special Purpose Zone 2  Shore based Activities   IUCN II " = "Special Purpose",
-  # #   "Special Purpose Zone 3  Shore based Activities   IUCN II " = "Special Purpose",
-  # #   "Special Purpose Zone 3  Shore based Activities   IUCN VI " = "Special Purpose",
-  # #   "Special Purpose Zone 4  Shore based Activities   IUCN II " = "Special Purpose"
-  # # ))
-  #
-  # state_mp <- wampa
-  # state_mp$zone <- as.factor(state_mp$waname)
-  # state_mp$zone <- forcats::fct_relevel(
-  #   state_mp$zone,
-  #   "Conservation (no-take)",
-  #   "Sanctuary (no-take)",
-  #   "Recreation",
-  #   "General Use",
-  #   "Special Purpose"
-  # )
-  #
-  # state_pal <- leaflet::colorFactor(c(
-  #   "#bfaf02", # conservation
-  #   "#7bbc63", # sanctuary = National Park
-  #   "#fdb930", # recreation
-  #   "#b9e6fb", # general use
-  #   "#ccc1d6" # special purpose
-  # ), state_mp$zone)
-
-  # state_mp <- sf::st_read(here::here('inst/data/spatial/western-australia_marine-parks-all.shp')) %>%
-  #   dplyr::filter(epbc == "State") %>%
-  #   dplyr::mutate(zone = dplyr::case_when(stringr::str_detect(zone_type, "(?i)Special") ~ "Special Purpose",
-  #                                         stringr::str_detect(zone_type, "(?i)Recreation") ~ "Recreation",
-  #                                         stringr::str_detect(zone_type, "(?i)General") ~ "General Use",
-  #                                         stringr::str_detect(zone_type, "(?i)Sanctuary") ~ "Sanctuary (no-take)",
-  #                                         stringr::str_detect(zone_type, stringr::fixed("Conservation Area (IUCN IA)")) ~ "Conservation (no-take)",
-  #                                         .default = "check")) %>%
-  #   dplyr::filter(!zone %in% "check") # Remove everything that doesn't fit this pattern, may have to update later
 
   state_mp <- sf::st_read(here::here('inst/data/spatial/western-australia_marine-parks_all.gpkg')) %>%
     dplyr::filter(agency == "DBCA") %>%
@@ -1387,6 +1326,35 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
 
   ta_sr_site <- data.table::data.table(ta_sr_site)
 
+  shark_ta <- shark_abundance %>%
+    dplyr::group_by(marine_park, method, year, status, gazetted, re_zoned, complete) %>%
+    dplyr::summarise(mean = mean(maxn),
+                     se = mpaviewer::se(maxn))
+
+  shark_ta <- data.table::data.table(shark_ta)
+
+  shark_ta_sanctuary <- shark_abundance %>%
+    dplyr::group_by(marine_park, method, year, status, dbca_sanctuary, gazetted, re_zoned) %>%
+    dplyr::summarise(mean = mean(maxn), se = mpaviewer::se(maxn)) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(!is.na(dbca_sanctuary))
+
+  shark_ta_sanctuary <- data.table::data.table(shark_ta_sanctuary)
+
+  shark_ta_zone <- shark_abundance %>%
+    dplyr::group_by(marine_park, method, year, status, dbca_zone, gazetted, re_zoned) %>%
+    dplyr::summarise(mean = mean(maxn), se = mpaviewer::se(maxn)) %>%
+    dplyr::ungroup()
+
+  shark_ta_zone <- data.table::data.table(shark_ta_zone)
+
+  shark_ta_site <- shark_abundance %>%
+    dplyr::group_by(marine_park, method, year, status, site, gazetted, re_zoned, complete) %>%
+    dplyr::summarise(mean = mean(maxn), se = mpaviewer::se(maxn)) %>%
+    dplyr::ungroup()
+
+  shark_ta_site <- data.table::data.table(shark_ta_site)
+
   # Lists for dropdowns
   ordered_top_fished_species <- fished_abundance %>%
     dplyr::group_by(marine_park, method, scientific_name) %>%
@@ -1473,6 +1441,43 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
     dplyr::filter(!is.na(dbca_sanctuary))
 
   fished_all_sum_sanctuary <- data.table::data.table(fished_all_sum_sanctuary)
+
+  ##############################################################################
+  # Add here unfished sums
+
+  # I think unfished species sum and unfished species sum sanctuary are pretty redundant
+  # They would be used to make individual species plots (same as whats in the 'whole assemblage' section)
+
+  # unfished_species_sum <- unfished_abundance %>%
+  #   dplyr::group_by(marine_park, method, year, status, scientific_name, gazetted, re_zoned, complete) %>%
+  #   dplyr::summarise(mean = mean(total_abundance), se = mpaviewer::se(total_abundance)) %>%
+  #   dplyr::ungroup()
+  #
+  # unfished_species_sum <- data.table::data.table(unfished_species_sum)
+  #
+  # unfished_species_sum_sanctuary <- unfished_abundance %>%
+  #   dplyr::group_by(marine_park, method, year, status, scientific_name, gazetted, re_zoned, complete, dbca_sanctuary) %>%
+  #   dplyr::summarise(mean = mean(total_abundance), se = mpaviewer::se(total_abundance)) %>%
+  #   dplyr::ungroup()%>%
+  #   dplyr::filter(!is.na(dbca_sanctuary))
+  #
+  # unfished_species_sum_sanctuary <- data.table::data.table(unfished_species_sum_sanctuary)
+
+  unfished_sum <- unfished_summed %>%
+    dplyr::group_by(marine_park, method, year, status, gazetted, re_zoned, complete) %>%
+    dplyr::summarise(mean = mean(total_abundance), se = mpaviewer::se(total_abundance)) %>%
+    dplyr::ungroup()
+
+  unfished_sum <- data.table::data.table(unfished_sum)
+
+  unfished_sum_sanctuary <- unfished_summed %>%
+    dplyr::group_by(marine_park, method, year, status, gazetted, re_zoned, complete, dbca_sanctuary) %>%
+    dplyr::summarise(mean = mean(total_abundance), se = mpaviewer::se(total_abundance)) %>%
+    dplyr::ungroup()%>%
+    dplyr::filter(!is.na(dbca_sanctuary))
+
+  unfished_sum_sanctuary <- data.table::data.table(unfished_sum_sanctuary)
+  ##############################################################################
 
   # TODO split these into ones that have been reformatted and ones that don't need it
   # Using data table to set keys for faster filtering ----
@@ -1576,7 +1581,10 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
   data.table::setkey(abundance_leaflet)
   data.table::setkey(metadata_leaflet)
   data.table::setkey(park_labels)
-
+  data.table::setkey(shark_ta)
+  data.table::setkey(shark_ta_sanctuary)
+  data.table::setkey(shark_ta_site)
+  data.table::setkey(shark_ta_zone)
   data.table::setkey(lats)
   data.table::setkey(abundance)
   data.table::setkey(trophic_abundance)
@@ -1602,6 +1610,9 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
   # data.table::setkey(common_names) # Not needed
   data.table::setkey(foa_codes)
   data.table::setkey(interpretation_trends)
+  data.table::setkey(unfished_sum)
+  data.table::setkey(unfished_sum_sanctuary)
+
 
   # Version 3: one object
   mpa_data <- structure(
@@ -1636,6 +1647,12 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
       fished_species_sum_sanctuary = fished_species_sum_sanctuary, # summarised
       fished_species_all_sum = fished_species_all_sum, # summarised
       fished_species_all_sum_sanctuary = fished_species_all_sum_sanctuary, # summarised
+      unfished_sum = unfished_sum,                                              # Added -CS
+      unfished_sum_sanctuary = unfished_sum_sanctuary,                          # Added -CS
+      shark_ta = shark_ta,                                                      # Added -CS
+      shark_ta_sanctuary = shark_ta_sanctuary,                                  # Added -CS
+      shark_ta_zone = shark_ta_zone,                                            # Added -CS
+      shark_ta_site = shark_ta_site,                                            # Added -CS
       metadata = metadata,
       sampling_effort = sampling_effort,
       cti_park = cti_park,
