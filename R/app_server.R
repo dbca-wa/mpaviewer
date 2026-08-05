@@ -734,7 +734,6 @@ app_server <- function(input, output, session) {
     map
   })
 
-
    ####### ->  Leaflet - Total abundance and species richness ----
   output$fish.park.metric.leaflet <- renderLeaflet({
 
@@ -1060,6 +1059,44 @@ app_server <- function(input, output, session) {
       img(src = paste0("www/plots/", "Fish_", park, "_", method, "_trophic_Planktivore.png"), align = "left", width = "100%")
     })
   })
+
+  ##############################################################################
+  ####### ->  Sharks and Ray Total Abundance ----
+  observeEvent(input$fish.park.method.dropdown, {
+    output$shark.park.total.plot <- renderUI({
+      req(input$fish.park.dropdown, input$fish.park.method.dropdown)
+      park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
+      method <- input$fish.park.method.dropdown
+
+      img(src = paste0("www/plots/", "Fish_", park, "_", method, "_shark_total_abundance.png"), align = "left", width = "100%")
+    })
+  })
+
+  ####### ->  Shark and Ray abundance by Sanctuary ----
+  observeEvent(input$fish.park.dropdown, {
+    output$shark.park.total.sanctuary.plot <- renderUI({
+      req(input$fish.park.dropdown, input$fish.park.method.dropdown)
+
+      park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
+      method <- input$fish.park.method.dropdown
+
+      img(src = paste0("www/plots/", "Fish_", park, "_", method, "_shark_total_abundance_sanctuary.png"), align = "left", width = "100%")
+    })
+  })
+
+  ####### ->  Shark and Ray abundance by Zone ----
+  observeEvent(input$fish.park.dropdown, {
+    output$shark.park.total.zone.plot <- renderUI({
+      req(input$fish.park.dropdown, input$fish.park.method.dropdown)
+
+      park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
+      method <- input$fish.park.method.dropdown
+
+      img(src = paste0("www/plots/", "Fish_", park, "_", method, "_shark_total_abundance_zone.png"), align = "left", width = "100%")
+    })
+  })
+  ##############################################################################
+
 
 
   ####### ->  KDE plot ----
