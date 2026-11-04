@@ -37,7 +37,7 @@ RUN Rscript -e 'remotes::install_github("iLab-fish/iLab")' # Check this
 # COPY /mpaviewer/renv.lock ./renv.lock
 ## app folder
 # COPY /mpaviewer ./app
-COPY /mpaviewer ./app # Potential mismatch here, check as it should be COPY <source> <destination>
+COPY /mpaviewer ./app
 
 EXPOSE 3838
 
