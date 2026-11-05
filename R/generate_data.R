@@ -331,7 +331,8 @@ generate_data <- function(raw_dir, save = TRUE, dest = here::here("inst/data/mpa
                   successful_count, successful_length,
                   depth_m, observer_count,
                   year,
-                  gazetted, re_zoned, complete, dbca_zone, dbca_sanctuary) # Trying to remove columns to save space/time to load the app
+                  gazetted, re_zoned, complete, dbca_zone, dbca_sanctuary) %>% # Trying to remove columns to save space/time to load the app
+    dplyr::filter(!successful_count %in% "No")
 
   test <- metadata %>%
     dplyr::filter(complete %in% "Intermittently sampled") %>%
