@@ -91,23 +91,6 @@ app_server <- function(input, output, session) {
   })
 
   ## FUNCTIONS -----
-  # TODO refactor as R/create_dropdown.R
-  create_dropdown <- function(input_name, choices, label, multiple) {
-    if (!is.null(input[[input_name]]) && input[[input_name]] %in% choices) {
-      selected <- input[[input_name]]
-    } else {
-      selected <- choices[1]
-    }
-
-    shiny::selectInput(
-      inputId = input_name,
-      label = label,
-      choices = choices,
-      selected = selected,
-      multiple = multiple, width = "100%"
-    )
-  }
-
   observeEvent(input$access, {
     updateTabItems(session, "tabs", "info")
   })
