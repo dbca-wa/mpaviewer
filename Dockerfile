@@ -10,7 +10,8 @@ RUN apt-get update -qq && apt-get -y --no-install-recommends install \
     libssh2-1-dev \
     unixodbc-dev \
     libcurl4-openssl-dev \
-    libssl-dev
+    libssl-dev \
+    cron
 
 ## update system libraries
 RUN apt-get update && \
@@ -37,7 +38,7 @@ RUN Rscript -e 'remotes::install_github("iLab-fish/iLab")' # Check this
 # COPY /mpaviewer/renv.lock ./renv.lock
 ## app folder
 # COPY /mpaviewer ./app
-COPY /mpaviewer ./app # Potential mismatch here, check as it should be COPY <source> <destination>
+COPY . ./app
 
 EXPOSE 3838
 

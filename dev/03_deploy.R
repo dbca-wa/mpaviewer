@@ -57,7 +57,7 @@ rsconnect::showLogs(streaming = FALSE)
 # Build dockerfile ----
 # Builds a ta.gz (this is also in the old code above)
 # # Runs the docker image from the docker file that exists in the root directory of the package (Dockerfile)
-mpaviewer::make_docker() # Old comment saying 'superseded by GH package' - maybe something to do with the github action that builds this when you push a new tag?
+# mpaviewer::make_docker() # Old comment saying 'superseded by GH package' - maybe something to do with the github action that builds this when you push a new tag?
 
 # Git commit
 # Trigger a new Image build through pushing a new tag

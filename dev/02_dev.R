@@ -11,111 +11,7 @@
 #### CURRENT FILE: DEV SCRIPT #####
 ###################################
 
-# Engineering
-
-## Dependencies ----
-## Add one line by package you want to add as dependency
-attachment::att_amend_desc()
-usethis::use_package( "thinkr" )
-usethis::use_package( "dplyr" )
-usethis::use_package( "magrittr" )
-usethis::use_package( "leaflet" )
-usethis::use_package( "devtools" )
-usethis::use_package( "fs" )
-usethis::use_package( "here" )
-usethis::use_package( "rlang" )
-usethis::use_package( "ggbreak" )
-usethis::use_package( "cachem")
-usethis::use_package( "leaflegend")
-usethis::use_package( "ggh4x")
-usethis::use_package( "scales")
-
-usethis::use_pipe()
-usethis::use_data_table()
-# attachment
-
-## Add modules ----
-## Create a module infrastructure in R/
-golem::add_module( name = "assetmap" ) # Name of the module
-golem::add_module( name = "dataloader" ) # Name of the module
-
-## Add helper functions ----
-## Creates fct_* and utils_*
-golem::add_fct( "helpers" )
-golem::add_utils( "helpers" )
-
-## External resources
-## Creates .js and .css files at inst/app/www
-golem::add_js_file( "script" )
-golem::add_js_handler( "handlers" )
-golem::add_css_file( "style" )
-
-## Add internal datasets ----
-## If you have data in your package
-usethis::use_data_raw( name = "corals", open = FALSE )
-usethis::use_data_raw( name = "fish", open = FALSE )
-
-## Tests ----
-## Add one line by test you want to create
-usethis::use_test( "app" )
-
-# Documentation
-
-## Vignette ----
-usethis::use_vignette("mpaviewer")
-devtools::build_vignettes()
-
-## Code Coverage----
-## Set the code coverage service ("codecov" or "coveralls")
-usethis::use_coverage()
-
-# Create a summary readme for the testthat subdirectory
-covrpage::covrpage()
-
-## CI ----
-## Use this part of the script if you need to set up a CI
-## service for your application
-##
-## (You'll need GitHub there)
-usethis::use_github()
-
-# GitHub Actions
-usethis::use_github_actions()
-# Chose one of the three
-# See https://usethis.r-lib.org/reference/use_github_action.html
-usethis::use_github_action_check_release()
-usethis::use_github_action_check_standard()
-usethis::use_github_action_check_full()
-# Add action for PR
-usethis::use_github_action_pr_commands()
-
-# Travis CI
-usethis::use_travis()
-usethis::use_travis_badge()
-
-# AppVeyor
-usethis::use_appveyor()
-usethis::use_appveyor_badge()
-
-# Circle CI
-usethis::use_circleci()
-usethis::use_circleci_badge()
-
-# Jenkins
-usethis::use_jenkins()
-
-# GitLab CI
-usethis::use_gitlab_ci()
-
-# Resources
-# https://shiny.rstudio.com/articles/modules.html
-# https://mastering-shiny.org/scaling-modules.html
-
-## Authenticate GoogleDrive and GoogleSheets ----
-# options(gargle_oauth_cache = ".secrets")
-## check the value of the option, if you like
-# gargle::gargle_oauth_cache()
-# googlesheets4::gs4_auth()
+rm(list = ls())
 
 # To install Github packages (e.g. CheckEM, iLab) ----
 # renv::install("iLab-fish/iLab")
@@ -149,18 +45,176 @@ project_dir <- getwd()
 # Step 2. Copy all internal data from campaign sharepoint folders into dashboard data folder ----
 mpaviewer::copy_data(dir = iLab::get_dir("iLab_fish"))
 
-# Step 3. Download all data from GoogleDrive (only run this section if it has been updated) ----
-# Not sure about this section, the file doesn't exist so this won't run
-# mpaviewer::googledrive_download_data(raw_dir = "C:/Users/damon/Documents/Work/Github/mpaviewer_data", project_dir = "C:/Users/damon/Documents/Work/Github/mpaviewer") # takes ~15 minutes to run
-
-# source(paste0(project_dir, "/R/projectfolder_data_download.R"))
-
-# Step 4. Generate new summarised data ----
+# Step 3. Generate new summarised data ----
 mpaviewer::generate_data(raw_dir = raw_dir)
 
-# Step 5. Generate new plots ----
+# Step 4. Generate new plots ----
 mpaviewer:::generate_plots()
 
 # You're now set! ----
 # go to dev/03_deploy.R
 rstudioapi::navigateToFile("dev/03_deploy.R")
+
+################################################################################
+################################################################################
+# All this below script is from old contributors
+# Should look into having all the packages properly documented, but app currently works so not touching for now
+
+# Engineering
+
+## Dependencies ----
+## Add one line by package you want to add as dependency
+
+
+################################################################################
+## NEW !!! #####################################################################
+# Copilot gave me this which should be a consistent way to recreate the current description file
+# It is not yet ran or tested
+# Imports
+usethis::use_package("cachem")
+usethis::use_package("ckanr", min_version = "0.7.0")
+usethis::use_package("config", min_version = "0.3.1")
+usethis::use_package("data.table")
+usethis::use_package("devtools", min_version = "2.4.5")
+usethis::use_package("dplyr", min_version = "1.1.2")
+usethis::use_package("forcats", min_version = "1.0.0")
+usethis::use_package("fs", min_version = "1.6.2")
+usethis::use_package("ggh4x")
+usethis::use_package("ggplot2", min_version = "3.4.2")
+usethis::use_package("glue", min_version = "1.6.2")
+usethis::use_package("golem", min_version = "0.3.1")
+usethis::use_package("googledrive")
+usethis::use_package("googlesheets4")
+usethis::use_package("grid")
+usethis::use_package("here", min_version = "1.0.1")
+usethis::use_package("httr", min_version = "1.4.5")
+usethis::use_package("leafgl", min_version = "0.1.1")
+usethis::use_package("leaflegend")
+usethis::use_package("leaflet", min_version = "2.1.2")
+usethis::use_package("magrittr", min_version = "2.0.3")
+usethis::use_package("plotrix")
+usethis::use_package("purrr", min_version = "1.0.1")
+usethis::use_package("readr", min_version = "2.1.4")
+usethis::use_package("rlang")
+usethis::use_package("scales")
+usethis::use_package("sf")
+usethis::use_package("shiny", min_version = "1.7.1")
+usethis::use_package("shinycssloaders", min_version = "1.0.0")
+usethis::use_package("shinydashboard", min_version = "0.7.2")
+usethis::use_package("shinydashboardPlus", min_version = "2.0.3")
+usethis::use_package("shinyWidgets", min_version = "0.7.6")
+usethis::use_package("stringr", min_version = "1.5.0")
+usethis::use_package("tidyr", min_version = "1.3.0")
+usethis::use_package("utils")
+
+# Suggests
+usethis::use_package("knitr", type = "Suggests", min_version = "1.42")
+usethis::use_package("rmarkdown", type = "Suggests", min_version = "2.21")
+usethis::use_package("spelling", type = "Suggests", min_version = "2.2.1")
+usethis::use_package("testthat", type = "Suggests", min_version = "3.0.0")
+
+# Pipe
+usethis::use_pipe()
+
+# attachment::att_amend_desc()
+# usethis::use_package( "thinkr" )
+# usethis::use_package( "dplyr" )
+# usethis::use_package( "magrittr" )
+# usethis::use_package( "leaflet" )
+# usethis::use_package( "devtools" )
+# usethis::use_package( "fs" )
+# usethis::use_package( "here" )
+# usethis::use_package( "rlang" )
+# usethis::use_package( "ggbreak" )
+# usethis::use_package( "cachem")
+# usethis::use_package( "leaflegend")
+# usethis::use_package( "ggh4x")
+# usethis::use_package( "scales")
+#
+# usethis::use_pipe()
+# usethis::use_data_table()
+# # attachment
+#
+# ## Add modules ----
+# ## Create a module infrastructure in R/
+# golem::add_module( name = "assetmap" ) # Name of the module
+# golem::add_module( name = "dataloader" ) # Name of the module
+#
+# ## Add helper functions ----
+# ## Creates fct_* and utils_*
+# golem::add_fct( "helpers" )
+# golem::add_utils( "helpers" )
+#
+# ## External resources
+# ## Creates .js and .css files at inst/app/www
+# golem::add_js_file( "script" )
+# golem::add_js_handler( "handlers" )
+# golem::add_css_file( "style" )
+#
+# ## Add internal datasets ----
+# ## If you have data in your package
+# usethis::use_data_raw( name = "corals", open = FALSE )
+# usethis::use_data_raw( name = "fish", open = FALSE )
+#
+# ## Tests ----
+# ## Add one line by test you want to create
+# usethis::use_test( "app" )
+#
+# # Documentation
+#
+# ## Vignette ----
+# usethis::use_vignette("mpaviewer")
+# devtools::build_vignettes()
+#
+# ## Code Coverage----
+# ## Set the code coverage service ("codecov" or "coveralls")
+# usethis::use_coverage()
+#
+# # Create a summary readme for the testthat subdirectory
+# covrpage::covrpage()
+#
+# ## CI ----
+# ## Use this part of the script if you need to set up a CI
+# ## service for your application
+# ##
+# ## (You'll need GitHub there)
+# usethis::use_github()
+#
+# # GitHub Actions
+# usethis::use_github_actions()
+# # Chose one of the three
+# # See https://usethis.r-lib.org/reference/use_github_action.html
+# usethis::use_github_action_check_release()
+# usethis::use_github_action_check_standard()
+# usethis::use_github_action_check_full()
+# # Add action for PR
+# usethis::use_github_action_pr_commands()
+#
+# # Travis CI
+# usethis::use_travis()
+# usethis::use_travis_badge()
+#
+# # AppVeyor
+# usethis::use_appveyor()
+# usethis::use_appveyor_badge()
+#
+# # Circle CI
+# usethis::use_circleci()
+# usethis::use_circleci_badge()
+#
+# # Jenkins
+# usethis::use_jenkins()
+#
+# # GitLab CI
+# usethis::use_gitlab_ci()
+
+# Resources
+# https://shiny.rstudio.com/articles/modules.html
+# https://mastering-shiny.org/scaling-modules.html
+
+## Authenticate GoogleDrive and GoogleSheets ----
+# options(gargle_oauth_cache = ".secrets")
+## check the value of the option, if you like
+# gargle::gargle_oauth_cache()
+# googlesheets4::gs4_auth()
+
