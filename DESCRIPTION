@@ -42,6 +42,7 @@ Imports:
     shinydashboardPlus (>= 2.0.3),
     shinyWidgets (>= 0.7.6),
     stringr (>= 1.5.0),
+    tibble (>= 3.0.0),
     tidyr (>= 1.3.0),
     utils
 Suggests: 
