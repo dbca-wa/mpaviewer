@@ -57,30 +57,23 @@
 <h2 id="architecture">Architecture<a class="anchor" aria-label="anchor" href="#architecture"></a>
 </h2>
 <ul>
-<li>Data is loaded from a locally saved <code>.rds</code> file, or freshly loaded from Google Drive or the DBCA data catalogue (and then saved as <code>.rds</code>). The locally saved file lives on a persistent volume.</li>
+<li>Data is loaded from a locally-created <code>.RData</code> file. The team is in the process of transitioning to Azure blob storage for data.</li>
 </ul>
 </div>
 <div class="section level2">
 <h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
 </h2>
-<p><strong>Data is currently not being saved or updated on the DBCA data catalogue as detailed below. Google drive is not being used for data storage (other than storage of overarching information e.g. sample site inclusion) - all data is stored on the Marine Science SharePoint.</strong></p>
-<p>The dashboard runs off a single <code>mpa_data.rds</code> R save file which is produced from a range of source data files (CSV, TXT, SHP).</p>
-<p>Archived on the DBCA data catalogue as dataset <a href="https://data.dbca.wa.gov.au/dataset/mpaviewer" class="external-link">mpaviewer</a> are: * A link to a Google Drive folder which contains a copy of source data files in the folder/file/data structure expected by <code><a href="reference/generate_data.html">mpaviewer::generate_data()</a></code>. * Links to the deployed dashboard and this GitHub code repository * The mpaviewer data file <code>mpa_data.rds</code> at a specific resource ID expected by <code><a href="reference/download_data.html">mpaviewer::download_data()</a></code>.</p>
+<p>The dashboard runs off a single <code>mpa_data.rds</code> R save file which is produced from a range of source data files (CSV, TXT, SHP). This file is created by running the functions <code><a href="reference/copy_data.html">mpaviewer::copy_data()</a></code>, <code><a href="reference/generate_data.html">mpaviewer::generate_data()</a></code> and <code><a href="reference/generate_plots.html">mpaviewer::generate_plots()</a></code>, which pull the raw data from the Marine Science SharePoint.</p>
 <div class="section level3">
-<h3 id="update-source-data">Update source data<a class="anchor" aria-label="anchor" href="#update-source-data"></a>
+<h3 id="update-source-data-and-create-dashboard-data">Update source data and create dashboard data<a class="anchor" aria-label="anchor" href="#update-source-data-and-create-dashboard-data"></a>
 </h3>
-<p>Data owners can update the Google Drive folder with new data.</p>
-</div>
-<div class="section level3">
-<h3 id="generate-dashboard-data">Generate dashboard data<a class="anchor" aria-label="anchor" href="#generate-dashboard-data"></a>
-</h3>
-<p>Whenever the source data was updated, an analyst must download the contents of the Google Drive folder “mpaviewer” into the directory <code>inst/data</code> of a local clone of the mpaviewer codebase and run <code><a href="reference/generate_data.html">mpaviewer::generate_data()</a></code>, then upload the data file <code>mpa_data.rds</code> to the DBCA data catalogue.</p>
+<p>Data owners can update the data by correcting data in the original SharePoint source, and then requesting an analyst to run the code defined in <code>dev/02_dev.R</code>. The functions contained in this script will pull new source data, update the <code>mpa_data.RData</code> file, and create new static plots to be rendered by the dashboard.</p>
 </div>
 <div class="section level3">
 <h3 id="update-the-dashboard-with-new-data">Update the dashboard with new data<a class="anchor" aria-label="anchor" href="#update-the-dashboard-with-new-data"></a>
 </h3>
-<p>A <a href="https://github.com/dbca-wa/mpaviewer/pkgs/container/mpaviewer_cron" class="external-link">Docker container for ETL</a> periodically executes a script to download source data and process it into the application data.</p>
-<p>Until the source data files are all available from the DBCA Data Catalogue, the container simply downloads the pre-processed data file <code>mpa_data.rds</code> from the DBCA data catalogue.</p>
+<p>A Github Action is triggered by a new tag being pushed. This action runs a Dockerfile which creates a new image, stored in the Github Container Registry.</p>
+<p>The dashboard can be tested locally by using <code><a href="reference/run_app.html">mpaviewer::run_app()</a></code>.</p>
 </div>
 </div>
 <div class="section level2">
@@ -94,33 +87,17 @@
 <li>Once R CMD Check passes and all build errors and warnings are addressed, commit changes.</li>
 <li>Write descriptive and well-formed commit messages and reference the GH issue.</li>
 <li>Push and see whether the R CMD Check GH action passes.</li>
-<li>Bonus points: Build and run the Docker image locally. If that’s not an option, at least make sure that any new package dependencies are added to the Dockerfile.</li>
 </ul>
 </div>
 <div class="section level2">
 <h2 id="release">Release<a class="anchor" aria-label="anchor" href="#release"></a>
 </h2>
-<p>Once app and Docker image work, create a new version, tag, and push the tag.</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">styler</span><span class="fu">::</span><span class="fu">style_pkg</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="fu">spelling</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/spelling//reference/spell_check_package.html" class="external-link">spell_check_package</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="fu">spelling</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/spelling//reference/wordlist.html" class="external-link">update_wordlist</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Code and docs tested, working, committed</span></span>
-<span><span class="fu">usethis</span><span class="fu">::</span><span class="fu"><a href="https://usethis.r-lib.org/reference/use_version.html" class="external-link">use_version</a></span><span class="op">(</span>which<span class="op">=</span><span class="st">"patch"</span><span class="op">)</span></span>
-<span><span class="fu">usethis</span><span class="fu">::</span><span class="fu"><a href="https://usethis.r-lib.org/reference/use_version.html" class="external-link">use_version</a></span><span class="op">(</span>which<span class="op">=</span><span class="st">"minor"</span><span class="op">)</span></span>
-<span><span class="fu">usethis</span><span class="fu">::</span><span class="fu"><a href="https://usethis.r-lib.org/reference/use_version.html" class="external-link">use_version</a></span><span class="op">(</span>which<span class="op">=</span><span class="st">"major"</span><span class="op">)</span></span>
-<span><span class="fu">usethis</span><span class="fu">::</span><span class="fu"><a href="https://usethis.r-lib.org/reference/edit_file.html" class="external-link">edit_file</a></span><span class="op">(</span><span class="st">"NEWS.md"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Document to load new package version. Git commit, tag, and push.</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/document.html" class="external-link">document</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">v</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/packageDescription.html" class="external-link">packageVersion</a></span><span class="op">(</span><span class="st">"mpaviewer"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/system.html" class="external-link">system</a></span><span class="op">(</span><span class="fu">glue</span><span class="fu">::</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html" class="external-link">glue</a></span><span class="op">(</span><span class="st">"git tag -a v{v} -m 'v{v}' &amp;&amp; git push &amp;&amp; git push --tags"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>Once the app and Docker image work, follow the steps in <code>03_deploy.R</code> to create a new version, tag, and push the tag.</p>
 </div>
 <div class="section level2">
 <h2 id="deployment">Deployment<a class="anchor" aria-label="anchor" href="#deployment"></a>
 </h2>
-<p>GitHub Actions are configured to build a new Docker image for every tag starting with “v”, such as “v1.0.0”. The images are pushed to the GitHub container registry <code>ghcr.io</code>. The DBCA maintainer of <code>mpaviewer</code> then updates the tag number (e.g. <code>1.0.0</code>) in the image run by Kubernetes, which will trigger a hot reload of the image.</p>
+<p>GitHub Actions are configured to build a new Docker image for every tag starting with “v”, such as “v1.0.0”. The images are pushed to the GitHub container registry <code>ghcr.io</code>. The DBCA maintainer of <code>mpaviewer</code> then updates the tag number (e.g. <code>1.0.0</code>) in Rancher, which will trigger a hot reload of the image.</p>
 <p>The commands to deploy a new version are in <code>dev/03_deploy.R</code>.</p>
 </div>
 </div>
