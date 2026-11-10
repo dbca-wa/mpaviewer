@@ -37,50 +37,32 @@ monitoring data for DBCA staff.
 
 ## Architecture
 
-- Data is loaded from a locally saved `.rds` file, or freshly loaded
-  from Google Drive or the DBCA data catalogue (and then saved as
-  `.rds`). The locally saved file lives on a persistent volume.
+- Data is loaded from a locally-created `.RData` file. The team is in
+  the process of transitioning to Azure blob storage for data.
 
 ## Data
 
-**Data is currently not being saved or updated on the DBCA data
-catalogue as detailed below. Google drive is not being used for data
-storage (other than storage of overarching information e.g. sample site
-inclusion) - all data is stored on the Marine Science SharePoint.**
-
 The dashboard runs off a single `mpa_data.rds` R save file which is
-produced from a range of source data files (CSV, TXT, SHP).
+produced from a range of source data files (CSV, TXT, SHP). This file is
+created by running the functions `mpaviewer::copy_data()`,
+`mpaviewer::generate_data()` and `mpaviewer::generate_plots()`, which
+pull the raw data from the Marine Science SharePoint.
 
-Archived on the DBCA data catalogue as dataset
-[mpaviewer](https://data.dbca.wa.gov.au/dataset/mpaviewer) are: \* A
-link to a Google Drive folder which contains a copy of source data files
-in the folder/file/data structure expected by
-`mpaviewer::generate_data()`. \* Links to the deployed dashboard and
-this GitHub code repository \* The mpaviewer data file `mpa_data.rds` at
-a specific resource ID expected by `mpaviewer::download_data()`.
+### Update source data and create dashboard data
 
-### Update source data
-
-Data owners can update the Google Drive folder with new data.
-
-### Generate dashboard data
-
-Whenever the source data was updated, an analyst must download the
-contents of the Google Drive folder "mpaviewer" into the directory
-`inst/data` of a local clone of the mpaviewer codebase and run
-`mpaviewer::generate_data()`, then upload the data file `mpa_data.rds`
-to the DBCA data catalogue.
+Data owners can update the data by correcting data in the original
+SharePoint source, and then requesting an analyst to run the code
+defined in `dev/02_dev.R`. The functions contained in this script will
+pull new source data, update the `mpa_data.RData` file, and create new
+static plots to be rendered by the dashboard.
 
 ### Update the dashboard with new data
 
-A [Docker container for
-ETL](https://github.com/dbca-wa/mpaviewer/pkgs/container/mpaviewer_cron)
-periodically executes a script to download source data and process it
-into the application data.
+A Github Action is triggered by a new tag being pushed. This action runs
+a Dockerfile which creates a new image, stored in the Github Container
+Registry.
 
-Until the source data files are all available from the DBCA Data
-Catalogue, the container simply downloads the pre-processed data file
-`mpa_data.rds` from the DBCA data catalogue.
+The dashboard can be tested locally by using `mpaviewer::run_app()`.
 
 ## Development
 
@@ -98,38 +80,18 @@ The commands to develop new functionality are in `dev/02_dev.R`.
 - Write descriptive and well-formed commit messages and reference the GH
   issue.
 - Push and see whether the R CMD Check GH action passes.
-- Bonus points: Build and run the Docker image locally. If that's not an
-  option, at least make sure that any new package dependencies are added
-  to the Dockerfile.
 
 ## Release
 
-Once app and Docker image work, create a new version, tag, and push the
-tag.
-
-```{r eval=FALSE}
-styler::style_pkg()
-spelling::spell_check_package()
-spelling::update_wordlist()
-
-# Code and docs tested, working, committed
-usethis::use_version(which="patch")
-usethis::use_version(which="minor")
-usethis::use_version(which="major")
-usethis::edit_file("NEWS.md")
-
-# Document to load new package version. Git commit, tag, and push.
-devtools::document()
-v <- packageVersion("mpaviewer")
-system(glue::glue("git tag -a v{v} -m 'v{v}' && git push && git push --tags"))
-```
+Once the app and Docker image work, follow the steps in `03_deploy.R` to
+create a new version, tag, and push the tag.
 
 ## Deployment
 
 GitHub Actions are configured to build a new Docker image for every tag
 starting with "v", such as "v1.0.0". The images are pushed to the GitHub
 container registry `ghcr.io`. The DBCA maintainer of `mpaviewer` then
-updates the tag number (e.g. `1.0.0`) in the image run by Kubernetes,
-which will trigger a hot reload of the image.
+updates the tag number (e.g. `1.0.0`) in Rancher, which will trigger a
+hot reload of the image.
 
 The commands to deploy a new version are in `dev/03_deploy.R`.
