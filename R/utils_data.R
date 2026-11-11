@@ -13,7 +13,7 @@ load_mpa_data<- function() {
     if(!nzchar(path)) path<- "inst/data/mpa_data.Rdata" #fall back to repo-relative path
     e<-new.env() #make temp envionment to load into
     load(path, envir=e)
-    .mpa_cache$mpadata <-e$mpa_data #store rdata object into cache
+    .mpa_cache$mpa_data <-e$mpa_data #store rdata object into cache
   }
   .mpa_cache$mpa_data #return freshly loaded/cached data
 }
