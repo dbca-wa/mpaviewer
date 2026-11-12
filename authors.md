@@ -7,7 +7,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/dbca-wa/mpaviewer/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/dbca-wa/mpaviewer/blob/v0.1.7/DESCRIPTION)
 
 Gibbons B (2026). *mpaviewer: MPA Viewer*. R package version 0.0.0.9000,
 <https://github.com/dbca-wa/mpaviewer>.
