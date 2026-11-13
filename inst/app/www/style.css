@@ -142,3 +142,43 @@ a:hover {
 .modal-content {
     border-radius: 20px;
 }
+
+/* ---- Dashboard layout (moved from inline tags$style() in app_ui.R) ---- */
+.loader { min-height: 80px !important; }
+
+.left-side, .main-sidebar { padding-top: 55px; }
+.main-sidebar { font-size: 18px; }
+.skin-blue .main-header .navbar .sidebar-toggle { display: none; }
+.main-header .navbar { height: 75px; padding-top: 0px; }
+.navbar-statis-top { height: 75px; }
+.main-header .logo { height: 75px; padding-top: 0%; }
+html, body { overflow: hidden !important; }
+
+/* species iframes (fish "Individual species" tab) */
+.wrap { width: 500px; height: 750px; padding: 0; overflow: hidden; }
+.frame {
+  width: 1000px; height: 1300px; border: 0;
+  -webkit-transform: scale(0.5); transform: scale(0.5);
+  -webkit-transform-origin: 0 0; transform-origin: 0 0;
+}
+
+.small-box.bg-yellow { background-color: #0CA2B0 !important; color: #ffffff !important; }
+.inner { color: #ffffff !important; }
+
+/* title text injected into the header by the script below */
+.myClass {
+  line-height: 50px; text-align: left; font-family: 'Heebo', Arial, Helvetica, sans-serif;
+  padding: 0 10px; overflow: hidden; color: white; font-weight: 600;
+  font-size: 1.5rem; margin-bottom: 1.25rem;
+}
+.skin-blue .main-header .navbar { background-color: #2d2f32; }
+.skin-blue .main-header .logo { background-color: #2d2f32; color: #fff; border-bottom: 0 solid transparent; }
+.skin-blue .sidebar-menu>li.active>a { border-left-color: #d14210; }
+.skin-blue .main-sidebar, .skin-blue .wrapper { background-color: #3b3e42; }
+
+/* header / sidebar sizing (moved from app_ui.R) */
+.main-header {max-height: 75px; }
+.main-header .logo {height: 75px; }
+.sidebar-toggle {height: 75px; padding-top: 1px !important; }
+.navbar { min-height: 75px !important; }
+.box {-webkit-box-shadow: none; -moz-box-shadow: none; box-shadow: none; }

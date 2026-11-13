@@ -15,7 +15,7 @@ create_dropdown <- function (input, ns, input_name, choices, label, multiple) {
   }
 
   shiny::selectInput(
-    inputID = ns(input_name),
+    inputId = ns(input_name),
     label = label,
     choices = choices,
     selected = selected,

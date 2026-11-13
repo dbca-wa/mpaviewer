@@ -22,11 +22,11 @@ plots_dir<- function(){
 #' @noRd
 plot_img <- function(file, title= NULL) {
   content<- if (file.exists(file.path(plots_dir(), file))) { #  #file.exists() check; a missing png shows a message instead of broken image
-    img(src = paste0("wwww/plots/", file), align = "left", wdith = "100%")
+    img(src = paste0("www/plots/", file), align = "left", width = "100%")
   } else {
     p(em("Plot not available for this selection."))
   }
-  if (is.null(title)) content else tagList(h4(title, content))
+  if (is.null(title)) content else tagList(h4(title), content)
 }
 
 #Loops over the rows of the plot table and returns one output$<id> for each row
@@ -40,8 +40,8 @@ plot_img <- function(file, title= NULL) {
 #'
 #' @param prefix File name prefix e.g. "Fish" or "Coral"
 #' @param park,method Reactives returning the selected park/method
-#'  (`method = NULL` for assets without methods)
-#'  @noRd
+#' (`method = NULL` for assets without methods)
+#' @noRd
 register_png_plots <- function(output, spec, prefix, park, method = NULL) {
   # local () is essential: without it every output would capture the last row of the loop
   for (i in seq_len(nrow(spec))) {
