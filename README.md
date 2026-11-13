@@ -11,8 +11,6 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 checks](https://github.com/dbca-wa/mpaviewer/workflows/R-CMD-check/badge.svg)](https://github.com/dbca-wa/mpaviewer/actions)
 [![Docker
 app](https://github.com/dbca-wa/mpaviewer/actions/workflows/docker.yaml/badge.svg)](https://github.com/dbca-wa/mpaviewer/actions/workflows/docker.yaml)
-[![Docker
-data](https://github.com/dbca-wa/mpaviewer/actions/workflows/docker_cron.yaml/badge.svg)](https://github.com/dbca-wa/mpaviewer/actions/workflows/docker_cron.yaml)
 [![Docs](https://github.com/dbca-wa/mpaviewer/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/dbca-wa/mpaviewer/actions/workflows/pkgdown.yaml)
 
 <!-- badges: end -->
@@ -80,3 +78,25 @@ updates the tag number (e.g. `1.0.0`) in Rancher, which will trigger a
 hot reload of the image.
 
 The commands to deploy a new version are in `dev/03_deploy.R`.
+
+## Changelog
+
+### v0.1.8
+
+Not yet released
+
+### v0.1.7
+
+12/11/2026 - Updated Dockerfile to include `plotrix` R package, as the
+application was stuck in a restart loop on DBCA’s infrastructure.
+
+### v0.1.6
+
+5/11/2026 - Recreated the Dockerfile with updated package dependencies
+to resolve a critical security vulnerability with the `brotli` Ubuntu
+package. Refreshed outdated code in the Github Actions, and removed cron
+job associated scripts and actions.
+
+### v0.1.5 & previous versions
+
+Versions were implemented before recording of changes and updated
