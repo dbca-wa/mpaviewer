@@ -629,6 +629,7 @@ mod_fish_server <- function(id, mpa_data){
       dat <- dat[method %in% c(input$fish.park.method.dropdown)]
 
       dat %>%
+        dplyr::filter(is.finite(latitude_dd), is.finite(longitude_dd)) %>% #protect map from broken lat/longs
         dplyr::mutate(content = paste(
           sep = " ",
           "<b>Sample:", sample, "</b>", "<br/>",
@@ -938,6 +939,7 @@ mod_fish_server <- function(id, mpa_data){
       mpa_data$sampling_effort %>%
         # dplyr::filter(marine_park %in% c(input$fish.state.park.dropdown)) %>%
         # dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
+        dplyr::filter(is.finite(latitude_dd), is.finite(longitude_dd)) %>% #protect map from broken lat/longs
         dplyr::mutate(content = paste(
           sep = " ",
           "<b>Method:", method, "</b>", "<br/>",
@@ -1095,6 +1097,7 @@ mod_fish_server <- function(id, mpa_data){
       dat <- fish_park_abundance_species_leaflet()
 
       dat <- dplyr::full_join(dat, fish_park_metadata_leaflet()) %>%
+        dplyr::filter(is.finite(latitude_dd), is.finite(longitude_dd)) %>% #protect map from broken lat/longs
         tidyr::replace_na(list(maxn = 0))
 
       # TODO I don't think this is the complete data?!?!?!?

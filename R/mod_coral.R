@@ -213,7 +213,8 @@ mod_coral_server <- function(id, mpa_data) {
           "<b>Site:", site, "</b>", "<br/>",
           "<b>Status:</b>", status, "<br/>",
           "<b>Depth:</b>", depth_m, "m", "<br/>",
-          "<b>Reef Zone:</b>", reef_zone, "<br/>"))
+          "<b>Reef Zone:</b>", reef_zone, "<br/>"))%>%
+        dplyr::filter(is.finite(latitude_dd), is.finite(longitude_dd))#protect map from broken lat/longs
     })
 
     output$benthic.state.sampling.leaflet <- renderLeaflet({
@@ -223,8 +224,9 @@ mod_coral_server <- function(id, mpa_data) {
           sep = " ",
           "<b>Marine Park:</b>", marine_park, "<br/>",
           "<b>Site:", site, "</b>", "<br/>")) %>%
-        dplyr::filter(!is.na(latitude_dd))
-      pal <- data.frame(marker_col = c("#F1652C", "yellow", "#2ECFE2","#739AF8"), marine_park = c("Shark Bay Marine Park", "Ningaloo Marine Park", "Montebello Islands Marine Park","Rowley Shoals Marine Park"))
+        dplyr::filter(is.finite(latitude_dd), is.finite(longitude_dd))#protect map from broken lat/longs
+
+        pal <- data.frame(marker_col = c("#F1652C", "yellow", "#2ECFE2","#739AF8"), marine_park = c("Shark Bay Marine Park", "Ningaloo Marine Park", "Montebello Islands Marine Park","Rowley Shoals Marine Park"))
       dat <- dplyr::left_join(dat, pal, by="marine_park")
       map <- leaflet_basemap(dat) %>%
         fitBounds(
