@@ -1102,7 +1102,8 @@ mod_fish_server <- function(id, mpa_data){
       overzero.ta <- dplyr::filter(dat, maxn > 0) #%>% dplyr::glimpse()
       equalzero.ta <- dplyr::filter(dat, maxn == 0) #%>% dplyr::glimpse()
 
-      max.ta <- base::max(overzero.ta$maxn)
+      #Guard so all zero or empty species can't push -Inf to legend labels
+      max.ta <- if (nrow(overzero.ta)) base::max(overzero.ta$maxn) else 0
 
       map <- leaflet_basemap(dat) %>%
         fitBounds(~ min(longitude_dd), ~ min(latitude_dd), ~ max(longitude_dd), ~ max(latitude_dd)) %>%
