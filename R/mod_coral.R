@@ -309,11 +309,11 @@ mod_coral_server <- function(id, mpa_data) {
 
     # Info popups ----
     observeEvent(input$alert.coral.marinepark, {
-      showModal(modalDialog(title = park(), includeHTML(file.path(popups_dir(), paste0("fish_", park_slug(park()), ".html")))))
+      showModal(modalDialog(title = park(), include_page(file.path(popups_dir(), paste0("fish_", park_slug(park()), ".html")))))
     })
 
     observeEvent(input$park.coralcover, {
-      showModal(modalDialog(title = "How do we measure coral cover?", includeHTML(file.path(popups_dir(), "coral.cover.html"))))
+      showModal(modalDialog(title = "How do we measure coral cover?", include_page(file.path(popups_dir(), "coral.cover.html"))))
     })
   })
 }

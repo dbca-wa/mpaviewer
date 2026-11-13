@@ -83,19 +83,19 @@ app_ui <- function(request) {
                          fluidRow(
                            box(width = 12,
                                column(width = 7, style = "padding:15px",
-                                      includeHTML("inst/app/www/images/text/stereo-BRUVs.html")),
+                                      include_page(app_sys("/app/www/images/text/stereo-BRUVs.html"))),
                                column(width = 4,
                                       img (src = "www/images/method_bruv.png", align="right")))),
                          fluidRow(
                            box(width = 12,
                                column(width = 7, style = "padding:15px",
-                                      includeHTML("inst/app/www/images/text/stereo-DOVs.html")),
+                                      include_page(app_sys("/app/www/images/text/stereo-DOVs.html"))),
                                column(width = 4,
                                       img (src = "www/images/method_dov.png", align="right")))),
                          fluidRow(
                            box(width = 12,
                                column(width = 7, style = "padding:15px",
-                                      includeHTML("inst/app/www/images/text/stereo-ROV.html")),
+                                      include_page(app_sys("/app/www/images/text/stereo-ROV.html"))),
                                column(width = 4,
                                       img (src = "www/images/method_rov.png", align="right"))))),
                 tabPanel("Contact",

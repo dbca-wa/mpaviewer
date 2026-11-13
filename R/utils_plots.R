@@ -62,3 +62,10 @@ popups_dir <- function() {
   d <- app_sys("app/www/popups")
   if (nzchar(d)) d else "inst/app/www/popups"
 }
+
+#Insert an HTML file as-is without includeHTML()'s 'complete HTML document warning (not essential just annoying)
+#A missing file shows a short message instead of ending the session
+include_page <-function(path){
+  if (!file.exists(path)) return(p(em("No information available for this selection.")))
+  HTML(paste(readLines(path, warn=FALSE), collapse = "\n"))
+}

@@ -1192,19 +1192,19 @@ mod_fish_server <- function(id, mpa_data){
     observeEvent(input$park.cti,
                  showModal(modalDialog(
                    title = "What is reef fish temperature index (RFTI)?",
-                   includeHTML("inst/app/www/popups/fish.cti.html")))
+                   include_page(file.path(popups_dir(),"fish.cti.html"))))
     )
 
     observeEvent(input$park.ta,
                  showModal(modalDialog(
                    title = "How do we measure total abundance?",
-                   includeHTML("inst/app/www/popups/total.abundance.html")))
+                   include_page(file.path(popups_dir(),"total.abundance.html"))))
     )
 
     observeEvent(input$park.shark.ta,
                  showModal(modalDialog(
                    title = "How do we measure total abundance?",
-                   includeHTML("inst/app/www/popups/total.abundance.html")))
+                   include_page(file.path(popups_dir(),"total.abundance.html"))))
     )
 
     observeEvent(input$park.sr,
@@ -1212,7 +1212,7 @@ mod_fish_server <- function(id, mpa_data){
                  # print(dir())
                  showModal(modalDialog(
                    title = "How do we measure species richness?",
-                   includeHTML("inst/app/www/popups/species.richness.html")))
+                   include_page(file.path(popups_dir(),"species.richness.html"))))
     )
 
     # MARINE PARK ----
@@ -1222,9 +1222,9 @@ mod_fish_server <- function(id, mpa_data){
 
       showModal(modalDialog(
         title = input$fish.park.dropdown,
-        includeHTML(paste0("inst/app/www/popups/fish_",
+        include_page(file.path(popups_dir(),paste0("fish_",
                            stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", " " = "")),
-                           ".html"))
+                           ".html")))
       )
       ))
 
