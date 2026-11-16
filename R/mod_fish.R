@@ -202,7 +202,7 @@ mod_fish_ui <- function(id) {
             conditionalPanel(
               paste0("input['",ns("fishparkmetric"),"'] == \"Sharks and Rays\""),
 
-              h3("Shark and Ray abundance:", actionButton(ns("park.ta"), label = " ",
+              h3("Shark and Ray abundance:", actionButton(ns("park.shark.ta"), label = " ",
                                                           icon = icon("info"),
                                                           icon.library = "font awesome",
                                                           style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
@@ -973,12 +973,14 @@ mod_fish_server <- function(id, mpa_data){
       groups <- dat %>%
         dplyr::distinct(year)
 
+      zones<-zones_for_park(mpa_data$state_mp, park(), dat)
+
       map <- leaflet_basemap(dat) %>%
         fitBounds(~ min(longitude_dd), ~ min(latitude_dd), ~ max(longitude_dd), ~ max(latitude_dd)) %>%
         leaflet:: addPolygons(
-          data =  mpa_data$state_mp,
+          data =  zones,
           color = ~ mpa_data$state_pal(zone),
-          popup =  mpa_data$state_mp$COMMENTS,
+          popup =  zones$COMMENTS,
           group = "Marine Parks"
         ) %>%
         leaflet::addCircleMarkers(data = dat,
@@ -995,7 +997,7 @@ mod_fish_server <- function(id, mpa_data){
                                   options = layersControlOptions(collapsed = FALSE)
         ) %>%
         leaflet::addLegend(
-          pal = mpa_data$state_pal, values = mpa_data$state_mp$zone, opacity = 1,
+          pal = mpa_data$state_pal, values = zones$zone, opacity = 1,
           title = "Zones",
           position = "bottomleft", group = "Marine Parks"
         )
@@ -1108,16 +1110,18 @@ mod_fish_server <- function(id, mpa_data){
       #Guard so all zero or empty species can't push -Inf to legend labels
       max.ta <- if (nrow(overzero.ta)) base::max(overzero.ta$maxn) else 0
 
+      zones<- zones_for_park(mpa_data$state_mp, park(), dat)
+
       map <- leaflet_basemap(dat) %>%
         fitBounds(~ min(longitude_dd), ~ min(latitude_dd), ~ max(longitude_dd), ~ max(latitude_dd)) %>%
         addGlPolygons(
-          data =  mpa_data$state_mp,
+          data =  zones,
           color = ~ mpa_data$state_pal(zone),
-          popup =  mpa_data$state_mp$COMMENTS,
+          popup =  zones$COMMENTS,
           group = "Marine Parks"
         ) %>%
         addLegend(
-          pal = mpa_data$state_pal, values = mpa_data$state_mp$zone, opacity = 1,
+          pal = mpa_data$state_pal, values = zones$zone, opacity = 1,
           title = "Zones",
           position = "bottomleft", group = "Marine Parks"
         ) %>%

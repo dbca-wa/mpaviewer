@@ -267,6 +267,8 @@ mod_coral_server <- function(id, mpa_data) {
     })
 
     output$benthic.park.sampling.leaflet <- renderLeaflet({
+      zones<-zones_for_park(mpa_data$state_mp, park(), park_sampling_effort())
+
       map <- leaflet_basemap(park_sampling_effort()) %>%
         fitBounds(
           ~ min(longitude_dd),
@@ -286,14 +288,14 @@ mod_coral_server <- function(id, mpa_data) {
                                   group = "Sampling locations"
         ) %>%
         addGlPolygons(
-          data =  mpa_data$state_mp,
+          data =  zones,
           color = ~ mpa_data$state_pal(zone),
-          popup =  mpa_data$state_mp$COMMENTS,
+          popup =  zones$COMMENTS,
           group = "Marine Parks"
         ) %>%
         addLegend(
           pal = mpa_data$state_pal,
-          values = mpa_data$state_mp$zone,
+          values = zones$zone,
           opacity = 1,
           title = "Zones",
           position = "bottomright",

@@ -33,3 +33,32 @@ filter_park<- function(tbl, park, method = NULL){
   if (!is.null(method)) keep <- keep & tbl$method %in% method
   tbl[keep,]
 }
+
+#' Zone polygons for one park
+#'
+#' The statewide zones are ~5mb of JSON per map and a single park only needs its own zones (0.1-2.6mb JSON).
+#' A zone is kept when its `name` matches the park (ignoring "Marine Park"/"Marine Reserve' and punctuation), or when the park's sampling points sit in/next to it (<= `near_m`)
+#' which also brings in neighbours like Murion Islands (Ningaloo). Every zone of a matched name is kept whole, so unsampled zones are never droped.
+#' @param zones The `state_mp` sf object.
+#' @param park Selected marine park name, e.g. "Ningaloo Marine Park".
+#' @param pts Data with `latitude_dd` / `longitude_dd` for that park's samples
+#' @param near_m How close (metres) a sample must be to count as being in a zone's area
+#' @noRd
+
+zones_for_park <- function(zones, park, pts, near_m=10000){
+  norm <- function(x) gsub("[^a-z]", "", tolower(sub(" Marine (Park|Reserve)$", "", x, ignore.case=TRUE)))
+  nz <- norm(zones$name); np <- norm(as.character(park))
+  keep <- zones$name[nz==np | (nzchar(nz) & (startsWith(nz, np)|startsWith(np, nz)))]
+  lon<- as.numeric(pts$longitude_dd); lat<- as.numeric(pts$latitude_dd); ok<- is.finite(lon) & is.finite(lat)
+  pts<-unique(data.frame(longitude_dd = lon[ok], latitude_dd = lat[ok]))
+  if (nrow(pts)){
+    zm <- sf::st_transform(zones, 3577) #metres, so near_m means metres
+    pm <- sf::st_transform(sf::st_as_sf(pts, coords = c("longitude_dd", "latitude_dd"), crs=4326), 3577)
+    idx <- sf::st_nearest_feature(pm, zm)
+    near <- as.numeric(sf::st_distance(pm, zm[idx,], by_element = TRUE)) <= near_m
+    keep<- union(keep, zones$name[idx[near]])
+  }
+  if (!length(keep)) return(zones) #nothing match: show every zone rather than none
+  zones[zones$name %in% keep,]
+}
+
