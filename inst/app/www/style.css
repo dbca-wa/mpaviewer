@@ -182,3 +182,17 @@ html, body { overflow: hidden !important; }
 .sidebar-toggle {height: 75px; padding-top: 1px !important; }
 .navbar { min-height: 75px !important; }
 .box {-webkit-box-shadow: none; -moz-box-shadow: none; box-shadow: none; }
+
+/* ---- layout fixes ----*/
+/* Marine park tabs: the metric picker and plot panels sit directly in the tab pane (no column) so give them the same 15px side padding as the columns above and stop rows inside them pulling 15px off the left edge */
+.nav-tabs-custom >.tab-content > .tab-pane > .form-group,
+.nav-tabs-custom >.tab-content > .tab-pane > .shiny.panel-conditional {padding-left: 15px; padding-right:15px;}
+.nav-tabs-custom >.tab-content > .tab-pane > .form-group{clear: both;}
+.nav-tabs-custom >.tab-content > .tab-pane > .shiny.panel-conditional > .row { margin-left: 0; margin-right: 0;}
+
+/* Map legends: lift them above the attribution line and make attribution text smaller*/
+.leaflet-control-attribution {font-size: 9px;}
+.leaflet-bottom.info.legend { margin-bottom: 34px ;}
+
+/* Header title: keep it on one line on narrower screens */
+@media (max-width: 1100px) {.myClass {font-size:1.1rem; white-space:nowrap;}}

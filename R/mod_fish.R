@@ -484,7 +484,7 @@ mod_fish_server <- function(id, mpa_data){
           label = ~marine_park,
           labelOptions = labelOptions(noHide = TRUE,
                                       textOnly = TRUE,
-                                      textsize="15px",
+                                      textsize="11px",
                                       offset = c(3,-8),
                                       style=list(color ="white"))) %>%
         addCircleMarkers(data = dat, #one circle per sample, grouped by method so the layer swtich can turn each method off
