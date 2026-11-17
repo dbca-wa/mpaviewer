@@ -37,7 +37,7 @@ mod_coral_ui <- function(id) {
 
           #Row 1, left: park dropdown (built in server from the data and the metric picker)
           column(width = 6,
-              htmlOutput(ns("benthic.park.coralcover.dropdown")),
+              htmlOutput(ns("benthic.park.coralcover.dropdown.ui")),
               selectInput(
               width = "100%",
               ns("benthicparkmethoddropdown"),
@@ -79,7 +79,7 @@ mod_coral_ui <- function(id) {
             #One plot per site: the site dropdown is built in the server, the plot file name contains the site
             h4("Most abundant families by site:"),
 
-            htmlOutput(ns("benthic.park.site.coralcover.dropdown")),
+            htmlOutput(ns("benthic.park.site.coralcover.dropdown.ui")),
             withSpinner(uiOutput(ns("benthic.site.coralcover.plot"))),
 
             h4("Coral cover by site:"),
@@ -151,12 +151,12 @@ mod_coral_server <- function(id, mpa_data) {
 
     # Dropdowns ----
     #Park dropdown: parks that have coral data. create_dropdown() keeps the current choice if choices change
-    output$benthic.park.coralcover.dropdown <- renderUI({
+    output$benthic.park.coralcover.dropdown.ui <- renderUI({
       create_dropdown(input, ns, "benthic.park.coralcover.dropdown",
                       unique(mpa_data$coral_cover_metadata$marine_park), "Choose a marine park:", FALSE)})
 
     #Site dropdown: Only sites with more than 2 years of data in the chosen park are offered
-    output$benthic.park.site.coralcover.dropdown <- renderUI({
+    output$benthic.park.site.coralcover.dropdown.ui <- renderUI({
       sites <- mpa_data$coral_cover_metadata %>%
         dplyr::group_by(marine_park, site) %>%
         dplyr::summarise(n = length(plot_year), .groups = "drop") %>%

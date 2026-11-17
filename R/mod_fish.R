@@ -36,8 +36,8 @@ mod_fish_ui <- function(id) {
 
             #Row 1, left: park and method dropdowns, built in server, and data acknowledgement text
             column(width = 6,
-              htmlOutput(ns("fish.park.dropdown")),
-              uiOutput(ns("fish.park.method.dropdown")),
+              htmlOutput(ns("fish.park.dropdown.ui")),
+              uiOutput(ns("fish.park.method.dropdown.ui")),
               htmlOutput(ns("acknowledgement"))),
 
             #Row 1, right: banner photo of the chosen park and its info button (opens a pop-up)
@@ -129,7 +129,7 @@ mod_fish_ui <- function(id) {
               withSpinner(uiOutput(ns("fish.park.fished.all.sum.sanctuary.plot"))),
 
               ##Individual species: species dropdown (built in the server) then that species two plots ##
-              htmlOutput(ns("fish.park.fished.species.dropdown")),
+              htmlOutput(ns("fish.park.fished.species.dropdown.ui")),
               withSpinner(uiOutput(ns("fish.park.fished.species.abundance.plot"))),
               withSpinner(uiOutput(ns("fish.park.fished.species.abundance.sanctuary.plot"))),),
 
@@ -317,7 +317,7 @@ mod_fish_server <- function(id, mpa_data){
     # Dropdowns (marine park tab) ----
 
     #Park dropdown: ordered by latitude. pickerInput gives a searchable list
-    output$fish.park.dropdown <- renderUI({
+    output$fish.park.dropdown.ui <- renderUI({
         lats <- mpa_data$lats %>%
         dplyr::arrange(mean_lat)
 
@@ -330,7 +330,7 @@ mod_fish_server <- function(id, mpa_data){
 
     #Method dropdown: only the methods used in the chosen park
     observeEvent(input$fish.park.dropdown, {
-      output$fish.park.method.dropdown <- renderUI({
+      output$fish.park.method.dropdown.ui <- renderUI({
         req(input$fish.park.dropdown)
 
         dat <- mpa_data$methods[marine_park %in% c(input$fish.park.dropdown)]
@@ -338,7 +338,7 @@ mod_fish_server <- function(id, mpa_data){
                        selected = c(unique(sort(dat$method)))[1])})})
 
     #Target-species dropdown: species with a total above 0 in this park and method, most abundant first
-    output$fish.park.fished.species.dropdown <- renderUI({
+    output$fish.park.fished.species.dropdown.ui <- renderUI({
       req(input$fish.park.dropdown, input$fish.park.method.dropdown)
       dat <- mpa_data$ordered_top_fished_species[marine_park %in% c(input$fish.park.dropdown) &
                                                    method %in% c(input$fish.park.method.dropdown)]
@@ -357,7 +357,16 @@ mod_fish_server <- function(id, mpa_data){
         selected = choices[1],
         options = list(`actions-box` = TRUE, `live-search` = TRUE, `dropup-auto` = FALSE))})
 
-    #All species dropdown: every species seen in this park and method, most abundant first
+    #All species dropdown: all species that have a plot file for this park and method
+    #generate_plots() only draws a species plot when its total is > 10 so most of the species in the data have no plot
+    species_with_plot<- reactive({
+      req(park(), method())
+      files<-list.files(file.path(plots_dir(), "species"), pattern = "\\.png$")
+      prefix<-paste0("Fish_", park_slug(park()), "_", method(), "_")
+      f<-files[startsWith(files, prefix)]
+      f<-f[!grepl("_(sanctuary|targeted|retained|KDE)\\.png$",f)] #base plot only not the variants
+      sub("\\.png$", "", substring(f, nchar(prefix)+1))})
+
     output$UIfish.park.all.species.dropdown <- renderUI({
       dat <- mpa_data$ordered_top_species[marine_park %in% c(input$fish.park.dropdown) &
                                             method %in% c(input$fish.park.method.dropdown)]
@@ -366,6 +375,8 @@ mod_fish_server <- function(id, mpa_data){
         dplyr::arrange(desc(total)) %>%
         dplyr::distinct(scientific_name) %>%
         dplyr::pull("scientific_name")
+
+      choices<-choices[choices %in% species_with_plot()] #drop species with no plot
 
       shinyWidgets::pickerInput(
         inputId = ns("fish.park.all.species.dropdown"),
@@ -387,6 +398,8 @@ mod_fish_server <- function(id, mpa_data){
 
       dat <- mpa_data$sampling_effort[marine_park %in% c(input$fish.park.dropdown)]
       dat <- dat[method %in% c(input$fish.park.method.dropdown)]
+
+      req(nrow(dat)>0) #park/method can briefly disagree after a park change, this skips it quietly until the method dropdown catches up
 
       dat %>%
         dplyr::filter(is.finite(latitude_dd), is.finite(longitude_dd)) %>% #protect map from broken lat/longs
@@ -604,7 +617,6 @@ mod_fish_server <- function(id, mpa_data){
     # Species plots  ----
     #these are not in fish_png_spec because the filename contains the species
 
-
     #Target species (one chosen from the dropdown). GOTCHA: "Targeted"/"Highly retained" are stripped
     # Only includes consistently sampled sites
     observeEvent(input$fish.park.method.dropdown, {
@@ -613,8 +625,7 @@ mod_fish_server <- function(id, mpa_data){
         park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
         method <- input$fish.park.method.dropdown
         species <- stringr::str_replace_all(input$fish.park.fished.species.dropdown, c(" Targeted" = "", " Highly retained" = ""), "")
-        tagList(h4(paste0("Total abundance of ", species, ":")),
-              img(src = paste0("www/plots/species/", "Fish_", park, "_", method, "_", species, "_targeted.png"), align = "left", width = "100%"))})})
+        plot_img(paste0("species/Fish_", park, "_", method, "_", species, "_targeted.png"), paste0("Total abundance of ", species, ":"))})})
 
     # Target species, by sanctuary
     # Only includes consistently sampled sites
@@ -624,8 +635,7 @@ mod_fish_server <- function(id, mpa_data){
         park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
         method <- input$fish.park.method.dropdown
         species <- stringr::str_replace_all(input$fish.park.fished.species.dropdown, c(" Targeted" = "", " Highly retained" = ""), "")
-        tagList(h4(paste0("Total abundance of ", species, " by sanctuary:")),
-                img(src = paste0("www/plots/species/", "Fish_", park, "_", method, "_", species, "_sanctuary.png"), align = "left", width = "100%"))})})
+        plot_img(paste0("species/Fish_", park, "_", method, "_", species, "_sanctuary.png"), paste0("Total abundance of ", species, " by sanctuary:"))})})
 
     #Any species chosen from the all-species dropdown
     observeEvent(input$fish.park.method.dropdown, {
@@ -634,8 +644,7 @@ mod_fish_server <- function(id, mpa_data){
         park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
         method <- input$fish.park.method.dropdown
         species <- input$fish.park.all.species.dropdown
-        tagList(h4(paste0("Total abundance of ", species, ":")),
-                img(src = paste0("www/plots/species/", "Fish_", park, "_", method, "_", species, ".png"), align = "left", width = "100%"))})})
+        plot_img(paste0("species/Fish_", park, "_", method, "_", species, ".png"), paste0("Total abundance of ", species, ":"))})})
 
     #The same species, by sanctuary
     observeEvent(input$fish.park.method.dropdown, {
@@ -644,12 +653,7 @@ mod_fish_server <- function(id, mpa_data){
         park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
         method <- input$fish.park.method.dropdown
         species <- input$fish.park.all.species.dropdown
-        tagList(h4(paste0("Total abundance of ", species, " by sanctuary:")),
-                img(src = paste0("www/plots/species/", "Fish_", park, "_", method, "_", species, "_sanctuary.png"), align = "left", width = "100%"))})})
-
-
-
-
+        plot_img(paste0("species/Fish_", park, "_", method, "_", species, "_sanctuary.png"), paste0("Total abundance of ", species, " by sanctuary:"))})})
 
     # Species webpage (iFrames) -----
     #Embeds the species' page from the Fishes of Australia site, using the url in foa_codes
