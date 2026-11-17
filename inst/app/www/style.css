@@ -196,3 +196,4 @@ html, body { overflow: hidden !important; }
 
 /* Header title: keep it on one line on narrower screens */
 @media (max-width: 1100px) {.myClass {font-size:1.1rem; white-space:nowrap;}}
+@media (max-width: 1200px) {.leaflet.bottom.info.legeng {margin-bottom: 62px;}}
