@@ -1,100 +1,84 @@
-# UI for the fish page (modularised app)
+#Fish page
+#Comprised of 3 main components: 1. user interface, 2. plot table, 3. server function
+
+#---- UI -------------------------------------------------------------------------------------------------------------
 #' fish UI function
 #' @param id Module id (namespace).
 #' @noRd
 #' @importFrom shiny NS tagList
 
-#UI for the fish tab. GOTCHA: every id must be wrapped in ns("..."), and conditionalPanel
-# conditions are JS strings, so they use paste0("input['", ns("id"), "']== ...") not input.id
-##### FISH UI #####
+#UI for the coral tab. GOTCHA: every id must be wrapped in ns("...")
+#similarly for conditionalPanel() conditions are JS strings, so they use paste0("input['", ns("id"), "']== ...") not input.id
 mod_fish_ui <- function(id) {
-  ns <- NS(id)
+  ns <- NS(id)  #makes every id unique in this module (fish-<id>)
     tabItem(
       tabName = "fishtab",
       fluidRow(
 
+        #left side: the box that holds the plots with two tabs (state-wide, one marine park)
+        #Its id (tabset1) is read by the map panels at the bottom to decide which ID to show
+        tabBox(title = "Choose a spatial scale to plot",
+               width = 8,
+               id = ns("tabset1"), height = "78vh",
 
-        # valueBoxOutput("box.total.fish"),
-
-        tabBox(
-          title = "Choose a spatial scale to plot",
-          width = 8,
-          # width = "55%", # was 95%
-          id = ns("tabset1"), height = "78vh",
-
-
-          ## STATE ----
+        ## STATE-WIDE TAB ----
+        #two summary boxes then a block per park (summary boxes and a banner) all built in the server
           tabPanel("State-wide summary",
                    style = "overflow: auto",
-                   # column(width = 5,
-                   # htmlOutput("fish.state.park.dropdown"),
-                   # h4("State summary:"),
                    valueBoxOutput(ns("box.total.number.fish"), width = 6),
                    valueBoxOutput(ns("box.total.species.fish"), width = 6),
                    h4("Marine Parks Surveyed:"),
-                   uiOutput(ns("statewide_plots")),
-          ),
+                   uiOutput(ns("statewide_plots")),),
 
-          ### End of State
-
-          ## MARINE PARK ----
-
-          tabPanel(
-            "Marine park",
+          ## MARINE PARK TAB ----
+          tabPanel("Marine park",
             style = "overflow: auto",
-            # box(width = 12, title = "Filter data", solidHeader = TRUE, #status = "warning",
-            column(
-              width = 6,
+
+            #Row 1, left: park and method dropdowns, built in server, and data acknowledgement text
+            column(width = 6,
               htmlOutput(ns("fish.park.dropdown")),
               uiOutput(ns("fish.park.method.dropdown")),
-              htmlOutput(ns("acknowledgement"))
-            ),
-            column(
-              width = 6,
-              column(
-                width = 11,
-                uiOutput(ns("ui.fish.park.image"))
-              ),
-              column(
-                width = 1,
+              htmlOutput(ns("acknowledgement"))),
+
+            #Row 1, right: banner photo of the chosen park and its info button (opens a pop-up)
+            column(width = 6,
+              column(width = 11,
+                uiOutput(ns("ui.fish.park.image"))),
+              column(width = 1,
                 actionButton(ns("alert.marinepark"),
                              label = " ",
                              icon = icon("info"),
                              icon.library = "font awesome",
-                             style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px"
-                )
+                             style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px"))),
 
-
-              )
-            ),
-
-            # box(width = 12, title = "Plot data", #solidHeader = TRUE, #status = "warning",
+            #Picks which group of plots to show: each choice has its own conditionalPanel below
             selectInput(
               width = "100%",
               ns("fishparkmetric"),
               "Choose a group of metrics to plot:",
               choices = c("Whole assemblage", "Individual species", "Target species", "Feeding guilds", "Sharks and Rays"),
               multiple = FALSE,
-              selectize = TRUE
-            )#)
-            ,
-            conditionalPanel(
-              paste0("input['", ns("fishparkmetric"), "'] == \"Whole assemblage\""),
+              selectize = TRUE),
 
+            #WHOLE ASSEMBLAGE: CTI, total abundance, and species richness plots
+            #Most outputs are pre-rendered PNGs (ids match fish_png_spec); withSpinner shows a spinner while they load
+            conditionalPanel(paste0("input['", ns("fishparkmetric"), "'] == \"Whole assemblage\""),
+
+              ## CTI ##
               h3("Reef fish thermal index (RFTI):", actionButton(ns("park.cti"), label = " ",
                                                                  icon = icon("info"),
                                                                  icon.library = "font awesome",
                                                                  style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
-
               withSpinner(uiOutput(ns("fish.park.cti"))),
 
+              ## Total abundance/most abundant species ##
               h3("Total abundance:", actionButton(ns("park.ta"), label = " ",
                                                   icon = icon("info"),
                                                   icon.library = "font awesome",
                                                   style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
-
               withSpinner(uiOutput(ns("fish.park.total.plot"))),
 
+              #Collapsible text on the trend, built in the server (only appears when there is one)
               uiOutput(ns("fish.park.total.trend")),
 
               h4("Most abundant species:"),
@@ -104,19 +88,19 @@ mod_fish_ui <- function(id) {
               withSpinner(uiOutput(ns("fish.park.total.sanctuary.plot"))),
 
               h4("Total abundance by zone:"),
-              # withSpinner(uiOutput("ui.fish.park.total.zone.plot")),
               withSpinner(uiOutput(ns("fish.park.total.zone.plot"))),
 
-              ## Only show site plots if stereo-DOVs
+              ## Site plot: Only shown for stereo-DOVs and stereo-ROVs
               withSpinner(uiOutput(ns("fish.park.total.site.plot"))),
 
-
+              ## Species richness ##
               h3("Species richness:", actionButton(ns("park.sr"), label = " ",
                                                    icon = icon("info"),
                                                    icon.library = "font awesome",
                                                    style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
               withSpinner(uiOutput(ns("fish.park.rich.plot"), height = 350)),
 
+              #Collapsible text on the trend, built in the server (only appears when there is one)
               uiOutput(ns("fish.park.rich.trend")),
 
               h4("Species richness by sanctuary:"),
@@ -124,18 +108,14 @@ mod_fish_ui <- function(id) {
 
               h4("Species richness by zone:"),
               withSpinner(uiOutput(ns("fish.park.rich.zone.plot"))),
-              # withSpinner(plotOutput("fish.park.rich.zone.plot", height = 250)),
 
-              ## Only show site plots if stereo-DOVs
-              withSpinner(uiOutput(ns("fish.park.rich.site.plot")))
+              ## Site plot: Only shown for stereo-DOVs and stereo-ROVs
+              withSpinner(uiOutput(ns("fish.park.rich.site.plot")))),
 
+            # TARGET SPECIES: summed plots, then one species picked from a drop down
+            conditionalPanel(paste0("input['",ns("fishparkmetric"),"'] == \"Target species\""),
 
-              #h4("Spatial"),
-              #withSpinner(leafletOutput(width = "100%", "fish.park.metric.leaflet", height = 300))
-            ),
-            conditionalPanel(
-              paste0("input['",ns("fishparkmetric"),"'] == \"Target species\""),
-
+              ## Summed abundance ##
               h4("Total abundance of highly retained demersal species:"),
               withSpinner(uiOutput(ns("fish.park.fished.sum.plot"))),
 
@@ -148,114 +128,69 @@ mod_fish_ui <- function(id) {
               h4("Total abundance of all targeted species by sanctuary:"),
               withSpinner(uiOutput(ns("fish.park.fished.all.sum.sanctuary.plot"))),
 
+              ##Individual species: species dropdown (built in the server) then that species two plots ##
               htmlOutput(ns("fish.park.fished.species.dropdown")),
               withSpinner(uiOutput(ns("fish.park.fished.species.abundance.plot"))),
-              withSpinner(uiOutput(ns("fish.park.fished.species.abundance.sanctuary.plot"))),
+              withSpinner(uiOutput(ns("fish.park.fished.species.abundance.sanctuary.plot"))),),
 
-              # withSpinner(plotOutput("fish.park.fished.species.kde.plot", height = 500)),
-              # h4("KDE:"),
-              # withSpinner(uiOutput("fish.park.fished.species.kde.plot")),
-              #
-              # # withSpinner(uiOutput("ui.fish.park.fished.species.kde.sanctuary.plot")),
-              # htmlOutput("fish.park.fished.species.iframe")
-            ),
-            conditionalPanel(
-              paste0("input['",ns("fishparkmetric"),"'] == \"Individual species\""),
+            # INDIVIDUAL SPECIES: pick any species, see its plots, a map of where it was seen, and its web page
+            conditionalPanel(paste0("input['",ns("fishparkmetric"),"'] == \"Individual species\""),
               htmlOutput(ns("UIfish.park.all.species.dropdown")),
-
-              # h4("Total abundance of chosen species:"),
               withSpinner(uiOutput(ns("fish.park.all.species.abundance.plot"))),
-
-              # h4("Total abundance of chosen species by sanctuary:"),
               withSpinner(uiOutput(ns("fish.park.all.species.abundance.sanctuary.plot"))),
 
-              fluidRow(
-                box(
-                  h4("Spatial"),
+              #map
+              fluidRow(box(h4("Spatial"),
                   withSpinner(leafletOutput(width = "100%", ns("fish.park.all.species.leaflet"), height = 600))),
-                box(
-                  div(class = "wrap",
-                      htmlOutput(ns("fish.park.all.species.iframe")))
-                ))
-            ),
-            conditionalPanel(
-              paste0("input['",ns("fishparkmetric"),"'] == \"Feeding guilds\""),
+                box(div(class = "wrap",htmlOutput(ns("fish.park.all.species.iframe")))))),
 
-              # h4("Piscivores:"),
-              uiOutput(ns("fish.park.trophic.pisc.plot")),
+            #FEEDING GUILDS: one plot per trophic group
+            conditionalPanel(paste0("input['",ns("fishparkmetric"),"'] == \"Feeding guilds\""),
 
-              # h4("Herbivores:"),
-              withSpinner(uiOutput(ns("fish.park.trophic.herb.plot"))),
+              uiOutput(ns("fish.park.trophic.pisc.plot")),#Piscivores
+              withSpinner(uiOutput(ns("fish.park.trophic.herb.plot"))), #Herbivores
+              withSpinner(uiOutput(ns("fish.park.trophic.coral.plot"))), #Corallivores
+              withSpinner(uiOutput(ns("fish.park.trophic.omni.plot"))), #Omnivores
+              withSpinner(uiOutput(ns("fish.park.trophic.invert.plot"))), #Invertivores
+              withSpinner(uiOutput(ns("fish.park.trophic.plank.plot")))            ), #Planktivores
 
-              # h4("Corallivores:"),
-              withSpinner(uiOutput(ns("fish.park.trophic.coral.plot"))),
-
-              # h4("Omnivores:"),
-              withSpinner(uiOutput(ns("fish.park.trophic.omni.plot"))),
-
-              # h4("Intertivores:"),
-              withSpinner(uiOutput(ns("fish.park.trophic.invert.plot"))),
-
-              # h4("Planktivores:"),
-              withSpinner(uiOutput(ns("fish.park.trophic.plank.plot")))
-            ),
-            conditionalPanel(
-              paste0("input['",ns("fishparkmetric"),"'] == \"Sharks and Rays\""),
-
+            #SHARKS AND RAYS: Abundance plots,
+            conditionalPanel(paste0("input['",ns("fishparkmetric"),"'] == \"Sharks and Rays\""),
               h3("Shark and Ray abundance:", actionButton(ns("park.shark.ta"), label = " ",
                                                           icon = icon("info"),
                                                           icon.library = "font awesome",
                                                           style = "color: #fff; background-color: #d14210; border-color: #d14210; border-radius: 10px;  border-width: 2px")),
-
               withSpinner(uiOutput(ns("shark.park.total.plot"))),
 
               h4("Shark and Ray abundance by sanctuary:"),
               withSpinner(uiOutput(ns("shark.park.total.sanctuary.plot"))),
 
               h4("Shark and Ray abundance by zone:"),
-              # withSpinner(uiOutput("ui.fish.park.total.zone.plot")),
-              withSpinner(uiOutput(ns("shark.park.total.zone.plot")))
-
-            )
-          )
-
-        ),
-
-        ### End of marine park plots
+              withSpinner(uiOutput(ns("shark.park.total.zone.plot")))))
+        ), #End of marine park plots
 
         ### Leaflet box ----
-
-        fluidRow(
-          div(column(
-            width = 4,
-            box(
-              width = 12, title = "Sampling locations",
-              conditionalPanel(
-                paste0("input['",ns("tabset1"),"'] !== \"Marine park\""),
+        #Right side: one map, pinned to the right edge of the screen. Which of the two maps shows depends on the plot tab selected (tabset1)
+        fluidRow(div(column(width = 4,
+            box(width = 12, title = "Sampling locations",
+              conditionalPanel(paste0("input['",ns("tabset1"),"'] !== \"Marine park\""),
                 withSpinner(leafletOutput(width = "100%", ns("fish.state.sampling.leaflet"), height = "78vh")),
-                style="z-index:1002;"
-              ),
-              conditionalPanel(
-                paste0("input['",ns("tabset1"),"'] == \"Marine park\""),
-                withSpinner(leafletOutput(width = "100%", ns("fish.park.sampling.leaflet"), height = "78vh"))
-              )
+                style="z-index:1002;"),
 
-              # h4("Sampling locations"),
-              # leafletOutput(width = "100%", "fish.state.sampling.leaflet", height = "78vh")
-            ),
+              conditionalPanel(paste0("input['",ns("tabset1"),"'] == \"Marine park\""),
+                withSpinner(leafletOutput(width = "100%", ns("fish.park.sampling.leaflet"), height = "78vh")))),
+            style = "position:fixed; right: 0;"))))
+      ) #end tabitem
+} #end UI function
 
-            style = "position:fixed; right: 0;"
-          ))
-        )
-      )
-    )
-}
-
-##### FISH PLOT TABLE #####
+#---- PLOT TABLE -------------------------------------------------------------------------------------------------------------
 #Table of the pre-rendered PNG plots on the fish tab (see register_png_plots())).
+# One row = one plot. To add one: add a row here and a matching ns("id") in mod_fish_ui().
 #GOTCHA: `id` must also appear as ns("id") in mod_fish_ui, and `suffix` must match the file names written by generate_plots()
+#`title` is a heading shown above the plot (NA=none)
 #`methods` limits a plot to those methods (NA=all)
 #`suffix` completes the file name Fish_<park>_<method>_<suffix>.png
+# The species plots are NOT here: their file names contain the species so they have their own blocks below
 
 fish_png_spec<- tibble::tribble(
   ~id,                                     ~suffix,                          ~title,                      ~methods,
@@ -285,7 +220,7 @@ fish_png_spec<- tibble::tribble(
 )
 
 
-##### FISH SERVER #####
+#---- SERVER -------------------------------------------------------------------------------------------------------------
 #' fish Server function
 #'
 #' @param id Module id (namespace); must match the id given to mod_fish_ui().
@@ -296,44 +231,41 @@ fish_png_spec<- tibble::tribble(
 #Inside moduleServer, input$x are automatically namespaced to this module
 mod_fish_server <- function(id, mpa_data){
   moduleServer(id, function(input, output, session){
-    ns <- session$ns
+    ns <- session$ns #needed for inputs built inside renderUI
 
     #short reactive aliases for the three main selections (NULL until the dropdowns render)
     park<-reactive(input$fish.park.dropdown)
     method<-reactive(input$fish.park.method.dropdown)
-    species.all<-reactive(input$fish.park.all.species.dropdown)
 
-    #One row per plot: add a row to fish_png_spec (and a matching ns("id") in mod_fish_ui) for a new plot
+    #pre-rendered png plots: one call creates every plot listed in fish_png_spec (see table above)
     register_png_plots(output, fish_png_spec, "Fish", park, method)
 
     #State-wide summary ----
-    #Yellow summary box (CSS in style.css turns bg-yellow teal)
+    #Helper for the yellow summary boxes (CSS in style.css turns bg-yellow teal)
     value_box<- function(value, subtitle, width=NULL){
       valueBox(HTML(paste0('<p style = "color:#ffffff";><font size="+3">', prettyNum(value, big.mark = ","), '</font></p>')),
-               subtitle, icon = icon("fish"), color="yellow", width = width)
-    }
+               subtitle, icon = icon("fish"), color="yellow", width = width)}
 
-
+    #Total fish counted box
     output$box.total.number.fish <- renderValueBox(value_box(mpa_data$total_number_fish,"Fish counted"))
+
+    #Total fish species identified box
     output$box.total.species.fish <- renderValueBox(value_box(mpa_data$total_species_fish,"Fish species identified"))
 
-
+    #One block per marine park: its name, three summary boxes and a banner photo
+    #three tables below hold one row per park in the same order
     output$statewide_plots <- renderUI({
       total_fish <- mpa_data$total_number_fish_park
       total_species <- mpa_data$total_species_fish_park
       mins_watched <- mpa_data$mins_watched
 
-      # if (nrow(total_fish) > 0) {
-
       number_of_parks <- nrow(total_fish)
 
       marine_park_summaries <-
         lapply(1:number_of_parks, function(i) {
-
-          total_ind <- total_fish %>% slice(i)  #%>% glimpse()
-          total_spe <- total_species %>% slice(i)  #%>% glimpse()
+          total_ind <- total_fish %>% slice(i)
+          total_spe <- total_species %>% slice(i)
           mins_watched <- mins_watched %>% slice(i)
-
 
           ind <- unique(total_ind$total)
           spe <- unique(total_spe$richness)
@@ -341,12 +273,15 @@ mod_fish_server <- function(id, mpa_data){
 
           marine_park <- unique(total_ind$marine_park)
 
+          #filename version of the park (used for the banner image)
           park <- stringr::str_replace_all(tolower(marine_park), c("marine park" = "", "island marine reserve" = "", " " = ""))
 
-          tagList(
-            HTML(paste0('<center>')),
+          #The banner file is www/images/fish_<park>_banner.jpg; a park without one shows a broken image
+          tagList(HTML(paste0('<center>')),
             h4(marine_park),
             HTML(paste0('</left>')),
+
+            #Total fish counted box
             valueBox(HTML(paste0('<p style = "color:#ffffff";><font size="+3">',
                                  prettyNum(ind,  big.mark = ","),
                                  '</font></p>')),
@@ -354,12 +289,15 @@ mod_fish_server <- function(id, mpa_data){
                      icon = icon("fish"),
                      color = "yellow", width = 4),
 
+            #Total fish species identified box
             valueBox(HTML(paste0('<p style = "color:#ffffff";><font size="+3">',
                                  prettyNum(spe,  big.mark = ","),
                                  '</font></p>')),
                      "Fish species indentified",
                      icon = icon("fish"),
                      color = "yellow", width = 4),
+
+            #Total hours of video watched box
             valueBox(HTML(paste0('<p style = "color:#ffffff";><font size="+3">',
                                  prettyNum(round(mins/60),  big.mark = ","),
                                  '</font></p>')),
@@ -367,56 +305,41 @@ mod_fish_server <- function(id, mpa_data){
                      icon = icon("fish"),
                      color = "yellow", width = 4),
 
-
+            #Park banner image
             HTML(paste0('<center><img src = "www/images/fish_', park, '_banner.jpg" width = "97%"></center>')),
-            # img(src = paste0("www/images/fish_", park, "_banner.jpg"), align = "center", width = "95%"),#, height = 200 , align = "left"
             br(),
             br(),
-            br()
-          )
-
-        })
-
+            br())
+         }) #end of marine_park_summaries
       do.call(tagList, marine_park_summaries)
+    }) #end of state-wide plots
 
-    })
+    # Dropdowns (marine park tab) ----
 
-    # FISH ----
-
-    #### MARINE PARK DROPDOWNS ----
-    ####### ->  Create a marine park dropdown ----
+    #Park dropdown: ordered by latitude. pickerInput gives a searchable list
     output$fish.park.dropdown <- renderUI({
-
-      lats <- mpa_data$lats %>%
-        dplyr::arrange(mean_lat) # removed desc for marine park workshop
+        lats <- mpa_data$lats %>%
+        dplyr::arrange(mean_lat)
 
       pickerInput(
         inputId = ns("fish.park.dropdown"),
         label = "Choose a marine park:",
         choices = c(unique(lats$marine_park)),
         multiple = FALSE,
-        # selected = unique(lats$marine_park)[1],
-        options = list(`actions-box` = TRUE, `live-search` = TRUE, `dropup-auto` = FALSE)
-      )
-    })
+        options = list(`actions-box` = TRUE, `live-search` = TRUE, `dropup-auto` = FALSE))})
 
-    # ####### ->  Create method dropdown ----
+    #Method dropdown: only the methods used in the chosen park
     observeEvent(input$fish.park.dropdown, {
       output$fish.park.method.dropdown <- renderUI({
         req(input$fish.park.dropdown)
 
         dat <- mpa_data$methods[marine_park %in% c(input$fish.park.dropdown)]
+        selectizeInput(ns("fish.park.method.dropdown"), "Choose a method:", choices = c(unique(sort(dat$method))),
+                       selected = c(unique(sort(dat$method)))[1])})})
 
-        selectizeInput(ns("fish.park.method.dropdown"), "Choose a method:", choices = c(unique(sort(dat$method))), selected = c(unique(sort(dat$method)))[1])
-
-
-      }) #%>% bindCache(input$fish.park.dropdown)
-    })
-
-    ####### ->  Create a fished species dropdown ----
+    #Target-species dropdown: species with a total above 0 in this park and method, most abundant first
     output$fish.park.fished.species.dropdown <- renderUI({
       req(input$fish.park.dropdown, input$fish.park.method.dropdown)
-
       dat <- mpa_data$ordered_top_fished_species[marine_park %in% c(input$fish.park.dropdown) &
                                                    method %in% c(input$fish.park.method.dropdown)]
       choices <- dat %>%
@@ -432,13 +355,10 @@ mod_fish_server <- function(id, mpa_data){
         choices = choices,
         multiple = FALSE,
         selected = choices[1],
-        options = list(`actions-box` = TRUE, `live-search` = TRUE, `dropup-auto` = FALSE)
-      )
-    }) #%>% bindCache(input$fish.park.dropdown, input$fish.park.method.dropdown)
+        options = list(`actions-box` = TRUE, `live-search` = TRUE, `dropup-auto` = FALSE))})
 
-    ####### ->  Create an all species dropdown ----
+    #All species dropdown: every species seen in this park and method, most abundant first
     output$UIfish.park.all.species.dropdown <- renderUI({
-
       dat <- mpa_data$ordered_top_species[marine_park %in% c(input$fish.park.dropdown) &
                                             method %in% c(input$fish.park.method.dropdown)]
 
@@ -454,174 +374,14 @@ mod_fish_server <- function(id, mpa_data){
         choices = choices,
         multiple = FALSE,
         selected = choices[1],
-        options = list(`actions-box` = TRUE, `live-search` = TRUE, `dropup-auto` = FALSE)
-      )
-    }) #%>% bindCache(input$fish.park.dropdown, input$fish.park.method.dropdown)
-
-    ####### ->  Create a trophic group dropdown ----
-    # output$fish.park.trophic.dropdown <- renderUI({
-    #
-    #   dat <- mpa_data$trophic.sum[marine_park %in% c(input$fish.park.dropdown) &
-    #                                 method %in% c(input$fish.park.method.dropdown)]
-    #
-    #   choices <- dat %>%
-    #     dplyr::distinct(trophic.group) %>%
-    #     dplyr::pull("trophic.group")
-    #
-    #   pickerInput(
-    #     inputId = "fish.park.trophic.dropdown",
-    #     label = "Choose trophic groups to plot:",
-    #     choices = sort(choices),
-    #     multiple = TRUE,
-    #     selected = sort(choices)[1:3],
-    #     options = list(`actions-box` = TRUE, `live-search` = TRUE, `dropup-auto` = FALSE)
-    #   )
-    # }) #%>% bindCache(input$fish.park.dropdown, input$fish.park.method.dropdown)
-
-    #----------------------------------------------------------------------------#
-    ####### DATA FILTERED BY DROPDOWNS ----
-
-    ####### ->  Total abundance and Species Richness for leaflets ----
-    fish_park_alldata <- reactive({
-      req(input$fish.park.dropdown, input$fish.park.method.dropdown)
-
-      dat <- mpa_data$all.data[marine_park %in% c(input$fish.park.dropdown)]
-      dat <- dat[method %in% c(input$fish.park.method.dropdown)]
-
-      dat
-
-    }) #%>% bindCache(input$fish.park.dropdown, input$fish.park.method.dropdown)
+        options = list(`actions-box` = TRUE, `live-search` = TRUE, `dropup-auto` = FALSE))})
 
 
-    fish_park_ta <- reactive({
-      req(fish_park_alldata())
+    # Data for the maps and trend boxes ----
+    #Sampling sites for the selected path and method, wth the popup HTML pre-built
+    # Rows without useable lat/lon are dropped to avoid NAs causing 'bounds are not valid' issue.
 
-      fish_park_alldata()[metric %in% c("Total abundance")]
-
-    })
-
-    # TODO finish splitting this
-    fish_park_sr <- reactive({
-      req(fish_park_alldata())
-
-      fish_park_alldata()[metric %in% c("Species richness")]
-
-    })
-
-    # ####### ->  Overall SR + TA dataframes ----
-    # fish_park_overall <- reactive({
-    #   req(input$fish.park.dropdown, input$fish.park.method.dropdown)
-    #
-    #   dat <- mpa_data$ta_sr[marine_park %in% c(input$fish.park.dropdown)]
-    #   dat <- dat[method %in% c(input$fish.park.method.dropdown)]
-    #
-    #   dat
-    # })
-    #
-    # ####### ->  Overall Species richness ----
-    # fish_park_sr_overall <- reactive({
-    #   req(fish_park_overall())
-    #
-    #   dat <- fish_park_overall()[metric %in% c("Species richness")]
-    #
-    #   dat
-    # })
-    #
-    # ####### ->  Overall Total abundance ----
-    # fish_park_ta_overall <- reactive({
-    #   req(fish_park_overall())
-    #
-    #   dat <- fish_park_overall()[metric %in% c("Total abundance")]
-    #
-    #   dat
-    # })
-
-    ####### ->  Sanctuary SR + TA plots ----
-    fish_park_sanctuary <- reactive({
-      req(input$fish.park.dropdown, input$fish.park.method.dropdown)
-
-      dat <- mpa_data$ta_sr_sanctuary[marine_park %in% c(input$fish.park.dropdown)]
-      dat <- dat[method %in% c(input$fish.park.method.dropdown)]
-
-      dat
-    })
-
-    # ####### ->  Sanctuary Species richness ----
-    # fish_park_sr_sanctuary <- reactive({
-    #   req(fish_park_sanctuary())
-    #
-    #   dat <- fish_park_sanctuary()[metric %in% c("Species richness")]
-    #
-    #   dat
-    # })
-
-    ####### ->  Sanctuary Total abundance ----
-    fish_park_ta_sanctuary <- reactive({
-      req(fish_park_sanctuary())
-
-      dat <- fish_park_sanctuary()[metric %in% c("Total abundance")]
-
-      dat
-    })
-
-    ####### ->  Site SR + TA plots ----
-    fish_park_site <- reactive({
-      req(input$fish.park.dropdown, input$fish.park.method.dropdown)
-
-      dat <- mpa_data$ta_sr_site[marine_park %in% c(input$fish.park.dropdown)]
-      dat <- dat[method %in% c(input$fish.park.method.dropdown)]
-
-      dat
-    })
-
-    ####### ->  Site Species richness ----
-    fish_park_sr_site <- reactive({
-      req(fish_park_site())
-
-      dat <- fish_park_site()[metric %in% c("Species richness")]
-
-      dat
-    })
-
-    ####### ->  Site Total abundance ----
-    fish_park_ta_site <- reactive({
-      req(fish_park_site())
-
-      dat <- fish_park_site()[metric %in% c("Total abundance")]
-
-      dat
-    })
-
-    ####### ->  Zone SR + TA plots ----
-    fish_park_zone <- reactive({
-      req(input$fish.park.dropdown, input$fish.park.method.dropdown)
-
-      dat <- mpa_data$ta_sr_zone[marine_park %in% c(input$fish.park.dropdown)]
-      dat <- dat[method %in% c(input$fish.park.method.dropdown)]
-
-      dat
-    })
-
-    ####### ->  Zone Species richness ----
-    fish_park_sr_zone <- reactive({
-      req(fish_park_zone())
-
-      dat <- fish_park_zone()[metric %in% c("Species richness")]
-
-      dat
-    })
-
-    ####### ->  Zone Total abundance ----
-    fish_park_ta_zone <- reactive({
-      req(fish_park_zone())
-
-      dat <- fish_park_zone()[metric %in% c("Total abundance")]
-
-      dat
-    })
-
-
-    ####### ->  Sampling effort for leaflet ----
+    #Sampling effort
     fish_park_samplingeffort <- reactive({
       req(input$fish.park.dropdown, input$fish.park.method.dropdown)
 
@@ -637,308 +397,39 @@ mod_fish_server <- function(id, mpa_data){
           "<b>Depth:</b>", depth_m, "m", "<br/>",
           "<b>Site:</b>", site, "<br/>",
           "<b>Location:</b>", location, "<br/>",
-          "<b>Number of times sampled:</b>", number_of_times_sampled, "<br/>"
-        ))
-    })
+          "<b>Number of times sampled:</b>", number_of_times_sampled, "<br/>"))})
 
-    ####### ->  Abundance by species NOT summarised (for leaflets)----
+    #Where the chosen species was counted (one row per sample with a count)
     fish_park_abundance_species_leaflet <- reactive({
       req(input$fish.park.dropdown, input$fish.park.method.dropdown, input$fish.park.all.species.dropdown)
 
       dat <- mpa_data$abundance_leaflet[marine_park %in% c(input$fish.park.dropdown)]
       dat <- dat[method %in% c(input$fish.park.method.dropdown)]
       dat <- dat[scientific_name %in% c(input$fish.park.all.species.dropdown)]
+      dat })
 
-      dat
-
-    })
-
-    ####### ->  Metadata for leaflet Abundance by species -----
-    fish_park_metadata_leaflet <- reactive({
+    #Every sample in this park and method (so samples where species was not seen can be shown as zero)
+      fish_park_metadata_leaflet <- reactive({
       req(input$fish.park.dropdown, input$fish.park.method.dropdown, input$fish.park.all.species.dropdown)
 
       dat <- mpa_data$metadata_leaflet[marine_park %in% c(input$fish.park.dropdown)]
       dat <- dat[method %in% c(input$fish.park.method.dropdown)]
-
-      dat
-
-    })
+      dat })
 
 
-    ####### ->  Abundance by species summarised ----
-    fish_park_abundance_species <- reactive({
-      req(input$fish.park.dropdown, input$fish.park.method.dropdown, input$fish.park.all.species.dropdown)
-
-      dat <- mpa_data$abundance.sum[marine_park %in% c(input$fish.park.dropdown)] # changed from abundance to summarised
-      dat <- dat[method %in% c(input$fish.park.method.dropdown)]
-      dat <- dat[scientific_name %in% c(input$fish.park.all.species.dropdown)]
-
-      dat
-
-    })
-
-    ####### ->  Abundance by species by Sanctuary----
-    fish_park_abundance_species_sanctuary <- reactive({
-      req(input$fish.park.dropdown, input$fish.park.method.dropdown, input$fish.park.all.species.dropdown)
-
-      dat <- mpa_data$abundance_sum_sanctuary[marine_park %in% c(input$fish.park.dropdown)]
-      dat <- dat[method %in% c(input$fish.park.method.dropdown)]
-      dat <- dat[scientific_name %in% c(input$fish.park.all.species.dropdown)]
-
-      dat
-
-    })
-
-    ####### ->  Top ten species ----
-    fish_park_top_ten <- reactive({
-      req(input$fish.park.dropdown, input$fish.park.method.dropdown)
-
-      dat <- mpa_data$top_ten[marine_park %in% c(input$fish.park.dropdown)]
-      dat <- dat[method %in% c(input$fish.park.method.dropdown)]
-
-      dat
-
-    })
-
-    ####### ->  Individual Fished species abundance ----
-    fish_park_fishedabundance <- reactive({
-      req(input$fish.park.dropdown, input$fish.park.method.dropdown)
-
-      dat <- mpa_data$fished_species_sum[marine_park %in% c(input$fish.park.dropdown)]
-      dat <- dat[method %in% c(input$fish.park.method.dropdown)]
-
-      dat
-
-    })
-
-    ####### ->  Individual Fished species abundance by sanctuary ----
-    fish_park_fishedabundance_sanctuary <- reactive({
-      req(input$fish.park.dropdown, input$fish.park.method.dropdown)
-
-      dat <- mpa_data$fished_species_sum_sanctuary[marine_park %in% c(input$fish.park.dropdown)]
-      dat <- dat[method %in% c(input$fish.park.method.dropdown)]
-
-      dat
-
-    })
-
-    ####### ->  All fished species summed together ----
-    fish_park_fishedsum <- reactive({
-      req(input$fish.park.dropdown, input$fish.park.method.dropdown)
-
-      dat <- mpa_data$fished_sum[marine_park %in% c(input$fish.park.dropdown)]
-      dat <- dat[method %in% c(input$fish.park.method.dropdown)]
-
-      dat
-
-    })
-
-    ####### ->  All fished species summed together by Sanctuary----
-    fish_park_fishedsum_sanctuary <- reactive({
-      req(input$fish.park.dropdown, input$fish.park.method.dropdown)
-
-      dat <- mpa_data$fished_sum_sanctuary[marine_park %in% c(input$fish.park.dropdown)]
-      dat <- dat[method %in% c(input$fish.park.method.dropdown)]
-
-      dat
-
-    })
-
-    ####### ->  Summarised trophic abundance ----
-    # fish_park_trophicabundance <- reactive({
-    #   req(input$fish.park.dropdown, input$fish.park.method.dropdown)
-    #
-    #   dat <- mpa_data$trophic.sum[marine_park %in% c(input$fish.park.dropdown)]
-    #   dat <- dat[method %in% c(input$fish.park.method.dropdown)]
-    #
-    #   dat
-    #
-    # })
-
-    ####### ->  Complete length ----
-    fish_park_fishedcompletelength <- reactive({
-      req(input$fish.park.dropdown, input$fish.park.method.dropdown)
-
-      dat <- mpa_data$fished_complete_length[marine_park %in% c(input$fish.park.dropdown)]
-      dat <- dat[method %in% c(input$fish.park.method.dropdown)]
-
-      dat
-
-    })
-
-    ####### ->  Trends ----
+    #Trends: written interpretation of the trends for this park and method (feeds the two collapsible boxes below)
     fish_park_trends <- reactive({
       req(input$fish.park.dropdown, input$fish.park.method.dropdown)
 
       dat <- mpa_data$interpretation_trends[marine_park %in% c(input$fish.park.dropdown)]
       dat <- dat[method %in% c(input$fish.park.method.dropdown)]
+      dat})
 
-      dat
-
-    })
-
-    # STATE DROPDOWNS ----
-
-    # ####### ->  Create method dropdown ----
-    # output$fish.state.method.dropdown <- renderUI({
-    #   # choices <- mpa_data$metadata %>%
-    #   #   # dplyr::filter(marine_park %in% c(input$fish.state.park.dropdown)) %>%
-    #   #   dplyr::distinct(method) %>%
-    #   #   dplyr::pull("method")
-    #   #
-    #   # create_dropdown("fish.state.method.dropdown", choices, "Choose a method:", FALSE)
-    #   #
-    #   #
-    #   dat <- mpa_data$methods
-    #
-    #   selectizeInput("fish.state.method.dropdown", "Choose a method:", choices = c(unique(sort(dat$method))), selected = c(unique(sort(dat$method)))[1])
-    #
-    #
-    # })
-
-    ####### ->  Sampling effort leaflet ----
-    output$fish.state.sampling.leaflet <- renderLeaflet({
-      # req(input$fish.state.method.dropdown)
-
-      dat <- fish_samplingeffort()
-      pal <- data.frame(marker_col = c("#F1652C", "yellow", "#2ECFE2","#2ECFE2", "#739AF8"), method = c("stereo-DOVs", "stereo-BRUVs", "stereo-ROVs","stereo-ROVs+UVC", "UVC"))
-      dat <- dplyr::left_join(dat, pal, by = "method")
-
-      projcrs <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
-      #
-      #     bruvs <- fish_samplingeffort() %>%
-      #       dplyr::filter(method %in% "stereo-BRUVs")
-      #
-      #     bruvs <- sf::st_as_sf(x = bruvs,
-      #                           coords = c("longitude_dd", "latitude_dd"),
-      #                           crs = projcrs)
-      #
-      #     dovs <- fish_samplingeffort() %>%
-      #       dplyr::filter(method %in% "stereo-DOVs")
-      #
-      #     dovs <- sf::st_as_sf(x = dovs,
-      #                          coords = c("longitude_dd", "latitude_dd"),
-      #                          crs = projcrs)
-      #
-      #     rovs <- fish_samplingeffort() %>%
-      #       dplyr::filter(method %in% "stereo-ROVs")
-      #
-      #     rovs <- sf::st_as_sf(x = rovs,
-      #                          coords = c("longitude_dd", "latitude_dd"),
-      #                          crs = projcrs)
-      #
-      #     uvc <- fish_samplingeffort() %>%
-      #       dplyr::filter(method %in% "UVC")
-      #
-      #     uvc <- sf::st_as_sf(x = uvc,
-      #                         coords = c("longitude_dd", "latitude_dd"),
-      #                         crs = projcrs)
-
-      map <- leaflet_basemap(fish_samplingeffort()) %>%
-        fitBounds(
-          ~ min(longitude_dd),
-          ~ min(latitude_dd),
-          ~ max(longitude_dd),
-          ~ max(latitude_dd)
-        ) %>%
-
-        addPolygons(
-          data =  mpa_data$state_mp,
-          color = ~ mpa_data$state_pal(zone),
-          popup =  mpa_data$state_mp$COMMENTS,
-          group = "Marine Parks",
-          fillOpacity = 0.9,
-          stroke = FALSE
-        ) %>%
-
-        addLegend(
-          pal = mpa_data$state_pal,
-          values = mpa_data$state_mp$zone,
-          opacity = 1,
-          title = "Zones",
-          position = "bottomright",
-          group = "Marine Parks"
-        ) %>%
-
-        addLabelOnlyMarkers(
-          data = mpa_data$park_labels,
-          ~longitude_dd, ~latitude_dd,
-          label = ~marine_park,
-          labelOptions = labelOptions(noHide = TRUE,
-                                      textOnly = TRUE,
-                                      textsize="15px",
-                                      offset = c(3,-8),
-                                      style=list(color ="white"))
-        ) %>%
-
-        addCircleMarkers(data = dat,
-                         lng = ~longitude_dd,
-                         lat = ~latitude_dd,
-                         popup = ~content,
-                         label = ~as.character(sample),
-                         color = "black", weight = 0.5,
-                         fillColor = ~marker_col,
-                         opacity = 1, radius = 7,
-                         group = ~method) %>%
-
-        # # UVC
-        # addCircleMarkers(data = uvc,
-        #             popup = ~content,
-        #             color = "black",
-        #             fillColor = "#6383db",
-        #             opacity = 1, radius = 7,
-        #             group = "UVC") %>%
-        #
-        # # ROVs
-        # addCircleMarkers(data = rovs,
-        #             popup = ~content,
-        #             color = "black",
-        #             fillColor = "#0CA2B0",
-        #             opacity = 1, radius = 7, stroke = FALSE,
-        #             group = "stereo-ROVs") %>%
-        #
-        # # BRUVS
-        # addCircleMarkers(data = bruvs,
-        #             popup = ~content,
-        #             color = "black",
-        #             fillColor = "#FEC52E",
-        #             opacity = 1, radius = 7, stroke = FALSE,
-        #             group = "stereo-BRUVs") %>%
-        #
-        # # DOVS
-        # addCircleMarkers(data = dovs,
-        #             popup = ~content,
-        #             color = "black",
-        #             fillColor = "#d14210",
-        #             opacity = 1, radius = 7, stroke = FALSE,
-        #             group = "stereo-DOVs") %>%
-
-
-        addLayersControl(
-          overlayGroups = c(
-            "Marine Parks",
-            "stereo-BRUVs",
-            "stereo-DOVs",
-            "stereo-ROVs",
-            "UVC"
-
-          ),
-          options = layersControlOptions(collapsed = FALSE)
-        )%>%
-        addLegend("bottomright",
-                  colors = c("#F1652C", "#FFEC58", "#2ECFE2","#2ECFE2", "#739AF8"),
-                  labels = c("stereo-DOVs", "stereo-BRUVs", "stereo-ROVs", "stereo-ROVs+UVC", "UVC"),
-                  title = "Sampling locations",
-                  opacity = 1)
-    })
-
-
+    #All sampling effort in the state, for every method, with a popup HTML (used by the state-wide map)
     fish_samplingeffort <- reactive({
-      req(mpa_data) # , input$fish.state.method.dropdown
+      req(mpa_data)
 
-      mpa_data$sampling_effort %>%
-        # dplyr::filter(marine_park %in% c(input$fish.state.park.dropdown)) %>%
-        # dplyr::filter(method %in% c(input$fish.state.method.dropdown)) %>%
+      dat <- mpa_data$sampling_effort%>%
         dplyr::filter(is.finite(latitude_dd), is.finite(longitude_dd)) %>% #protect map from broken lat/longs
         dplyr::mutate(content = paste(
           sep = " ",
@@ -948,32 +439,72 @@ mod_fish_server <- function(id, mpa_data){
           "<b>Depth:</b>", depth_m, "m", "<br/>",
           "<b>Site:</b>", site, "<br/>",
           "<b>Location:</b>", location, "<br/>",
-          "<b>Number of times sampled:</b>", number_of_times_sampled, "<br/>"
-        ))
-    })
+          "<b>Number of times sampled:</b>", number_of_times_sampled, "<br/>"))})
 
-
-
-    #----------------------------------------------------------------------------#
-    #### STATE PLOTS ----
-
-
-
-
-    #----------------------------------------------------------------------------#
-    #### MARINE PARK PLOTS ----
-    ####### ->  Sampling effort leaflet ----
-    output$fish.park.sampling.leaflet <- renderLeaflet({
-
-      dat <- fish_park_samplingeffort()
-
-      # Create the basemap with marine parks and legend
+    # Maps ----
+    #State-wide map: every sampling location coloured by method, over all marine park zones, with park names
+    #All zones are kept (this map shows the whole state), whereas the park maps below only draw their own zones
+    output$fish.state.sampling.leaflet <- renderLeaflet({
+      dat <- fish_samplingeffort()
+      #specify marker colour per method. GOTCHA: a method missing from this table gets no colour so add new methods here
       pal <- data.frame(marker_col = c("#F1652C", "yellow", "#2ECFE2","#2ECFE2", "#739AF8"), method = c("stereo-DOVs", "stereo-BRUVs", "stereo-ROVs","stereo-ROVs+UVC", "UVC"))
       dat <- dplyr::left_join(dat, pal, by = "method")
-      groups <- dat %>%
-        dplyr::distinct(year)
+      projcrs <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
 
-      zones<-zones_for_park(mpa_data$state_mp, park(), dat)
+      map <- leaflet_basemap(fish_samplingeffort()) %>%
+        fitBounds(~ min(longitude_dd), ~ min(latitude_dd), ~ max(longitude_dd), ~ max(latitude_dd)) %>% #zoom to fit all sites
+        addPolygons(data =  mpa_data$state_mp, #zone polygons coloured by zone type
+          color = ~ mpa_data$state_pal(zone),
+          popup =  mpa_data$state_mp$COMMENTS,
+          group = "Marine Parks",
+          fillOpacity = 0.9,
+          stroke = FALSE) %>%
+        addLegend(pal = mpa_data$state_pal,
+          values = mpa_data$state_mp$zone,
+          opacity = 1,
+          title = "Zones",
+          position = "bottomright",
+          group = "Marine Parks") %>%
+        addLabelOnlyMarkers(#Park names written on the map. Parks with no coordinates in park_labels are skipped
+          data = dplyr::filter(mpa_data$park_labels, is.finite(latitude_dd), is.finite(longitude_dd)), #skip rows without coordinates (Dampier & walpole)
+          ~longitude_dd, ~latitude_dd,
+          label = ~marine_park,
+          labelOptions = labelOptions(noHide = TRUE,
+                                      textOnly = TRUE,
+                                      textsize="15px",
+                                      offset = c(3,-8),
+                                      style=list(color ="white"))) %>%
+        addCircleMarkers(data = dat, #one circle per sample, grouped by method so the layer swtich can turn each method off
+                         lng = ~longitude_dd,
+                         lat = ~latitude_dd,
+                         popup = ~content,
+                         label = ~as.character(sample),
+                         color = "black", weight = 0.5,
+                         fillColor = ~marker_col,
+                         opacity = 1, radius = 7,
+                         group = ~method) %>%
+        addLayersControl(overlayGroups = c(
+            "Marine Parks",
+            "stereo-BRUVs",
+            "stereo-DOVs",
+            "stereo-ROVs",
+            "UVC"),
+          options = layersControlOptions(collapsed = FALSE))%>%
+        addLegend("bottomright",
+                  colors = c("#F1652C", "#FFEC58", "#2ECFE2","#2ECFE2", "#739AF8"),
+                  labels = c("stereo-DOVs", "stereo-BRUVs", "stereo-ROVs", "stereo-ROVs+UVC", "UVC"),
+                  title = "Sampling locations",
+                  opacity = 1)})
+
+    #Marine park map: the selected park's sites coloured by method, one layer switch per year, over just that parks zones
+    output$fish.park.sampling.leaflet <- renderLeaflet({
+      dat <- fish_park_samplingeffort()
+
+      # marker colour per method (same table as the state-wide map)
+      pal <- data.frame(marker_col = c("#F1652C", "yellow", "#2ECFE2","#2ECFE2", "#739AF8"), method = c("stereo-DOVs", "stereo-BRUVs", "stereo-ROVs","stereo-ROVs+UVC", "UVC"))
+      dat <- dplyr::left_join(dat, pal, by = "method")
+
+      zones<-zones_for_park(mpa_data$state_mp, park(), dat) #only this parks zones to speed up rendering
 
       map <- leaflet_basemap(dat) %>%
         fitBounds(~ min(longitude_dd), ~ min(latitude_dd), ~ max(longitude_dd), ~ max(latitude_dd)) %>%
@@ -981,9 +512,8 @@ mod_fish_server <- function(id, mpa_data){
           data =  zones,
           color = ~ mpa_data$state_pal(zone),
           popup =  zones$COMMENTS,
-          group = "Marine Parks"
-        ) %>%
-        leaflet::addCircleMarkers(data = dat,
+          group = "Marine Parks") %>%
+        leaflet::addCircleMarkers(data = dat, #circles grouped by year: layer control lets you show one year at a time
                                   lng = ~longitude_dd,
                                   lat = ~latitude_dd,
                                   popup = ~content,
@@ -994,47 +524,88 @@ mod_fish_server <- function(id, mpa_data){
                                   group = ~year) %>% #"Sampling locations"
         leaflet::addLayersControl(data = dat,
                                   overlayGroups = ~year,
-                                  options = layersControlOptions(collapsed = FALSE)
-        ) %>%
-        leaflet::addLegend(
-          pal = mpa_data$state_pal, values = zones$zone, opacity = 1,
+                                  options = layersControlOptions(collapsed = FALSE)) %>%
+        leaflet::addLegend(pal = mpa_data$state_pal, values = zones$zone, opacity = 1,
           title = "Zones",
-          position = "bottomleft", group = "Marine Parks"
-        )
+          position = "bottomleft", group = "Marine Parks")
+      map })
 
-      map
-    })
+    #Individual species map: circles sized by the highest count (maxn) of the chosen species per sample.
+    #Samples where it was not seen are small black dots
+    #Note that currently it is possible to select a species that wasn't seen at all in a given park + method (i.e. map full of small black dots).
+    #We can change this so those species are hidden from the drop down if we want
+    output$fish.park.all.species.leaflet <- renderLeaflet({
+      req(fish_park_abundance_species_leaflet())
+      dat <- fish_park_abundance_species_leaflet()
 
-    ####### ->  Acknowledgements  ----
+      dat <- dplyr::full_join(dat, fish_park_metadata_leaflet()) %>%
+        dplyr::filter(is.finite(latitude_dd), is.finite(longitude_dd)) %>% #protect map from broken lat/longs
+        tidyr::replace_na(list(maxn = 0))
 
+      # Species seen nowhere in this park in this park + method are not in abundance_leaflet (zeros are removed in generate_data(),
+      #so they come out of the join below as all-zero samples which is correct)
+      overzero.ta <- dplyr::filter(dat, maxn > 0)
+      equalzero.ta <- dplyr::filter(dat, maxn == 0)
+
+      #Largest count, for the size of the legend.Guarded so all zero or empty species can't push -Inf to legend labels
+      max.ta <- if (nrow(overzero.ta)) base::max(overzero.ta$maxn) else 0
+
+      zones<- zones_for_park(mpa_data$state_mp, park(), dat) #only this parks zones
+
+      map <- leaflet_basemap(dat) %>%
+        fitBounds(~ min(longitude_dd), ~ min(latitude_dd), ~ max(longitude_dd), ~ max(latitude_dd)) %>% #zoom to fit this parks sites
+        addGlPolygons(data =  zones, #draw zone polygons
+          color = ~ mpa_data$state_pal(zone),
+          popup =  zones$COMMENTS,
+          group = "Marine Parks") %>%
+        addLegend(pal = mpa_data$state_pal, values = zones$zone, opacity = 1,
+          title = "Zones",
+          position = "bottomleft", group = "Marine Parks") %>%
+        addLayersControl(overlayGroups = c("Marine Parks",
+                            "Abundance"),
+          options = layersControlOptions(collapsed = FALSE)) %>%
+        add_legend_ta(
+          colors = c("black", "blue", "blue"),
+          labels = c(0, round(max.ta / 2), max.ta),
+          sizes = c(5, 20, 40), group = "Abundance")
+
+      # Blue circles where the species was seen, sized by count
+      if (nrow(overzero.ta)) {
+        map <- map %>%
+          addCircleMarkers(data = overzero.ta, lat = ~latitude_dd, lng = ~longitude_dd,
+            radius = ~ scales::rescale(maxn, c(5, 25)),
+            fillOpacity = 0.5, stroke = FALSE,
+            label = ~ as.character(maxn), group = "Abundance", color = "blue")}
+
+      #Small black ddts where species was not seen
+      if (nrow(equalzero.ta)) {
+        map <- map %>%
+          addCircleMarkers(data = equalzero.ta, lat = ~latitude_dd, lng = ~longitude_dd,
+            radius = 3, fillOpacity = 0.5, color = "black", stroke = FALSE,
+            label = ~ as.character(maxn), group = "Abundance")}
+
+      map })
+
+    # Extra text and images (marine park tab)  ----
+    # Data acknowledgement for the chosen park: the text for the matching row or a blank for the others
     observeEvent(input$fish.park.dropdown, {
       output$acknowledgement <- renderText({
-        #req(input$fish.park.dropdown)
-        HTML(ack <- if_else(mpa_data$acknowledgements$park == input$fish.park.dropdown, mpa_data$acknowledgements$acknowledgement, " "))
-        #HTML(ack <- paste("hello", "Line two", sep = "<br/>"))
-      })
-    })
+        HTML(ack <- if_else(mpa_data$acknowledgements$park == input$fish.park.dropdown, mpa_data$acknowledgements$acknowledgement, " "))})})
 
-    # TODO move to the generate data function
-    pal <- c("Sanctuary" = "#C0D435",
-             "SP Scientific Reference" = "#CAC3D5",
-             "Recreation" = "#F8EE75",
-             "General Use" = "#BBE3EF",
-             "SP Benthic Protection" = "#CAC3D5",
-             "Outside Park" = "#B3B3B3",
-             "Conservation Area" = "#C0B134",
-             "Marine Management Area" = "#b7cfe1",
-             "SP Seagrass Protection" = "#AB9ECC",
-             "Marine Nature Reserve" = "#bfd054",
-             "SP Habitat Protection" = "#CAC3D5",
-             "Shore Based Activities" = "#231D1D",
-             "SP Wildlife Conservation" = "#7C7CB8")
 
-  ##############################################################################
+    # Banner photo for the chosen park. GOTCHA file is www/images/fish_<park>.jpg where park = park name in lower case without "marine park"/"island marine reserve" or spaces
+    observeEvent(input$fish.park.dropdown, {
+      output$ui.fish.park.image <- renderUI({
+        req(input$fish.park.dropdown)
+        park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
+        img(src = paste0("www/images/fish_", park, ".jpg"), align = "right", width = "100%")})})
 
-#KDE plot code here was deleted 13/11/26 as not used (available in git history if reinstated later)
 
-    ####### ->  Individual Fished species abundance ----
+    # Species plots  ----
+    #these are not in fish_png_spec because the filename contains the species
+
+
+    #Target species (one chosen from the dropdown). GOTCHA: "Targeted"/"Highly retained" are stripped
     # Only includes consistently sampled sites
     observeEvent(input$fish.park.method.dropdown, {
       output$fish.park.fished.species.abundance.plot <- renderUI({
@@ -1042,239 +613,113 @@ mod_fish_server <- function(id, mpa_data){
         park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
         method <- input$fish.park.method.dropdown
         species <- stringr::str_replace_all(input$fish.park.fished.species.dropdown, c(" Targeted" = "", " Highly retained" = ""), "")
-
         tagList(h4(paste0("Total abundance of ", species, ":")),
-                img(src = paste0("www/plots/species/", "Fish_", park, "_", method, "_", species, "_targeted.png"), align = "left", width = "100%"))
+              img(src = paste0("www/plots/species/", "Fish_", park, "_", method, "_", species, "_targeted.png"), align = "left", width = "100%"))})})
 
-
-      })
-    })
-
-    ####### ->  Individual Fished species abundance by Sanctuary ----
+    # Target species, by sanctuary
     # Only includes consistently sampled sites
     observeEvent(input$fish.park.method.dropdown, {
       output$fish.park.fished.species.abundance.sanctuary.plot <- renderUI({
         req(input$fish.park.dropdown, input$fish.park.method.dropdown, input$fish.park.fished.species.dropdown)
-
         park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
         method <- input$fish.park.method.dropdown
         species <- stringr::str_replace_all(input$fish.park.fished.species.dropdown, c(" Targeted" = "", " Highly retained" = ""), "")
-
         tagList(h4(paste0("Total abundance of ", species, " by sanctuary:")),
-                img(src = paste0("www/plots/species/", "Fish_", park, "_", method, "_", species, "_sanctuary.png"), align = "left", width = "100%"))
-      })
-    })
+                img(src = paste0("www/plots/species/", "Fish_", park, "_", method, "_", species, "_sanctuary.png"), align = "left", width = "100%"))})})
 
-    ####### ->  Individual Species abundance ----
+    #Any species chosen from the all-species dropdown
     observeEvent(input$fish.park.method.dropdown, {
       output$fish.park.all.species.abundance.plot <- renderUI({
         req(input$fish.park.dropdown, input$fish.park.method.dropdown, input$fish.park.all.species.dropdown)
         park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
         method <- input$fish.park.method.dropdown
         species <- input$fish.park.all.species.dropdown
-
         tagList(h4(paste0("Total abundance of ", species, ":")),
-                img(src = paste0("www/plots/species/", "Fish_", park, "_", method, "_", species, ".png"), align = "left", width = "100%"))
-      })
-    })
+                img(src = paste0("www/plots/species/", "Fish_", park, "_", method, "_", species, ".png"), align = "left", width = "100%"))})})
 
-    ####### ->  Individual Species abundance by Sanctuary ----
+    #The same species, by sanctuary
     observeEvent(input$fish.park.method.dropdown, {
       output$fish.park.all.species.abundance.sanctuary.plot <- renderUI({
         req(input$fish.park.dropdown, input$fish.park.method.dropdown, input$fish.park.all.species.dropdown)
         park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
         method <- input$fish.park.method.dropdown
         species <- input$fish.park.all.species.dropdown
-
         tagList(h4(paste0("Total abundance of ", species, " by sanctuary:")),
-                img(src = paste0("www/plots/species/", "Fish_", park, "_", method, "_", species, "_sanctuary.png"), align = "left", width = "100%"))
-      })
-    })
-
-    ####### ->  Leaflet - All species abundance ----
-    output$fish.park.all.species.leaflet <- renderLeaflet({
-
-      req(fish_park_abundance_species_leaflet())
-
-      dat <- fish_park_abundance_species_leaflet()
-
-      dat <- dplyr::full_join(dat, fish_park_metadata_leaflet()) %>%
-        dplyr::filter(is.finite(latitude_dd), is.finite(longitude_dd)) %>% #protect map from broken lat/longs
-        tidyr::replace_na(list(maxn = 0))
-
-      # TODO I don't think this is the complete data?!?!?!?
-
-      overzero.ta <- dplyr::filter(dat, maxn > 0) #%>% dplyr::glimpse()
-      equalzero.ta <- dplyr::filter(dat, maxn == 0) #%>% dplyr::glimpse()
-
-      #Guard so all zero or empty species can't push -Inf to legend labels
-      max.ta <- if (nrow(overzero.ta)) base::max(overzero.ta$maxn) else 0
-
-      zones<- zones_for_park(mpa_data$state_mp, park(), dat)
-
-      map <- leaflet_basemap(dat) %>%
-        fitBounds(~ min(longitude_dd), ~ min(latitude_dd), ~ max(longitude_dd), ~ max(latitude_dd)) %>%
-        addGlPolygons(
-          data =  zones,
-          color = ~ mpa_data$state_pal(zone),
-          popup =  zones$COMMENTS,
-          group = "Marine Parks"
-        ) %>%
-        addLegend(
-          pal = mpa_data$state_pal, values = zones$zone, opacity = 1,
-          title = "Zones",
-          position = "bottomleft", group = "Marine Parks"
-        ) %>%
-        addLayersControl(
-          overlayGroups = c("Marine Parks",
-                            "Abundance"),
-          options = layersControlOptions(collapsed = FALSE)
-        ) %>%
-        add_legend_ta(
-          colors = c("black", "blue", "blue"),
-          labels = c(0, round(max.ta / 2), max.ta),
-          sizes = c(5, 20, 40), group = "Abundance"
-        )
-
-      if (nrow(overzero.ta)) {
-        map <- map %>%
-          addCircleMarkers(
-            data = overzero.ta, lat = ~latitude_dd, lng = ~longitude_dd,
-            radius = ~ scales::rescale(maxn, c(5, 25)), #((((maxn / max(maxn))) * 20)),
-            fillOpacity = 0.5, stroke = FALSE,
-            label = ~ as.character(maxn), group = "Abundance", color = "blue"
-          )
-      }
-
-      if (nrow(equalzero.ta)) {
-        map <- map %>%
-          addCircleMarkers(
-            data = equalzero.ta, lat = ~latitude_dd, lng = ~longitude_dd,
-            radius = 3, fillOpacity = 0.5, color = "black", stroke = FALSE,
-            label = ~ as.character(maxn), group = "Abundance"
-          )
-      }
-
-      map
-    })
+                img(src = paste0("www/plots/species/", "Fish_", park, "_", method, "_", species, "_sanctuary.png"), align = "left", width = "100%"))})})
 
 
-    # EXTRA CONTENT ----
 
-    # Marine Park image ----
-    # NOTE this depends on the image filename being identical to the data folders
-    # in the source data (data/Ningaloo or data/Ningaloo Marine Park)
-    observeEvent(input$fish.park.dropdown, {
-      output$ui.fish.park.image <- renderUI({
-        req(input$fish.park.dropdown)
-        park <- stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", "island marine reserve" = "", " " = ""))
 
-        img(src = paste0("www/images/fish_", park, ".jpg"), align = "right", width = "100%") # removed www from URL to get rid of golem
-      })
-    })
 
-    # Species iFrames -----
-    ####### ->  Marine Park All species ----
+    # Species webpage (iFrames) -----
+    #Embeds the species' page from the Fishes of Australia site, using the url in foa_codes
     output$fish.park.all.species.iframe <- renderUI({
-
       dat <- mpa_data$foa_codes[scientific_name %in% c(input$fish.park.all.species.dropdown)] %>%
         dplyr::distinct(url) %>%
         dplyr::pull("url")
-
       frame <- tags$iframe(src = paste0(dat), width = "100%", height = 600, class = "frame")
-      frame
-    })
+      frame})
 
-    ####### ->  Marine Park Fished species ----
-    output$fish.park.fished.species.iframe <- renderUI({
-
-      dat <- mpa_data$foa_codes[scientific_name %in% c(input$fish.park.fished.species.dropdown)] %>%
-        dplyr::distinct(url) %>%
-        dplyr::pull("url")
-
-      frame <- tags$iframe(src = paste0(dat), height = 800, width = "100%")
-      frame
-
-    })
-
+    # Info pop-ups -----
+    #Each button opens a modal with an HTML file from inst/app/www/popups
+    #CTI
     observeEvent(input$park.cti,
                  showModal(modalDialog(
                    title = "What is reef fish temperature index (RFTI)?",
-                   include_page(file.path(popups_dir(),"fish.cti.html"))))
-    )
+                   include_page(file.path(popups_dir(),"fish.cti.html")))))
 
+    #Total abundance
     observeEvent(input$park.ta,
                  showModal(modalDialog(
                    title = "How do we measure total abundance?",
-                   include_page(file.path(popups_dir(),"total.abundance.html"))))
-    )
-
+                   include_page(file.path(popups_dir(),"total.abundance.html")))))
+    #Total abundance (sharks) - same popup as above but it needs its own button id
     observeEvent(input$park.shark.ta,
                  showModal(modalDialog(
                    title = "How do we measure total abundance?",
-                   include_page(file.path(popups_dir(),"total.abundance.html"))))
-    )
+                   include_page(file.path(popups_dir(),"total.abundance.html")))))
 
+    #Species richness
     observeEvent(input$park.sr,
-                 # CHANGED THIS DEPLOYIN
-                 # print(dir())
                  showModal(modalDialog(
                    title = "How do we measure species richness?",
-                   include_page(file.path(popups_dir(),"species.richness.html"))))
-    )
+                   include_page(file.path(popups_dir(),"species.richness.html")))))
 
-    # MARINE PARK ----
-    # FOR FISH
-    observeEvent(
-      input$alert.marinepark,
-
+    # Marine park info button
+    #GOTCHA: this file is fish_<park>.html, only "marine park" and spaces are removed from the name (not "island marine reserve") so don't swap this code for park_slug as they do different things
+    observeEvent(input$alert.marinepark,
       showModal(modalDialog(
         title = input$fish.park.dropdown,
         include_page(file.path(popups_dir(),paste0("fish_",
                            stringr::str_replace_all(tolower(input$fish.park.dropdown), c("marine park" = "", " " = "")),
-                           ".html")))
-      )
-      ))
+                           ".html"))))))
 
-    # Interpretation of trends ----
-    ####### ->  Total abundance ----
-    output$fish.park.total.trend <- renderUI({
+    # Trend boxes ----
+    # Collapsible box with the written interpretation of the trend in total abundance
+    # Shows nothing when there is no trend text for this park and method
+        output$fish.park.total.trend <- renderUI({
+         dat <- fish_park_trends()[metric %in% c("total_abundance")]
 
-      dat <- fish_park_trends()[metric %in% c("total_abundance")]
-
-      if(nrow(dat > 0)){
-
-        box(width = 12, #height = 100,
+        if(nrow(dat) > 0){
+        box(width = 12,
             title = "Expand to see trend in total abundance",
             collapsed = TRUE,
             collapsible = TRUE,
             as.character(unique(dat$interpretation)),
             unique(dat$modified.by),
-            unique(dat$date.modified)
-        )
-      }
-    })
+            unique(dat$date.modified))}})
 
-    ####### ->  Species richness ----
+    #Same for species richness
     output$fish.park.rich.trend <- renderUI({
-
       dat <- fish_park_trends()[metric %in% c("species.richness")]
 
-      if(nrow(dat > 0)){
-
-        box(width = 12, #height = 100,
+      if(nrow(dat) > 0){
+        box(width = 12,
             title = "Expand to see trend in species richness",
             collapsed = TRUE,
             collapsible = TRUE,
             as.character(unique(dat$interpretation)),
             unique(dat$modified.by),
-            unique(dat$date.modified)
-        )
-      }
-
-    })
-
-
-
-  })
-}
+            unique(dat$date.modified))}})
+  }) #end of module server
+} #end of fish server
