@@ -1,44 +1,53 @@
-FROM rocker/geospatial:latest
-# system libraries of general use
-## install debian packages
-RUN apt-get update -qq && apt-get -y --no-install-recommends install \
-    libxml2-dev \
-    libcairo2-dev \
-    libsqlite3-dev \
-    libmariadbd-dev \
-    libpq-dev \
-    libssh2-1-dev \
-    unixodbc-dev \
-    libcurl4-openssl-dev \
-    libssl-dev \
-    cron
+# Install a base R version - update here when we update the version used by renv
+FROM rocker/r-ver:4.6.2
 
-## update system libraries
+# Install debian packages
+RUN apt-get update -qq && apt-get install -y --no-install-recommends \
+    cmake \
+    gdal-bin \
+    git \
+    libcurl4-openssl-dev \
+    libfontconfig1-dev \
+    libfreetype6-dev \
+    libfribidi-dev \
+    libgdal-dev \
+    libgeos-dev \
+    libharfbuzz-dev \
+    libicu-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libproj-dev \
+    libsqlite3-dev \
+    libssl-dev \
+    libtiff-dev \
+    libudunits2-dev \
+    libuv1-dev \
+    libwebp-dev \
+    libx11-dev \
+    libxml2-dev \
+    make \
+    pandoc \
+    zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# update system libraries
+# Currently updates to the latest version of every package
+# I need to work out if this is the best protocol
+# The other option is so pin specific versions above
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get clean
 
+WORKDIR /app
 
-# COPY /example-app/renv.lock ./renv.lock # <HOST PATH> <DESTINATION PATH>
-# Maybe move the other copy up here?
+RUN R -e "install.packages('renv', repos = c(CRAN = 'https://r-project.org'))"
 
-#RUN mkdir -p /usr/local/lib/R/etc/ /usr/lib/R/etc/
-# Check and add packages below
-# I don't think the below is the best way to do this
-# Try install from the renv
-# RUN Rscript -e 'install.packages("renv")'
-# Run Rscript -e 'renv::restore()'
-RUN Rscript -e 'install.packages(c("remotes", "leaflet", "leaflet.extras","here", "config", "cowplot", "thinkr", "shinydashboard", "shinydashboardPlus", "shinycssloaders", "shinyalert", "shinyWidgets", "leafgl", "golem", "ckanr", "scales", "data.table", "ggbreak", "ggh4x", "lutz", "plotrix"))'
-# RUN Rscript -e 'remotes::install_github("UWAMEGFisheries/GlobalArchive@f3c4315600a0396c7f72382b81d9073d346d431d")'
-RUN Rscript -e 'remotes::install_github("GlobalArchiveManual/CheckEM")' # Consider adding commit-hash
-RUN Rscript -e 'remotes::install_github("iLab-fish/iLab")' # Check this
-# Check and add github packages (CheckEM package, iLab package?)
+COPY renv.lock renv.lock
 
+RUN R -e "renv::restore(library = .libPaths()[1], prompt = FALSE)"
 
-# COPY /mpaviewer/renv.lock ./renv.lock
-## app folder
-# COPY /mpaviewer ./app
-COPY . ./app
+# Working directory has already been set, so changed the copy command
+COPY . .
 
 EXPOSE 3838
 
