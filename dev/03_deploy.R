@@ -48,8 +48,15 @@ pkgload::load_all(export_all = FALSE, helpers = FALSE, attach_testthat = FALSE)
 # Test local version
 mpaviewer::run_app()
 
-source("secrets/creds.R") # Hidden file for marine-ecology.io credentials
+# New version with updates to connect to new UWA server
+rsconnect::connectCloudUser()
+
+rsconnect::migrateToConnectCloud(contentId = "01a1f7d3-7c9c-d471-1c95-ab49ba162dd4")
+
 rsconnect::deployApp()
+
+# source("secrets/creds.R") # Hidden file for marine-ecology.io credentials
+# rsconnect::deployApp()
 
 # If you break the app, check logs here
 rsconnect::showLogs(streaming = FALSE)
